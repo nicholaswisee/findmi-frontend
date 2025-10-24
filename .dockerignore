@@ -1,0 +1,42 @@
+# === Dependencies & build artifacts ===
+node_modules
+bun.lockb
+npm-debug.log
+yarn-error.log
+.pnpm-store
+.cache
+dist
+build
+
+# === Environment & secrets ===
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.backup
+
+# === System / IDE files ===
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+*.swp
+*.swo
+*.log
+
+# === Git & CI/CD ===
+.git
+.gitignore
+.github
+.gitlab-ci.yml
+
+# === Docker files (tidak perlu di-copy ke image) ===
+Dockerfile
+docker-compose.yml
+docker-compose.dev.yml
+docker-compose.prod.yml
+
+# === OS or temp files ===
+tmp/
+cache/

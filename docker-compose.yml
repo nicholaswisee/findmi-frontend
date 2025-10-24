@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  frontend:
+    build: .
+    container_name: findmi-frontend
+    ports:
+      - "4242:80"
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    restart: always
