@@ -10,7 +10,7 @@ export default function PublicRoute({
   const { isAuthenticated } = useAuth();
 
   if (isAuthenticated) {
-    const from = (location.state as any)?.from?.pathname || "/profil";
+    const from = location.state?.from?.pathname || "/profile";
     return <Navigate to={from} replace />;
   }
 

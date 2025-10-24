@@ -20,19 +20,11 @@ export const routes: RouteObject[] = [
       { index: true, element: <HomePage /> },
       {
         path: "catalog",
-        element: (
-          <PublicRoute>
-            <CatalogPage />
-          </PublicRoute>
-        ),
+        element: <CatalogPage />,
       },
       {
         path: "catalog/:product_id",
-        element: (
-          <PublicRoute>
-            <ProductDetailPage />
-          </PublicRoute>
-        ),
+        element: <ProductDetailPage />,
       },
       {
         path: "cart",
