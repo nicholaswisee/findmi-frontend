@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 interface User {
   id: number;
   name: string;
-  email: string;
+  nim: string;
   role?: string;
 }
 
@@ -11,7 +11,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   refreshUser: () => Promise<void>;
-  login: (email: string, password: string) => Promise<void>;
+  login: (nim: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:6969";
 
   useEffect(() => {
     refreshUser();
@@ -53,13 +53,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (nim: string, password: string) => {
     try {
       const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ nim, password }),
       });
 
       if (!res.ok) {

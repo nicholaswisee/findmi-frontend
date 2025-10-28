@@ -2,16 +2,6 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useMemo } from "react";
 
-let navLinks = [
-  { path: "/", label: "Home" },
-  { path: "/catalog", label: "Catalog" },
-  // { path: "/cart", label: "Cart" },
-  // { path: "/checkout", label: "Checkout" },
-  // ,
-  // { path: "/profile", label: "Profile" },
-  // { path: "/profile/history", label: "Order History" },
-];
-
 export default function Navbar() {
   const { isAuthenticated, user } = useAuth();
 

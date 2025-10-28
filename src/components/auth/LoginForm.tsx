@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 export default function LoginForm() {
   const { login, isAuthenticated, user } = useAuth();
-  const [email, setEmail] = useState("");
+  const [nim, setNim] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ export default function LoginForm() {
     setError(null);
     setLoading(true);
     try {
-      await login(email, password);
+      await login(nim, password);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -37,10 +37,10 @@ export default function LoginForm() {
       className="flex flex-col gap-3 max-w-xl w-full"
     >
       <input
-        type="email"
-        value={email}
-        placeholder="Email"
-        onChange={(e) => setEmail(e.target.value)}
+        type="nim"
+        value={nim}
+        placeholder="NIM"
+        onChange={(e) => setNim(e.target.value)}
         className="border p-2 rounded"
       />
       <input
