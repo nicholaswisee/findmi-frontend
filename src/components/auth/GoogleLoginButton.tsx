@@ -10,6 +10,7 @@ export default function GoogleLoginButton() {
   return (
     <>
       <button
+        type="button"
         onClick={() => {
           handleLogin();
         }}

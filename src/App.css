@@ -1,58 +1,58 @@
 @import "tailwindcss";
 
-@font-face {
-  font-family: "Euskadi Regular";
-  src: url("./assets/fonts/[HEADING]\ Euskadi-Regular.otf");
-}
-
-@font-face {
-  font-family: "Darker Grotesque";
-  src: url("./assets/fonts/[SUBHEADING\ BODY]\ DarkerGrotesque-Variable.ttf");
-}
-
-@theme {
-  --font-heading: var(--font-heading);
-  --font-subheading: var(--font-subheading);
-  --font-body: var(--font-subheading);
-}
-
 :root {
   --font-heading: "Euskadi Regular";
   --font-subheading: "Darker Grotesque";
 }
 
-h1 {
-  @apply font-heading text-[clamp(1.75rem,4vw+1rem,3rem)];
-}
+@layer base {
+  @font-face {
+    font-family: "Euskadi Regular";
+    src: url("./assets/fonts/[HEADING]\ Euskadi-Regular.otf");
+  }
 
-h2 {
-  @apply font-heading text-[clamp(1.5rem,3vw+0.5rem,2.5rem)];
-}
+  @font-face {
+    font-family: "Darker Grotesque";
+    src: url("./assets/fonts/[SUBHEADING\ BODY]\ DarkerGrotesque-Variable.ttf");
+  }
 
-h3 {
-  @apply font-heading text-[clamp(1.25rem,2vw+0.5rem,2rem)];
-}
+  @theme {
+    --font-heading: var(--font-heading);
+    --font-subheading: var(--font-subheading);
+    --font-body: var(--font-subheading);
+  }
 
-h4 {
-  @apply font-heading text-[clamp(1.125rem,1vw+0.75rem,1.5rem)];
-}
+  /* Headings using Tailwind native text sizes with responsive breakpoints */
+  h1 {
+    @apply font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl;
+  }
 
-h5 {
-  @apply font-heading text-[clamp(1rem,0.75vw+0.75rem,1.25rem)];
-}
+  h2 {
+    @apply font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl;
+  }
 
-h6 {
-  @apply font-heading text-[clamp(0.875rem,0.5vw+0.5rem,1.125rem)];
-}
+  h3 {
+    @apply font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl;
+  }
 
-p.lead {
-  @apply text-[clamp(1.125rem,1vw+1rem,1.375rem)] font-medium;
-}
+  h4 {
+    @apply font-heading text-lg sm:text-xl md:text-2xl lg:text-3xl;
+  }
 
-p.small {
-  @apply text-[clamp(0.875rem,0.5vw+0.75rem,1rem)];
-}
+  h5 {
+    @apply font-heading text-base sm:text-lg md:text-xl lg:text-2xl;
+  }
 
-* {
-  @apply font-sans text-[clamp(1rem,0.5vw+0.9rem,1.125rem)] leading-relaxed;
+  h6 {
+    @apply font-heading text-sm sm:text-base md:text-lg lg:text-xl;
+  }
+
+  p.lead,
+  * {
+    @apply font-medium text-lg sm:text-xl md:text-2xl;
+  }
+
+  p.small {
+    @apply text-sm sm:text-base md:text-base;
+  }
 }
