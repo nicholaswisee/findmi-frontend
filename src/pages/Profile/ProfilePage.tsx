@@ -1,3 +1,16 @@
+import { useAuth } from "../../context/AuthContext";
+
 export default function ProfilePage() {
-  return <div>ProfilePage</div>;
+  const { logout } = useAuth();
+  return (
+    <div>
+      <button
+        onClick={() => {
+          logout();
+        }}
+      >
+        Logout
+      </button>
+    </div>
+  );
 }

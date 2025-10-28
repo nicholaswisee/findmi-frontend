@@ -1,3 +1,17 @@
+import { toast } from "sonner";
+
 export default function HomePage() {
-  return <div>HomePage</div>;
+  return (
+    <div>
+      <button
+        onClick={() => {
+          toast.success("Hello World", {
+            description: "This is an example toast",
+          });
+        }}
+      >
+        Hi
+      </button>
+    </div>
+  );
 }

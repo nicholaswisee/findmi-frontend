@@ -1,12 +1,14 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { Toaster } from "sonner";
 
 export default function MainLayout() {
   return (
-    <div className="flex flex-col min-h-screen bg-white text-gray-900">
+    <div className="flex flex-col bg-white text-gray-900 font-body">
       <Navbar />
-      <main className="flex-1 container mx-auto px-4 py-6">
+      <Toaster closeButton={true} position="bottom-right" />
+      <main className="w-full px-4 py-6 pt-14 sm:pt-16 md:pt-18 lg:pt-20 min-h-svh">
         <Outlet />
       </main>
       <Footer />

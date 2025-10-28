@@ -1,26 +1,44 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { useMemo } from "react";
 
-const navLinks = [
+let navLinks = [
   { path: "/", label: "Home" },
   { path: "/catalog", label: "Catalog" },
-  { path: "/cart", label: "Cart" },
-  { path: "/checkout", label: "Checkout" },
-  { path: "/auth", label: "Login" },
-  { path: "/profile", label: "Profile" },
-  { path: "/profile/history", label: "Order History" },
+  // { path: "/cart", label: "Cart" },
+  // { path: "/checkout", label: "Checkout" },
+  // ,
+  // { path: "/profile", label: "Profile" },
+  // { path: "/profile/history", label: "Order History" },
 ];
 
 export default function Navbar() {
+  const { isAuthenticated, user } = useAuth();
+
+  const links = useMemo<{ path: string; label: string }[]>(() => {
+    const base: { path: string; label: string }[] = [
+      { path: "/", label: "Home" },
+      { path: "/catalog", label: "Catalog" },
+    ];
+
+    if (isAuthenticated) {
+      base.push({ path: "/cart", label: "Cart" });
+      base.push({ path: "/profile", label: "Profile" });
+    } else {
+      base.push({ path: "/auth", label: "Login" });
+    }
+
+    if (user && user.role?.includes("admin")) {
+      base.push({ path: "/admin", label: "Admin" });
+    }
+    return base;
+  }, [isAuthenticated]);
+
   return (
     <nav
-      style={{
-        display: "flex",
-        gap: "1rem",
-        padding: "1rem",
-        background: "#f4f4f4",
-      }}
+      className={`flex gap-4 p-4 bg-white fixed top-0 w-full h-14 sm:h-16 md:h-18 lg:h-20`}
     >
-      {navLinks.map((link) => (
+      {links.map((link) => (
         <Link key={link.path} to={link.path}>
           {link.label}
         </Link>
