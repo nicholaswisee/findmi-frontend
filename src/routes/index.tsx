@@ -1,7 +1,6 @@
 import { type RouteObject } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import PrivateRoute from "./PrivateRoute";
-import PublicRoute from "./PublicRoute";
 import HomePage from "../pages/Home/HomePage";
 import CatalogPage from "../pages/Catalog/CatalogPage";
 import ProductDetailPage from "../pages/Catalog/ProductDetailPage";
