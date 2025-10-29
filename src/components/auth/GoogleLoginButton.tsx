@@ -1,6 +1,6 @@
 import "../../styles/auth.styles.css";
 
-const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:6969";
+const BACKEND_URL = import.meta.env.VITE_API_URL!;
 
 export default function GoogleLoginButton() {
   const handleLogin = () => {
