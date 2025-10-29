@@ -44,11 +44,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "auth",
-        element: (
-          <PublicRoute>
-            <AuthPage />
-          </PublicRoute>
-        ),
+        element: <AuthPage />,
       },
       {
         path: "profile",
