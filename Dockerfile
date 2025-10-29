@@ -4,7 +4,8 @@ WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 COPY .env .env
-COPY . .
+ARG VITE_API_URL
+RUN echo "VITE_API_URL=$VITE_API_URL" > .env
 RUN bun run build
 
 # Runtime stage with Nginx

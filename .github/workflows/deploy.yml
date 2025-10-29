@@ -21,7 +21,9 @@ jobs:
       - name: Build Docker image
         run: |
           IMAGE=ghcr.io/ami-2026/findmi-frontend:latest
-          docker build -t "$IMAGE" .
+          docker build \
+            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
+            -t "$IMAGE" .
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
       - name: Push Docker image
