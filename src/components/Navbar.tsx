@@ -15,7 +15,7 @@ export default function Navbar() {
       base.push({ path: "/cart", label: "Cart" });
       base.push({ path: "/profile", label: "Profile" });
     } else {
-      base.push({ path: "/auth", label: "Login" });
+      base.push({ path: "/login", label: "Login" });
     }
 
     if (user && user.role?.includes("admin")) {
