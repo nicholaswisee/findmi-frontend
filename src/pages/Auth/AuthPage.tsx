@@ -1,9 +1,9 @@
 import { Navigate } from "react-router-dom";
 import LoginForm from "../../components/auth/LoginForm";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/authStore";
 
 export default function AuthPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthStore();
 
   if (isAuthenticated) {
     return <Navigate to="/profile" />;

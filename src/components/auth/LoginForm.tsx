@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import GoogleLoginButton from "./GoogleLoginButton";
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/authStore";
 import { toast } from "sonner";
 
 export default function LoginForm() {
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, isAuthenticated, user } = useAuthStore();
   const [nim, setNim] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);

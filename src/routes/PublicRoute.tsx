@@ -1,5 +1,5 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "../store/authStore";
 
 export default function PublicRoute({
   children,
@@ -7,7 +7,7 @@ export default function PublicRoute({
   children: React.ReactNode;
 }) {
   const location = useLocation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthStore();
 
   if (isAuthenticated) {
     const from = location.state?.from?.pathname || "/profile";

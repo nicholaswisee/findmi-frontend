@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
 import { useMemo } from "react";
+import { useAuthStore } from "../store/authStore";
 
 export default function Navbar() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user } = useAuthStore();
 
   const links = useMemo<{ path: string; label: string }[]>(() => {
     const base: { path: string; label: string }[] = [

@@ -1,7 +1,7 @@
-import { useAuth } from "../../context/AuthContext";
+import { useAuthStore } from "../../store/authStore";
 
 export default function ProfilePage() {
-  const { logout } = useAuth();
+  const { logout } = useAuthStore();
   return (
     <div>
       <button
