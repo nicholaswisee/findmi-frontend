@@ -4,6 +4,7 @@ export default function ProfilePage() {
   const { logout } = useAuthStore();
   return (
     <div>
+      <p>Profile Page</p>
       <button
         onClick={() => {
           logout();

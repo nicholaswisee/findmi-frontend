@@ -18,6 +18,12 @@ bun run dev
 
 The app will be available at [http://localhost:4242](http://localhost:4242) by default.
 
+To add any components of ShadCN:
+
+```bash
+bunx --bun shadcn@latest add component-name
+```
+
 ### 3. Build for Production
 
 ```bash

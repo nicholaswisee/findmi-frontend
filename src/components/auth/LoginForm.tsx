@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import GoogleLoginButton from "./GoogleLoginButton";
 import { useAuthStore } from "../../store/authStore";
 import { toast } from "sonner";
+import { Button } from "../ui/button";
 
 export default function LoginForm() {
   const { login, isAuthenticated, user } = useAuthStore();
@@ -50,13 +51,14 @@ export default function LoginForm() {
         onChange={(e) => setPassword(e.target.value)}
         className="border p-2 rounded"
       />
-      <button
+      <Button
         type="submit"
         disabled={loading}
-        className="bg-blue-600 text-white p-2 rounded"
+        variant={"default"}
+        className="text-white p-2 rounded"
       >
         {loading ? "Logging in..." : "Login"}
-      </button>
+      </Button>
       <GoogleLoginButton />
     </form>
   );
