@@ -23,8 +23,12 @@ export default function LoginForm() {
     setLoading(true);
     try {
       await login(nim, password);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Gagal melakukan autentikasi.");
+      }
     } finally {
       setLoading(false);
     }
