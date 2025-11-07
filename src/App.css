@@ -68,27 +68,27 @@
   }
 
   h1 {
-    @apply font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl;
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl;
   }
 
   h2 {
-    @apply font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl;
+    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl;
   }
 
   h3 {
-    @apply font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl;
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl;
   }
 
   h4 {
-    @apply font-heading text-lg sm:text-xl md:text-2xl lg:text-3xl;
+    @apply text-lg sm:text-xl md:text-2xl lg:text-3xl;
   }
 
   h5 {
-    @apply font-heading text-base sm:text-lg md:text-xl lg:text-2xl;
+    @apply text-base sm:text-lg md:text-xl lg:text-2xl;
   }
 
   h6 {
-    @apply font-heading text-sm sm:text-base md:text-lg lg:text-xl;
+    @apply text-sm sm:text-base md:text-lg lg:text-xl;
   }
   /* 
   p.lead {

@@ -67,13 +67,24 @@ export type CreateBundlePayload = {
 
 export type UpdateBundlePayload = Partial<CreateBundlePayload>;
 
+type PaginationOptions = {
+  limit?: number;
+  offset?: number;
+};
+
 type AdminState = {
   products: Product[];
   bundles: Bundle[];
   loadingProducts: boolean;
   loadingBundles: boolean;
-  fetchProducts: () => Promise<void>;
-  fetchBundles: () => Promise<void>;
+  productPageIndex: number;
+  productPageSize: number;
+  productHasNext: boolean;
+  bundlePageIndex: number;
+  bundlePageSize: number;
+  bundleHasNext: boolean;
+  fetchProducts: (opts?: PaginationOptions) => Promise<void>;
+  fetchBundles: (opts?: PaginationOptions) => Promise<void>;
   createProduct: (data: CreateProductPayload) => Promise<Product>;
   updateProduct: (id: number, data: UpdateProductPayload) => Promise<Product>;
   updateProductStock: (
@@ -91,22 +102,54 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   bundles: [],
   loadingProducts: false,
   loadingBundles: false,
+  productPageIndex: 0,
+  productPageSize: 10,
+  productHasNext: false,
+  bundlePageIndex: 0,
+  bundlePageSize: 10,
+  bundleHasNext: false,
 
-  fetchProducts: async () => {
+  fetchProducts: async (opts) => {
+    const current = get();
+    const limit = opts?.limit ?? current.productPageSize;
+    const offset = opts?.offset ?? current.productPageIndex * limit;
     set({ loadingProducts: true });
     try {
-      const data = await apiRequest<Product[]>("/product");
-      set({ products: data });
+      const params = new URLSearchParams({
+        limit: String(limit),
+        offset: String(offset),
+      });
+      const data = await apiRequest<Product[]>(`/product?${params.toString()}`);
+      const pageIndex = Math.floor(offset / limit);
+      set({
+        products: data,
+        productPageIndex: pageIndex,
+        productPageSize: limit,
+        productHasNext: data.length === limit,
+      });
     } finally {
       set({ loadingProducts: false });
     }
   },
 
-  fetchBundles: async () => {
+  fetchBundles: async (opts) => {
+    const current = get();
+    const limit = opts?.limit ?? current.bundlePageSize;
+    const offset = opts?.offset ?? current.bundlePageIndex * limit;
     set({ loadingBundles: true });
     try {
-      const data = await apiRequest<Bundle[]>("/bundle");
-      set({ bundles: data });
+      const params = new URLSearchParams({
+        limit: String(limit),
+        offset: String(offset),
+      });
+      const data = await apiRequest<Bundle[]>(`/bundle?${params.toString()}`);
+      const pageIndex = Math.floor(offset / limit);
+      set({
+        bundles: data,
+        bundlePageIndex: pageIndex,
+        bundlePageSize: limit,
+        bundleHasNext: data.length === limit,
+      });
     } finally {
       set({ loadingBundles: false });
     }
