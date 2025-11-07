@@ -1,9 +1,14 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import {
+  Controller,
+  useFieldArray,
+  useForm,
+  type UseFormReturn,
+} from "react-hook-form";
 
-import type { Bundle } from "@/types/types";
+import type { Bundle, Product } from "@/types/types";
 import {
   Dialog,
   DialogClose,
@@ -18,6 +23,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+if (!API_URL) {
+  throw new Error("VITE_API_URL is not defined");
+}
+
 export type BundleFormValues = {
   name: string;
   price: number;
@@ -169,42 +181,13 @@ export function BundleFormDialog({
 
             <div className="space-y-3">
               {fields.map((field, index) => (
-                <div
+                <BundleItemRow
                   key={field.id}
-                  className="grid gap-3 rounded-md border p-3 md:grid-cols-[1fr_1fr_auto]"
-                >
-                  <div className="grid gap-2">
-                    <Label>Product ID</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      {...register(`bundle_items.${index}.product_id`, {
-                        valueAsNumber: true,
-                      })}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Quantity</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      {...register(`bundle_items.${index}.amount`, {
-                        valueAsNumber: true,
-                      })}
-                    />
-                  </div>
-                  <div className="flex items-end justify-end">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => remove(index)}
-                      disabled={fields.length === 1}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </div>
+                  index={index}
+                  form={form}
+                  disableRemove={fields.length === 1}
+                  onRemove={() => remove(index)}
+                />
               ))}
             </div>
           </div>
@@ -222,5 +205,178 @@ export function BundleFormDialog({
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+type BundleItemRowProps = {
+  index: number;
+  form: UseFormReturn<BundleFormValues>;
+  onRemove: () => void;
+  disableRemove: boolean;
+};
+
+function BundleItemRow({
+  index,
+  form,
+  onRemove,
+  disableRemove,
+}: BundleItemRowProps) {
+  const { control, setValue, watch } = form;
+  const productId = watch(`bundle_items.${index}.product_id`);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [results, setResults] = useState<Product[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [selectedName, setSelectedName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchTerm.trim().length < 2) {
+      setResults([]);
+      setSearchError(null);
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+    setSearching(true);
+    setSearchError(null);
+
+    fetch(
+      `${API_URL}/product/search?keyword=${encodeURIComponent(
+        searchTerm.trim()
+      )}`,
+      {
+        credentials: "include",
+        signal: controller.signal,
+      }
+    )
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to search products");
+        return res.json();
+      })
+      .then((payload) => {
+        if (!cancelled) {
+          setResults((payload?.data as Product[]) ?? []);
+        }
+      })
+      .catch((err) => {
+        if (err.name === "AbortError") return;
+        if (!cancelled) setSearchError((err as Error).message);
+      })
+      .finally(() => {
+        if (!cancelled) setSearching(false);
+      });
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [searchTerm]);
+
+  const handleSelectProduct = (product: Product) => {
+    setValue(`bundle_items.${index}.product_id`, product.id, {
+      shouldDirty: true,
+    });
+    setSelectedName(product.name);
+    setSearchTerm("");
+    setResults([]);
+  };
+
+  return (
+    <div className="space-y-3 rounded-md border p-3">
+      <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+        <div className="grid gap-2 items-start">
+          <Label>Selected product</Label>
+          <div className="rounded-md border bg-muted/40 px-3 py-2 text-sm">
+            {productId ? (
+              <span className="font-medium">
+                ID #{productId}
+                {selectedName ? (
+                  <span className="text-muted-foreground">
+                    {` · ${selectedName}`}
+                  </span>
+                ) : null}
+              </span>
+            ) : (
+              <span className="text-muted-foreground">No product selected</span>
+            )}
+          </div>
+          <Controller
+            control={control}
+            name={`bundle_items.${index}.product_id`}
+            render={({ field }) => (
+              <input type="hidden" {...field} value={field.value ?? ""} />
+            )}
+          />
+          <p className="text-xs text-muted-foreground">
+            Use the search below to choose a product.
+          </p>
+        </div>
+        <div className="grid gap-2 items-start h-fit">
+          <Label>Quantity</Label>
+          <Controller
+            control={control}
+            name={`bundle_items.${index}.amount`}
+            render={({ field }) => (
+              <Input
+                type="number"
+                min={1}
+                value={field.value ?? ""}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  const parsed = value === "" ? "" : Number(event.target.value);
+                  field.onChange(parsed);
+                }}
+                onBlur={field.onBlur}
+                ref={field.ref}
+              />
+            )}
+          />
+        </div>
+        <div className="flex items-start justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onRemove}
+            disabled={disableRemove}
+          >
+            Remove
+          </Button>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor={`bundle-item-search-${index}`}>Search product</Label>
+        <Input
+          id={`bundle-item-search-${index}`}
+          value={searchTerm}
+          onChange={(event) => setSearchTerm(event.target.value)}
+          placeholder="Type at least 2 characters"
+        />
+        {searching && (
+          <p className="text-xs text-muted-foreground">Searching...</p>
+        )}
+        {searchError && <p className="text-xs text-red-600">{searchError}</p>}
+        {!searching && results.length > 0 && (
+          <div className="space-y-1 rounded-md border bg-muted/40 p-2">
+            {results.map((product) => (
+              <button
+                key={product.id}
+                type="button"
+                className="flex w-full flex-col rounded-md px-2 py-1 text-left hover:bg-background"
+                onClick={() => handleSelectProduct(product)}
+              >
+                <span className="font-medium">{product.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  ID #{product.id} · Rp {product.price.toLocaleString("id-ID")}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
