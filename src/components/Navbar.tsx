@@ -34,7 +34,7 @@ export default function Navbar() {
     }
 
     if (user && user.role?.includes("admin")) {
-      base.unshift({ path: "/admin", label: "Admin", icon: null });
+      base.unshift({ path: "/dashboard", label: "Admin", icon: null });
     }
     return base;
   }, [isAuthenticated, user]);
