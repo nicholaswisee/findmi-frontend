@@ -16,7 +16,7 @@ function CarouselCard() {
     if (!api) {
       return;
     }
-
+    
     setCount(api.scrollSnapList().length);
     setCurrent(api.selectedScrollSnap());
 
@@ -25,7 +25,6 @@ function CarouselCard() {
     });
   }, [api]);
 
-  // Auto-scroll effect
   useEffect(() => {
     if (!api) {
       return;
@@ -35,9 +34,9 @@ function CarouselCard() {
       if (api.canScrollNext()) {
         api.scrollNext();
       } else {
-        api.scrollTo(0); // Go back to first slide
+        api.scrollTo(0); 
       }
-    }, 3000); // Change slide every 3 seconds
+    }, 3000); 
 
     return () => clearInterval(intervalId);
   }, [api]);
