@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import BundleTable from "@/components/admin/bundles/BundleTable";
@@ -6,6 +6,19 @@ import type { BundleFormValues } from "@/components/admin/bundles/BundleFormDial
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminStore } from "@/store/adminStore";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DEPARTMENTS } from "@/constants/departments";
+import type { UserDepartmentEnum } from "@/types/types";
+
+type DepartmentFilterValue = UserDepartmentEnum | "all";
 
 export default function BundlesAdmin() {
   const bundles = useAdminStore((state) => state.bundles);
@@ -16,11 +29,39 @@ export default function BundlesAdmin() {
   const hasNextPage = useAdminStore((state) => state.bundleHasNext);
   const updateBundle = useAdminStore((state) => state.updateBundle);
 
+  const [departmentFilter, setDepartmentFilter] =
+    useState<DepartmentFilterValue>("all");
+  const [searchTerm, setSearchTerm] = useState("");
+
   useEffect(() => {
     if (bundles.length === 0) {
-      fetchBundles();
+      fetchBundles().catch((err) => {
+        toast.error(
+          err instanceof Error ? err.message : "Failed to load bundles",
+        );
+      });
     }
   }, [bundles.length, fetchBundles]);
+
+  const fetchWithFilters = useCallback(
+    (params?: {
+      limit?: number;
+      offset?: number;
+      department?: DepartmentFilterValue;
+      search?: string;
+    }) =>
+      fetchBundles({
+        limit: params?.limit ?? pageSize,
+        offset: params?.offset ?? pageIndex * pageSize,
+        department: params?.department ?? departmentFilter,
+        search: params?.search ?? searchTerm,
+      }),
+    [departmentFilter, fetchBundles, pageIndex, pageSize, searchTerm],
+  );
+
+  const refetchCurrentPage = useCallback(async () => {
+    await fetchWithFilters();
+  }, [fetchWithFilters]);
 
   const handleEditBundle = useCallback(
     async (bundleId: number, values: BundleFormValues) => {
@@ -37,17 +78,45 @@ export default function BundlesAdmin() {
           is_hidden: values.is_hidden,
           bundle_items: values.bundle_items,
         });
-        await fetchBundles({
-          limit: pageSize,
-          offset: pageIndex * pageSize,
-        });
+        await refetchCurrentPage();
         toast.success("Bundle updated");
       } catch (err) {
         toast.error((err as Error).message ?? "Failed to update bundle");
       }
     },
-    [fetchBundles, pageIndex, pageSize, updateBundle],
+    [refetchCurrentPage, updateBundle],
   );
+
+  const handleDepartmentChange = (value: DepartmentFilterValue) => {
+    setDepartmentFilter(value);
+    fetchWithFilters({ offset: 0, department: value }).catch((err) => {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to apply filter",
+      );
+    });
+  };
+
+  const handleSearchSubmit = () => {
+    fetchWithFilters({ offset: 0, search: searchTerm }).catch((err) => {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to apply search",
+      );
+    });
+  };
+
+  const handleNextPage = () => {
+    if (loading || !hasNextPage) return;
+    fetchWithFilters({ offset: (pageIndex + 1) * pageSize }).catch((err) => {
+      toast.error((err as Error).message ?? "Failed to load next page");
+    });
+  };
+
+  const handlePreviousPage = () => {
+    if (loading || pageIndex === 0) return;
+    fetchWithFilters({ offset: (pageIndex - 1) * pageSize }).catch((err) => {
+      toast.error((err as Error).message ?? "Failed to load previous page");
+    });
+  };
 
   return (
     <section className="space-y-6">
@@ -57,14 +126,60 @@ export default function BundlesAdmin() {
         </div>
         <Button
           variant="outline"
-          onClick={() =>
-            fetchBundles({ limit: pageSize, offset: pageIndex * pageSize })
-          }
+          onClick={refetchCurrentPage}
           disabled={loading}
         >
           Refresh
         </Button>
       </header>
+
+      <div className="grid gap-4 sm:grid-cols-[200px_1fr_auto]">
+        <div className="space-y-2">
+          <Label>Department</Label>
+          <Select
+            value={departmentFilter}
+            onValueChange={(value) =>
+              handleDepartmentChange(value as DepartmentFilterValue)
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="All Departments" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Departments</SelectItem>
+              {DEPARTMENTS.map((dept) => (
+                <SelectItem key={dept} value={dept}>
+                  {dept}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="bundle-search">Search by name</Label>
+          <Input
+            id="bundle-search"
+            placeholder="Type bundle name..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                handleSearchSubmit();
+              }
+            }}
+          />
+        </div>
+        <div className="flex items-end">
+          <Button
+            onClick={handleSearchSubmit}
+            className="w-full"
+            variant="secondary"
+            disabled={loading}
+          >
+            Apply Filters
+          </Button>
+        </div>
+      </div>
 
       {loading && bundles.length === 0 ? (
         <Skeleton className="h-64 w-full rounded-xl" />
@@ -75,20 +190,8 @@ export default function BundlesAdmin() {
           pageSize={pageSize}
           hasNextPage={hasNextPage}
           loading={loading}
-          onNextPage={() =>
-            hasNextPage &&
-            fetchBundles({
-              limit: pageSize,
-              offset: (pageIndex + 1) * pageSize,
-            })
-          }
-          onPreviousPage={() =>
-            pageIndex > 0 &&
-            fetchBundles({
-              limit: pageSize,
-              offset: (pageIndex - 1) * pageSize,
-            })
-          }
+          onNextPage={handleNextPage}
+          onPreviousPage={handlePreviousPage}
           onEditBundle={(bundle, values) => handleEditBundle(bundle.id, values)}
         />
       )}

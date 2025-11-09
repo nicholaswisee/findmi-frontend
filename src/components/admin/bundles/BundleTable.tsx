@@ -7,10 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/admin/data-table";
 import type { Bundle } from "@/types/types";
 import { Button } from "@/components/ui/button";
-import {
-  BundleFormDialog,
-  type BundleFormValues,
-} from "./BundleFormDialog";
+import { BundleFormDialog, type BundleFormValues } from "./BundleFormDialog";
 
 type BundleTableProps = {
   data: Bundle[];
@@ -43,6 +40,23 @@ export default function BundleTable({
             #{row.original.id}
           </span>
         ),
+      },
+      {
+        accessorKey: "image_url",
+        header: "Image",
+        cell: ({ row }) => {
+          const imgUrl = row.getValue("image_url");
+
+          return (
+            <div className="aspect-square relative w-8 h-8 overflow-hidden flex items-center justify-center">
+              <img
+                src={`${imgUrl ? imgUrl : "https://picsum.photos/200/300"}`}
+                alt="Product Image"
+                className="object-contain w-full h-full"
+              />
+            </div>
+          );
+        },
       },
       {
         accessorKey: "name",
@@ -84,18 +98,18 @@ export default function BundleTable({
           </span>
         ),
       },
-      {
-        accessorKey: "is_hidden",
-        header: "Visibility",
-        cell: ({ row }) =>
-          row.original.is_hidden ? (
-            <Badge variant="outline" className="text-muted-foreground">
-              Hidden
-            </Badge>
-          ) : (
-            <Badge className="bg-green-600 hover:bg-green-600">Visible</Badge>
-          ),
-      },
+      // {
+      //   accessorKey: "is_hidden",
+      //   header: "Visibility",
+      //   cell: ({ row }) =>
+      //     row.original.is_hidden ? (
+      //       <Badge variant="outline" className="text-muted-foreground">
+      //         Hidden
+      //       </Badge>
+      //     ) : (
+      //       <Badge className="bg-green-600 hover:bg-green-600">Visible</Badge>
+      //     ),
+      // },
       {
         accessorKey: "action",
         header: "Modify",

@@ -15,6 +15,53 @@ export type UserDepartmentEnum =
   | "Panitia"
   | "none";
 
+export type UserDivisionEnum =
+  | "Sekretaris"
+  | "Bendahara"
+  | "Sekretaris & Bendahara"
+  | "Perizinan"
+  | "MSDM"
+  | "PSDM"
+  | "Pengawasan"
+  | "Eksekusi"
+  | "Lapangan"
+  | "Tour"
+  | "Event Organizer"
+  | "Exhibition"
+  | "Pre-Event"
+  | "Intrakampus"
+  | "Ekstrakampus"
+  | "Grafis"
+  | "Dokumentasi"
+  | "Publikasi"
+  | "Musik"
+  | "Properti"
+  | "Diseminasi Umum"
+  | "Diseminasi Khusus"
+  | "Roadshow Paguyuban"
+  | "Forum Paguyuban"
+  | "Sponsorship"
+  | "Entrepreneurship"
+  | "Logistik"
+  | "Produksi"
+  | "Akomodasi dan Transportasi"
+  | "IT"
+  | "Panitia"
+  | "none";
+
+export type UserRankEnum =
+  | "Ketua"
+  | "Kepala Bidang"
+  | "Wakil Kepala Bidang"
+  | "Kepala Divisi"
+  | "Wakil Kepala Divisi"
+  | "Kepala Subdivisi"
+  | "Wakil Kepala Subdivisi"
+  | "Staff"
+  | "none";
+
+export type UserRoleEnum = "user" | "admin" | "subadmin";
+
 export type OrderPaymentStatusEnum = "Pending" | "Paid" | "Failed" | "Refunded";
 
 export type OrderPaymentMethodEnum = "Manual" | "Midtrans";
@@ -43,4 +90,59 @@ export type Bundle = {
   image_url: string;
   bundle_items: BundleItem[];
   is_hidden: boolean;
+};
+
+export type User = {
+  id: number;
+  name: string;
+  department: UserDepartmentEnum;
+  division: UserDivisionEnum;
+  rank: UserRankEnum;
+  nim: string;
+  no_wa: string;
+  line_id: string;
+  role: UserRoleEnum;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
+};
+
+export type OrderItem = {
+  id: number;
+  order_id: number;
+  product_id?: number | null;
+  bundle_id?: number | null;
+  quantity: number;
+  unit_price: number;
+  product: Product | null;
+  bundle: Bundle | null;
+};
+
+export type Order = {
+  id: number;
+  user_id: number;
+  total_amount: number;
+  payment_status: OrderPaymentStatusEnum;
+  payment_method: OrderPaymentMethodEnum;
+  transaction_id?: string | null;
+  created_at: string;
+  updated_at: string;
+  items: OrderItem[];
+  admin_note?: string | null;
+  is_taken: boolean;
+};
+
+export type UserWithOrders = User & {
+  orders: Order[];
+};
+
+export type UsersWithOrdersResponse = {
+  total: number;
+  limit: number;
+  offset: number;
+  users: UserWithOrders[];
+};
+
+export type OrderWithUser = Order & {
+  user: User;
 };

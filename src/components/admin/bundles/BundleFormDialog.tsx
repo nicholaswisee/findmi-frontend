@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { CircleEllipsisIcon } from "lucide-react";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -98,8 +99,8 @@ export function BundleFormDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger ?? (
-          <Button variant="outline" size="sm">
-            Edit
+          <Button variant="outline" size="icon">
+            <CircleEllipsisIcon className="size-4" />
           </Button>
         )}
       </DialogTrigger>

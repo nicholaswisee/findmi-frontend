@@ -1,5 +1,13 @@
 import { create } from "zustand";
-import type { Bundle, Product } from "@/types/types";
+import type {
+  Bundle,
+  Order,
+  OrderWithUser,
+  Product,
+  UserDepartmentEnum,
+  UserWithOrders,
+  UsersWithOrdersResponse,
+} from "@/types/types";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -72,42 +80,142 @@ type PaginationOptions = {
   offset?: number;
 };
 
+type ListingOptions = PaginationOptions & {
+  department?: UserDepartmentEnum | "all";
+  search?: string;
+};
+
+type UserListingOptions = PaginationOptions & {
+  search?: string;
+};
+
 type AdminState = {
+  users: UserWithOrders[];
+  loadingUsers: boolean;
+  userSearchQuery: string;
+  orders: OrderWithUser[];
+  loadingOrders: boolean;
   products: Product[];
   bundles: Bundle[];
   loadingProducts: boolean;
   loadingBundles: boolean;
+  userPageIndex: number;
+  userPageSize: number;
+  userHasNext: boolean;
+  userTotal: number;
+  orderPageIndex: number;
+  orderPageSize: number;
+  orderHasNext: boolean;
   productPageIndex: number;
   productPageSize: number;
   productHasNext: boolean;
   bundlePageIndex: number;
   bundlePageSize: number;
   bundleHasNext: boolean;
-  fetchProducts: (opts?: PaginationOptions) => Promise<void>;
-  fetchBundles: (opts?: PaginationOptions) => Promise<void>;
+  fetchUsers: (opts?: UserListingOptions) => Promise<void>;
+  fetchProducts: (opts?: ListingOptions) => Promise<void>;
+  fetchBundles: (opts?: ListingOptions) => Promise<void>;
+  fetchOrders: (opts?: PaginationOptions) => Promise<void>;
   createProduct: (data: CreateProductPayload) => Promise<Product>;
   updateProduct: (id: number, data: UpdateProductPayload) => Promise<Product>;
   updateProductStock: (
     id: number,
-    data: UpdateProductStockPayload
+    data: UpdateProductStockPayload,
   ) => Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
   createBundle: (data: CreateBundlePayload) => Promise<Bundle>;
   updateBundle: (id: number, data: UpdateBundlePayload) => Promise<Bundle>;
   deleteBundle: (id: number) => Promise<void>;
+  updateOrderAdmin: (
+    id: number,
+    data: { admin_note?: string | null; is_taken?: boolean },
+  ) => Promise<Order>;
 };
 
 export const useAdminStore = create<AdminState>((set, get) => ({
+  users: [],
+  loadingUsers: false,
+  userSearchQuery: "",
+  orders: [],
+  loadingOrders: false,
   products: [],
   bundles: [],
   loadingProducts: false,
   loadingBundles: false,
+  userPageIndex: 0,
+  userPageSize: 10,
+  userHasNext: false,
+  userTotal: 0,
+  orderPageIndex: 0,
+  orderPageSize: 10,
+  orderHasNext: false,
   productPageIndex: 0,
   productPageSize: 10,
   productHasNext: false,
   bundlePageIndex: 0,
   bundlePageSize: 10,
   bundleHasNext: false,
+
+  fetchUsers: async (opts) => {
+    const current = get();
+    const limit = opts?.limit ?? current.userPageSize;
+    const offset = opts?.offset ?? current.userPageIndex * limit;
+    const providedSearch = opts?.search;
+    const normalizedSearch =
+      typeof providedSearch === "string"
+        ? providedSearch.trim()
+        : current.userSearchQuery;
+    set({ loadingUsers: true });
+    try {
+      const params = new URLSearchParams({
+        limit: String(limit),
+        offset: String(offset),
+      });
+      if (normalizedSearch) {
+        params.set("search", normalizedSearch);
+      }
+      const data = await apiRequest<UsersWithOrdersResponse>(
+        `/user?${params.toString()}`,
+      );
+      const pageIndex = Math.floor(data.offset / data.limit);
+      const hasNext = data.offset + data.users.length < data.total;
+      set({
+        users: data.users,
+        userPageIndex: pageIndex,
+        userPageSize: data.limit,
+        userHasNext: hasNext,
+        userTotal: data.total,
+        userSearchQuery: normalizedSearch,
+      });
+    } finally {
+      set({ loadingUsers: false });
+    }
+  },
+
+  fetchOrders: async (opts) => {
+    const current = get();
+    const limit = opts?.limit ?? current.orderPageSize;
+    const offset = opts?.offset ?? current.orderPageIndex * limit;
+    set({ loadingOrders: true });
+    try {
+      const params = new URLSearchParams({
+        limit: String(limit),
+        offset: String(offset),
+      });
+      const data = await apiRequest<OrderWithUser[]>(
+        `/order/admin?${params.toString()}`,
+      );
+      const pageIndex = Math.floor(offset / limit);
+      set({
+        orders: data,
+        orderPageIndex: pageIndex,
+        orderPageSize: limit,
+        orderHasNext: data.length === limit,
+      });
+    } finally {
+      set({ loadingOrders: false });
+    }
+  },
 
   fetchProducts: async (opts) => {
     const current = get();
@@ -119,6 +227,20 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         limit: String(limit),
         offset: String(offset),
       });
+      const category =
+        opts?.department && opts.department !== "all"
+          ? opts.department
+          : undefined;
+      const search = opts?.search?.trim();
+
+      if (category) {
+        params.set("category", category);
+      }
+
+      if (search) {
+        params.set("search", search);
+      }
+
       const data = await apiRequest<Product[]>(`/product?${params.toString()}`);
       const pageIndex = Math.floor(offset / limit);
       set({
@@ -142,6 +264,20 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         limit: String(limit),
         offset: String(offset),
       });
+      const category =
+        opts?.department && opts.department !== "all"
+          ? opts.department
+          : undefined;
+      const search = opts?.search?.trim();
+
+      if (category) {
+        params.set("category", category);
+      }
+
+      if (search) {
+        params.set("search", search);
+      }
+
       const data = await apiRequest<Bundle[]>(`/bundle?${params.toString()}`);
       const pageIndex = Math.floor(offset / limit);
       set({
@@ -186,7 +322,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     });
     set((state) => ({
       products: state.products.map((p) =>
-        p.id === id ? { ...p, remaining_stock: result.remaining_stock } : p
+        p.id === id ? { ...p, remaining_stock: result.remaining_stock } : p,
       ),
     }));
   },
@@ -223,5 +359,37 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     set((state) => ({
       bundles: state.bundles.filter((b) => b.id !== id),
     }));
+  },
+
+  updateOrderAdmin: async (id, payload) => {
+    const result = await apiRequest<Order>(`/order/admin/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+
+    set((state) => ({
+      orders: state.orders.map((order) =>
+        order.id === id
+          ? {
+              ...order,
+              ...result,
+            }
+          : order,
+      ),
+      users: state.users.map((user) => ({
+        ...user,
+        orders: user.orders.map((order) =>
+          order.id === id
+            ? {
+                ...order,
+                admin_note: result.admin_note,
+                is_taken: result.is_taken,
+              }
+            : order,
+        ),
+      })),
+    }));
+
+    return result;
   },
 }));

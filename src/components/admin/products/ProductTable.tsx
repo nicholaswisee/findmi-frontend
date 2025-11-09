@@ -5,10 +5,7 @@ import type { Product } from "@/types/types";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "../data-table";
 import { Button } from "@/components/ui/button";
-import {
-  ProductFormDialog,
-  type ProductFormValues,
-} from "./ProductFormDialog";
+import { ProductFormDialog, type ProductFormValues } from "./ProductFormDialog";
 
 type ProductTableProps = {
   data: Product[];
@@ -18,7 +15,10 @@ type ProductTableProps = {
   loading?: boolean;
   onNextPage?: () => void;
   onPreviousPage?: () => void;
-  onEditProduct?: (product: Product, values: ProductFormValues) => Promise<void>;
+  onEditProduct?: (
+    product: Product,
+    values: ProductFormValues
+  ) => Promise<void>;
 };
 
 export default function ProductTable({
@@ -36,6 +36,11 @@ export default function ProductTable({
       {
         accessorKey: "id",
         header: "ID",
+        cell: ({ row }) => (
+          <span className="text-xs text-muted-foreground">
+            #{row.original.id}
+          </span>
+        ),
       },
       {
         accessorKey: "image_url",
@@ -47,7 +52,7 @@ export default function ProductTable({
             <div className="aspect-square relative w-8 h-8 overflow-hidden flex items-center justify-center">
               <img
                 src={`${imgUrl ? imgUrl : "https://picsum.photos/200/300"}`}
-                alt="Product Image"
+                alt="Bundle Image"
                 className="object-contain w-full h-full"
               />
             </div>
@@ -57,27 +62,33 @@ export default function ProductTable({
       {
         accessorKey: "name",
         header: "Name",
+        cell: ({ row }) => (
+          <div className="space-y-1">
+            <p className="font-medium">{row.original.name}</p>
+            <p className="text-xs text-muted-foreground line-clamp-2">
+              {row.original.description || "No description"}
+            </p>
+          </div>
+        ),
       },
       {
         accessorKey: "price",
         header: "Price",
-        cell: ({ row }) => {
-          return (
-            <p>
-              Rp{" "}
-              {`${(row.getValue("price") as Number).toLocaleString("id-ID")}`}
-            </p>
-          );
-        },
+        cell: ({ row }) => (
+          <span className="font-medium">{`Rp ${row
+            .getValue<number>("price")
+            .toLocaleString("id-ID")}`}</span>
+        ),
       },
       {
         accessorKey: "category",
         header: "Category",
-        cell: ({ row }) => {
-          return (
-            <Badge variant={"secondary"}>{row.getValue("category")}</Badge>
-          );
-        },
+        cell: ({ row }) =>
+          row.original.category ? (
+            <Badge variant="secondary">{row.original.category}</Badge>
+          ) : (
+            <span className="text-muted-foreground">-</span>
+          ),
       },
       {
         accessorKey: "action",
