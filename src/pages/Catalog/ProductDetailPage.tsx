@@ -15,17 +15,42 @@ type Product = {
   remaining_stock: number;
 };
 
-type ApiResponse = {
+type BundleItem = {
+  product_id: number;
+  amount: number;
+};
+
+type Bundle = {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+  description: string;
+  image_url: string;
+  bundle_items: BundleItem[];
+  is_hidden: boolean;
+};
+
+type ApiResponse<T> = {
   success: boolean;
   message: string;
-  data: Product; // Data adalah object, bukan array!
+  data: T;
 };
 
 export default function ProductDetailPage() {
-  const { product_id } = useParams();
+  const { product_id, bundle_id } = useParams<{
+    product_id?: string;
+    bundle_id?: string;
+  }>();
   const navigate = useNavigate();
   
-  const [product, setProduct] = useState<Product | null>(null);
+  // Check if this is a bundle (URL contains /bundle/)
+  const isBundle = window.location.pathname.includes('/bundle/');
+  
+  // Use bundle_id if available, otherwise use product_id
+  const itemId = isBundle ? bundle_id : product_id;
+  
+  const [product, setProduct] = useState<Product | Bundle | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>("M"); // Default size
@@ -39,13 +64,28 @@ export default function ProductDetailPage() {
     return [imageUrl, imageUrl, imageUrl, imageUrl]; // Pakai image yang sama untuk semua thumbnail
   };
 
+  // Helper: Check if product is a Bundle
+  const isProductBundle = (item: Product | Bundle | null): item is Bundle => {
+    return item !== null && 'bundle_items' in item;
+  };
+
+  // Helper: Get stock (bundle always available, product has remaining_stock)
+  const getStock = () => {
+    if (!product) return 0;
+    if (isProductBundle(product)) return 999; // Bundle always available
+    return product.remaining_stock;
+  };
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoading(true);
         
-        console.log("Fetching product with ID:", product_id);
-        const url = `https://api.akumasukitb.com/product/${product_id}`;
+        // Determine if fetching bundle or product
+        const endpoint = isBundle ? 'bundle' : 'product';
+        const url = `https://api.akumasukitb.com/${endpoint}/${itemId}`;
+        
+        console.log(`Fetching ${endpoint} with ID:`, itemId);
         console.log("Fetch URL:", url);
         
         const response = await fetch(url, {
@@ -61,79 +101,85 @@ export default function ProductDetailPage() {
         if (!response.ok) {
           const errorText = await response.text();
           console.error("Error response:", errorText);
-          throw new Error(`Product not found: ${response.status}`);
+          throw new Error(`${endpoint} not found: ${response.status}`);
         }
         
-        const result: ApiResponse = await response.json();
+        const result: ApiResponse<Product | Bundle> = await response.json();
         console.log("API Response:", result);
         
         if (result.success && result.data) {
-          console.log("Product loaded:", result.data);
-          console.log("Remaining stock:", result.data.remaining_stock);
-          setProduct(result.data); // Data sudah langsung object Product
+          console.log(`${endpoint} loaded:`, result.data);
+          if ('remaining_stock' in result.data) {
+            console.log("Remaining stock:", result.data.remaining_stock);
+          }
+          setProduct(result.data);
         } else {
-          console.error("No product data in response");
-          throw new Error("Product not found");
+          console.error(`No ${endpoint} data in response`);
+          throw new Error(`${endpoint} not found`);
         }
         
       } catch (error) {
-        console.error("Error fetching product:", error);
-        toast.error(`Failed to load product: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        console.error(`Error fetching ${isBundle ? 'bundle' : 'product'}:`, error);
+        toast.error(`Failed to load ${isBundle ? 'bundle' : 'product'}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         navigate("/catalog");
       } finally {
         setLoading(false);
       }
     };
 
-    if (product_id) {
+    if (itemId) {
       fetchProduct();
     }
-  }, [product_id, navigate]);
+  }, [itemId, navigate, isBundle]);
 
   const handleAddToCart = async () => {
-    if (!selectedSize) {
+    if (!selectedSize && !isProductBundle(product)) {
       toast.error("Please select a size");
       return;
     }
 
     try {
-      // TODO: Uncomment untuk POST ke backend
-      // const response = await fetch("https://api.akumasukitb.com/cart", {
-      //   method: "POST",
-      //   credentials: 'include',
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     product_id: product?.id,
-      //     quantity,
-      //     size: selectedSize,
-      //   }),
-      // });
-      // if (!response.ok) {
-      //   throw new Error("Failed to add to cart");
-      // }
-      
-      // Dummy success untuk development
-      console.log("Adding to cart:", {
-        product_id: product?.id,
-        quantity,
-        size: selectedSize,
+      const requestBody = isProductBundle(product)
+        ? { productId: null, bundleId: product.id, quantity }
+        : { productId: product?.id, bundleId: null, quantity };
+
+      console.log("Adding to cart:", requestBody);
+
+      const response = await fetch("https://api.akumasukitb.com/cart/items", {
+        method: "POST",
+        credentials: 'include',
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(requestBody),
       });
+
+      console.log("Add to cart response status:", response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Add to cart error:", errorData);
+        throw new Error(errorData.message || "Failed to add to cart");
+      }
+
+      const result = await response.json();
+      console.log("Add to cart success:", result);
       
-      toast.success(`Added ${quantity}x ${product?.name} (Size: ${selectedSize}) to cart!`);
+      toast.success(`Added ${quantity}x ${product?.name} to cart!`);
     } catch (error) {
       console.error("Error adding to cart:", error);
-      toast.error("Failed to add to cart");
+      toast.error(`Failed to add to cart: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
   const incrementQuantity = () => {
-    if (product && quantity < product.remaining_stock) {
+    const stock = getStock();
+    if (product && quantity < stock) {
       setQuantity(quantity + 1);
       console.log("Incremented to:", quantity + 1);
     } else {
-      console.log("Cannot increment. Quantity:", quantity, "Stock:", product?.remaining_stock);
+      console.log("Cannot increment. Quantity:", quantity, "Stock:", stock);
     }
   };
 
@@ -210,7 +256,7 @@ export default function ProductDetailPage() {
                 {product.category}
               </span>
               <span className="text-xs font-semibold text-gray-700">
-                {product.remaining_stock > 0 ? `Tersedia (Stock: ${product.remaining_stock})` : "Habis"}
+                {getStock() > 0 ? `Tersedia (Stock: ${getStock()})` : "Habis"}
               </span>
             </div>
 
@@ -271,7 +317,7 @@ export default function ProductDetailPage() {
                   type="button"
                   onClick={incrementQuantity}
                   className="px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={!product || quantity >= product.remaining_stock}
+                  disabled={!product || quantity >= getStock()}
                 >
                   +
                 </button>
@@ -281,7 +327,7 @@ export default function ProductDetailPage() {
               <Button
                 variant="outline"
                 size="icon"
-                className="rounded-full border-2 border-pink-500 bg-pink-500 text-white hover:bg-pink-600 hover:border-pink-600 h-12 w-12 shrink-0"
+                className="rounded-2xl border-2 border-pink-500 bg-pink-500 text-white hover:bg-pink-600 hover:border-pink-600 h-12 w-12 shrink-0"
               >
                 <ShoppingCart className="size-5" />
               </Button>
@@ -289,7 +335,7 @@ export default function ProductDetailPage() {
               {/* Add to Cart Button */}
               <Button
                 onClick={handleAddToCart}
-                disabled={product.remaining_stock === 0}
+                disabled={getStock() === 0}
                 className="flex-1 bg-linear-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white rounded-full py-3 font-bold text-base uppercase tracking-wide shadow-md"
               >
                 ADD TO CART
