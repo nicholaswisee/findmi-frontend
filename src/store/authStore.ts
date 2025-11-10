@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -68,9 +69,10 @@ export const useAuthStore = create<AuthState>()(
           });
           if (!res.ok) {
             const err = await res.json();
-            throw new Error(err.message || "Login failed");
+            throw new Error(err.message || "Autentikasi gagal.");
           }
           await get().refreshUser();
+          toast.success("Autentikasi berhasil.");
         } catch (err) {
           console.error("Login error:", err);
           throw err;
@@ -83,6 +85,7 @@ export const useAuthStore = create<AuthState>()(
             method: "POST",
             credentials: "include",
           });
+          toast.success("Logout berhasil.");
         } catch (err) {
           console.error("Logout failed:", err);
         } finally {

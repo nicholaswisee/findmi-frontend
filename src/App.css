@@ -81,13 +81,13 @@
     @apply font-heading text-sm sm:text-base md:text-lg lg:text-xl;
   }
 
-  p.lead,
-  * {
-    @apply font-medium text-lg sm:text-xl md:text-2xl;
+  p.lead {
+    @apply font-medium text-base sm:text-lg md:text-xl;
   }
 
-  p.small {
-    @apply text-sm sm:text-base md:text-base;
+  p.small,
+  * {
+    @apply text-sm sm:text-base md:text-lg;
   }
 
   * {
