@@ -336,7 +336,7 @@ export default function ProductDetailPage() {
               <Button
                 onClick={handleAddToCart}
                 disabled={getStock() === 0}
-                className="flex-1 bg-linear-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white rounded-full py-3 font-bold text-base uppercase tracking-wide shadow-md"
+                className="flex-1 bg-linear-to-r h-12 from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white rounded-full py-3 font-bold text-base uppercase tracking-wide shadow-md"
               >
                 ADD TO CART
               </Button>
