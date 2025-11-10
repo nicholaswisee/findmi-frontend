@@ -1,10 +1,12 @@
 import { create } from "zustand";
 import type {
   Bundle,
+  BundlesResponse,
   Order,
   OrderWithUser,
   OrdersWithUsersResponse,
   Product,
+  ProductsResponse,
   UserDepartmentEnum,
   UserWithOrders,
   UsersWithOrdersResponse,
@@ -124,9 +126,11 @@ type AdminState = {
   productPageIndex: number;
   productPageSize: number;
   productHasNext: boolean;
+  productTotal: number;
   bundlePageIndex: number;
   bundlePageSize: number;
   bundleHasNext: boolean;
+  bundleTotal: number;
   fetchUsers: (opts?: UserListingOptions) => Promise<void>;
   fetchProducts: (opts?: ListingOptions) => Promise<void>;
   fetchBundles: (opts?: ListingOptions) => Promise<void>;
@@ -172,9 +176,11 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   productPageIndex: 0,
   productPageSize: 10,
   productHasNext: false,
+  productTotal: 0,
   bundlePageIndex: 0,
   bundlePageSize: 10,
   bundleHasNext: false,
+  bundleTotal: 0,
 
   fetchUsers: async (opts) => {
     const current = get();
@@ -312,13 +318,17 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         params.set("search", search);
       }
 
-      const data = await apiRequest<Product[]>(`/product?${params.toString()}`);
-      const pageIndex = Math.floor(offset / limit);
+      const data = await apiRequest<ProductsResponse>(
+        `/product?${params.toString()}`
+      );
+      const pageIndex = Math.floor(data.offset / data.limit);
+      const hasNext = data.offset + data.products.length < data.total;
       set({
-        products: data,
+        products: data.products,
         productPageIndex: pageIndex,
-        productPageSize: limit,
-        productHasNext: data.length === limit,
+        productPageSize: data.limit,
+        productHasNext: hasNext,
+        productTotal: data.total,
       });
     } finally {
       set({ loadingProducts: false });
@@ -349,13 +359,17 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         params.set("search", search);
       }
 
-      const data = await apiRequest<Bundle[]>(`/bundle?${params.toString()}`);
-      const pageIndex = Math.floor(offset / limit);
+      const data = await apiRequest<BundlesResponse>(
+        `/bundle?${params.toString()}`
+      );
+      const pageIndex = Math.floor(data.offset / data.limit);
+      const hasNext = data.offset + data.bundles.length < data.total;
       set({
-        bundles: data,
+        bundles: data.bundles,
         bundlePageIndex: pageIndex,
-        bundlePageSize: limit,
-        bundleHasNext: data.length === limit,
+        bundlePageSize: data.limit,
+        bundleHasNext: hasNext,
+        bundleTotal: data.total,
       });
     } finally {
       set({ loadingBundles: false });

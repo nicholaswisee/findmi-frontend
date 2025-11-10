@@ -31,6 +31,7 @@ export default function BundlesAdmin() {
   const pageIndex = useAdminStore((state) => state.bundlePageIndex);
   const pageSize = useAdminStore((state) => state.bundlePageSize);
   const hasNextPage = useAdminStore((state) => state.bundleHasNext);
+  const totalBundles = useAdminStore((state) => state.bundleTotal);
   const updateBundle = useAdminStore((state) => state.updateBundle);
   const createBundle = useAdminStore((state) => state.createBundle);
 
@@ -270,6 +271,7 @@ export default function BundlesAdmin() {
           loading={loading}
           onNextPage={handleNextPage}
           onPreviousPage={handlePreviousPage}
+          total={totalBundles}
           onEditBundle={(bundle, values) => handleEditBundle(bundle.id, values)}
         />
       )}

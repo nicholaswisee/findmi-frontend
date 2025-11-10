@@ -31,6 +31,7 @@ export default function ProductsAdmin() {
   const pageIndex = useAdminStore((state) => state.productPageIndex);
   const pageSize = useAdminStore((state) => state.productPageSize);
   const hasNextPage = useAdminStore((state) => state.productHasNext);
+  const totalProducts = useAdminStore((state) => state.productTotal);
   const updateProduct = useAdminStore((state) => state.updateProduct);
   const createProduct = useAdminStore((state) => state.createProduct);
 
@@ -307,6 +308,7 @@ export default function ProductsAdmin() {
           loading={loading}
           onNextPage={handleNextPage}
           onPreviousPage={handlePreviousPage}
+          total={totalProducts}
           onEditProduct={(product, values) =>
             handleEditProduct(product.id, values)
           }

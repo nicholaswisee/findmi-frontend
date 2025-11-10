@@ -19,6 +19,7 @@ type ProductTableProps = {
     product: Product,
     values: ProductFormValues
   ) => Promise<void>;
+  total?: number;
 };
 
 export default function ProductTable({
@@ -30,6 +31,7 @@ export default function ProductTable({
   onNextPage,
   onPreviousPage,
   onEditProduct,
+  total,
 }: ProductTableProps) {
   const columns = useMemo<ColumnDef<Product>[]>(
     () => [
@@ -127,7 +129,9 @@ export default function ProductTable({
           <p>
             {data.length === 0
               ? "No entries on this page"
-              : `Showing ${start}-${end}`}
+              : `Showing ${start}-${end}${
+                  typeof total === "number" ? ` of ${total}` : ""
+                }`}
           </p>
           <div className="flex items-center gap-2">
             <Button

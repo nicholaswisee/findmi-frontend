@@ -18,6 +18,7 @@ type BundleTableProps = {
   onNextPage?: () => void;
   onPreviousPage?: () => void;
   onEditBundle?: (bundle: Bundle, values: BundleFormValues) => Promise<void>;
+  total?: number;
 };
 
 export default function BundleTable({
@@ -29,6 +30,7 @@ export default function BundleTable({
   onNextPage,
   onPreviousPage,
   onEditBundle,
+  total,
 }: BundleTableProps) {
   const columns = useMemo<ColumnDef<Bundle>[]>(
     () => [
@@ -147,7 +149,9 @@ export default function BundleTable({
           <p>
             {data.length === 0
               ? "No entries on this page"
-              : `Showing ${start}-${end}`}
+              : `Showing ${start}-${end}${
+                  typeof total === "number" ? ` of ${total}` : ""
+                }`}
           </p>
           <div className="flex items-center gap-2">
             <Button

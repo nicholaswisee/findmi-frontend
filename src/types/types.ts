@@ -154,6 +154,20 @@ export type OrdersWithUsersResponse = {
   offset: number;
 };
 
+export type ProductsResponse = {
+  products: Product[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
+export type BundlesResponse = {
+  bundles: Bundle[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
 export type RevenueAnalyticsSummary = {
   totalRevenue: number;
   totalOrders: number;
