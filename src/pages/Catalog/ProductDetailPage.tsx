@@ -69,6 +69,7 @@ export default function ProductDetailPage() {
         
         if (result.success && result.data) {
           console.log("Product loaded:", result.data);
+          console.log("Remaining stock:", result.data.remaining_stock);
           setProduct(result.data); // Data sudah langsung object Product
         } else {
           console.error("No product data in response");
@@ -130,12 +131,18 @@ export default function ProductDetailPage() {
   const incrementQuantity = () => {
     if (product && quantity < product.remaining_stock) {
       setQuantity(quantity + 1);
+      console.log("Incremented to:", quantity + 1);
+    } else {
+      console.log("Cannot increment. Quantity:", quantity, "Stock:", product?.remaining_stock);
     }
   };
 
   const decrementQuantity = () => {
     if (quantity > 1) {
       setQuantity(quantity - 1);
+      console.log("Decremented to:", quantity - 1);
+    } else {
+      console.log("Cannot decrement below 1");
     }
   };
 
@@ -160,7 +167,7 @@ export default function ProductDetailPage() {
   return (
     <div className="container mx-auto px-4 py-6 max-w-6xl">
       {/* Product Detail Card */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border-2 border-dashed border-teal-600 p-6 md:p-10">
+      <div className="bg-white/1 backdrop-blur-sm rounded-lg shadow-lg border-2 border-dashed border-teal-600 p-6 md:p-10">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Left: Product Images */}
           <div className="md:w-[45%]">
@@ -203,7 +210,7 @@ export default function ProductDetailPage() {
                 {product.category}
               </span>
               <span className="text-xs font-semibold text-gray-700">
-                {product.remaining_stock > 0 ? "Tersedia" : "Habis"}
+                {product.remaining_stock > 0 ? `Tersedia (Stock: ${product.remaining_stock})` : "Habis"}
               </span>
             </div>
 
@@ -248,21 +255,23 @@ export default function ProductDetailPage() {
             {/* Quantity & Add to Cart */}
             <div className="flex items-center gap-3">
               {/* Quantity Selector */}
-              <div className="flex items-center border-2 border-gray-800 rounded-full overflow-hidden bg-white">
+              <div className="flex items-center border-2 border-teal-700 rounded-full overflow-hidden bg-teal-100/50">
                 <button
+                  type="button"
                   onClick={decrementQuantity}
-                  className="px-3 py-1.5 hover:bg-gray-100 transition-colors font-bold text-lg"
+                  className="px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={quantity <= 1}
                 >
-                  -
+                  −
                 </button>
-                <span className="px-4 py-1.5 font-bold min-w-[50px] text-center">
+                <span className="px-5 py-2 font-bold min-w-[60px] text-center text-teal-900">
                   {quantity}
                 </span>
                 <button
+                  type="button"
                   onClick={incrementQuantity}
-                  className="px-3 py-1.5 hover:bg-gray-100 transition-colors font-bold text-lg"
-                  disabled={quantity >= product.remaining_stock}
+                  className="px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!product || quantity >= product.remaining_stock}
                 >
                   +
                 </button>
@@ -272,7 +281,7 @@ export default function ProductDetailPage() {
               <Button
                 variant="outline"
                 size="icon"
-                className="rounded-full border-2 border-pink-500 text-pink-500 hover:bg-pink-500 hover:text-white h-10 w-10"
+                className="rounded-full border-2 border-pink-500 bg-pink-500 text-white hover:bg-pink-600 hover:border-pink-600 h-12 w-12 shrink-0"
               >
                 <ShoppingCart className="size-5" />
               </Button>
@@ -281,7 +290,7 @@ export default function ProductDetailPage() {
               <Button
                 onClick={handleAddToCart}
                 disabled={product.remaining_stock === 0}
-                className="flex-1 bg-pink-500 hover:bg-pink-600 text-white rounded-full py-2.5 font-bold text-sm uppercase tracking-wide"
+                className="flex-1 bg-linear-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white rounded-full py-3 font-bold text-base uppercase tracking-wide shadow-md"
               >
                 ADD TO CART
               </Button>
