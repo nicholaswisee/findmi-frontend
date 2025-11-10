@@ -1,3 +1,7 @@
 export default function ProductDetailPage() {
-  return <div>ProductDetailPage</div>;
+  return (
+    <div>
+      <h1>ProductDetailPage</h1>
+    </div>
+  );
 }
