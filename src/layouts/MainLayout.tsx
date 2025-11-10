@@ -6,7 +6,7 @@ import { Toaster } from "sonner";
 export default function MainLayout() {
   return (
     <div 
-      className="flex flex-col text-gray-900 font-body min-h-screen bg-cover bg-center bg-no-repeat bg-fixed"
+      className="flex flex-col text-gray-900 font-body min-h-screen bg-cover  bg-no-repeat"
       style={{ backgroundImage: "url('/global/background.webp')" }}
     >
       <Navbar />
