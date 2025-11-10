@@ -77,29 +77,8 @@ export default function ProductDetailPage() {
         
       } catch (error) {
         console.error("Error fetching product:", error);
-        
-        // Fallback ke dummy data untuk testing (sesuai format API real)
-        console.log("Using dummy data for testing");
-        console.warn("⚠️ Backend not available, using dummy data");
-        
-        const dummyProduct: Product = {
-          id: Number(product_id) || 1,
-          name: "FindMI Hoodie 2026",
-          price: 149000,
-          category: "Fundraising",
-          description: "Comfortable oversized hoodie with AMI 2026 logo.",
-          image_url: "https://cdn.findmi.akumasukitb.com/products/hoodie.png",
-          remaining_stock: 50,
-        };
-        setProduct(dummyProduct);
-        
-        // Toast info hanya di development
-        if (process.env.NODE_ENV === 'development') {
-          toast.info("Using dummy data (Backend not available)");
-        }
-        
-        setLoading(false);
-        return; // Don't navigate away when using dummy data
+        toast.error(`Failed to load product: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        navigate("/catalog");
       } finally {
         setLoading(false);
       }
