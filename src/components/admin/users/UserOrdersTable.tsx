@@ -17,7 +17,7 @@ type UserOrdersTableProps = {
   loading?: boolean;
   onNextPage?: () => void;
   onPreviousPage?: () => void;
-  onOrderClick?: (orderId: number) => void;
+  onOrderClick?: (order: Order, user: UserWithOrders) => void;
 };
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
@@ -28,7 +28,7 @@ const currencyFormatter = new Intl.NumberFormat("id-ID", {
 
 const formatCurrency = (value: number | string | null | undefined) =>
   currencyFormatter.format(
-    typeof value === "string" ? Number(value) || 0 : (value ?? 0),
+    typeof value === "string" ? Number(value) || 0 : value ?? 0
   );
 
 const formatDate = (value: string) => {
@@ -45,10 +45,12 @@ const formatDate = (value: string) => {
 
 function OrderItemsList({
   orders,
+  user,
   onOrderClick,
 }: {
   orders: Order[];
-  onOrderClick?: (orderId: number) => void;
+  user: UserWithOrders;
+  onOrderClick?: (order: Order, user: UserWithOrders) => void;
 }) {
   if (orders.length === 0) {
     return (
@@ -62,7 +64,7 @@ function OrderItemsList({
         <button
           type="button"
           key={order.id}
-          onClick={() => onOrderClick?.(order.id)}
+          onClick={() => onOrderClick?.(order, user)}
           className="w-full rounded-lg border p-3 text-left shadow-sm transition hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
         >
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -146,6 +148,7 @@ export default function UserOrdersTable({
             </Badge>
             <OrderItemsList
               orders={row.original.orders}
+              user={row.original}
               onOrderClick={onOrderClick}
             />
           </div>
@@ -161,8 +164,8 @@ export default function UserOrdersTable({
     manualPagination && data.length > 0
       ? pageIndex! * pageSize! + 1
       : data.length === 0
-        ? 0
-        : 1;
+      ? 0
+      : 1;
   const end =
     manualPagination && data.length > 0
       ? pageIndex! * pageSize! + data.length

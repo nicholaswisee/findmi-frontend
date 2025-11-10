@@ -1,8 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import BundleTable from "@/components/admin/bundles/BundleTable";
-import type { BundleFormValues } from "@/components/admin/bundles/BundleFormDialog";
+import {
+  BundleFormDialog,
+  type BundleFormValues,
+} from "@/components/admin/bundles/BundleFormDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminStore } from "@/store/adminStore";
@@ -16,9 +19,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEPARTMENTS } from "@/constants/departments";
-import type { UserDepartmentEnum } from "@/types/types";
+import type { Bundle, UserDepartmentEnum } from "@/types/types";
 
 type DepartmentFilterValue = UserDepartmentEnum | "all";
+const SEARCH_DEBOUNCE_MS = 1000;
 
 export default function BundlesAdmin() {
   const bundles = useAdminStore((state) => state.bundles);
@@ -28,16 +32,31 @@ export default function BundlesAdmin() {
   const pageSize = useAdminStore((state) => state.bundlePageSize);
   const hasNextPage = useAdminStore((state) => state.bundleHasNext);
   const updateBundle = useAdminStore((state) => state.updateBundle);
+  const createBundle = useAdminStore((state) => state.createBundle);
 
   const [departmentFilter, setDepartmentFilter] =
     useState<DepartmentFilterValue>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
+  const emptyBundle = useMemo<Bundle>(
+    () => ({
+      id: 0,
+      name: "",
+      description: "",
+      image_url: "",
+      price: 0,
+      category: "none",
+      is_hidden: false,
+      bundle_items: [{ product_id: 0, amount: 1 }],
+    }),
+    []
+  );
 
   useEffect(() => {
     if (bundles.length === 0) {
       fetchBundles().catch((err) => {
         toast.error(
-          err instanceof Error ? err.message : "Failed to load bundles",
+          err instanceof Error ? err.message : "Failed to load bundles"
         );
       });
     }
@@ -54,9 +73,9 @@ export default function BundlesAdmin() {
         limit: params?.limit ?? pageSize,
         offset: params?.offset ?? pageIndex * pageSize,
         department: params?.department ?? departmentFilter,
-        search: params?.search ?? searchTerm,
+        search: params?.search ?? appliedSearchTerm,
       }),
-    [departmentFilter, fetchBundles, pageIndex, pageSize, searchTerm],
+    [appliedSearchTerm, departmentFilter, fetchBundles, pageIndex, pageSize]
   );
 
   const refetchCurrentPage = useCallback(async () => {
@@ -84,22 +103,73 @@ export default function BundlesAdmin() {
         toast.error((err as Error).message ?? "Failed to update bundle");
       }
     },
-    [refetchCurrentPage, updateBundle],
+    [refetchCurrentPage, updateBundle]
+  );
+
+  const handleCreateBundle = useCallback(
+    async (values: BundleFormValues) => {
+      const mapString = (value?: string) =>
+        value && value.trim().length > 0 ? value.trim() : undefined;
+      try {
+        await createBundle({
+          name: values.name,
+          price: values.price,
+          category: mapString(values.category),
+          description: mapString(values.description),
+          image_url: mapString(values.image_url),
+          is_hidden: values.is_hidden,
+          bundle_items: values.bundle_items.map((item) => ({
+            product_id: item.product_id,
+            amount: item.amount,
+          })),
+        });
+        toast.success("Bundle created");
+        await fetchWithFilters({ offset: 0 });
+      } catch (err) {
+        toast.error((err as Error).message ?? "Failed to create bundle");
+      }
+    },
+    [createBundle, fetchWithFilters]
   );
 
   const handleDepartmentChange = (value: DepartmentFilterValue) => {
     setDepartmentFilter(value);
     fetchWithFilters({ offset: 0, department: value }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to apply filter",
+        err instanceof Error ? err.message : "Failed to apply filter"
       );
     });
   };
 
-  const handleSearchSubmit = () => {
-    fetchWithFilters({ offset: 0, search: searchTerm }).catch((err) => {
+  useEffect(() => {
+    const trimmed = searchTerm.trim();
+    if (trimmed === appliedSearchTerm) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setAppliedSearchTerm(trimmed);
+      fetchWithFilters({ offset: 0, search: trimmed }).catch((err) => {
+        toast.error(
+          err instanceof Error ? err.message : "Failed to apply search"
+        );
+      });
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeout);
+  }, [appliedSearchTerm, fetchWithFilters, searchTerm]);
+
+  const handleResetFilters = () => {
+    setDepartmentFilter("all");
+    setSearchTerm("");
+    setAppliedSearchTerm("");
+    fetchWithFilters({
+      offset: 0,
+      department: "all",
+      search: "",
+    }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to apply search",
+        err instanceof Error ? err.message : "Failed to reset filters"
       );
     });
   };
@@ -124,13 +194,23 @@ export default function BundlesAdmin() {
         <div>
           <p className="text-2xl font-semibold">Bundle Catalog</p>
         </div>
-        <Button
-          variant="outline"
-          onClick={refetchCurrentPage}
-          disabled={loading}
-        >
-          Refresh
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <BundleFormDialog
+            bundle={emptyBundle}
+            onSubmit={handleCreateBundle}
+            trigger={<Button type="button">Add Bundle</Button>}
+            title="Add new bundle"
+            description="Configure products and pricing for the new bundle."
+            submitLabel="Create bundle"
+          />
+          <Button
+            variant="outline"
+            onClick={refetchCurrentPage}
+            disabled={loading}
+          >
+            Refresh
+          </Button>
+        </div>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-[200px_1fr_auto]">
@@ -162,21 +242,19 @@ export default function BundlesAdmin() {
             placeholder="Type bundle name..."
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                handleSearchSubmit();
-              }
-            }}
           />
+          <p className="text-xs text-muted-foreground">
+            Search updates automatically after a short pause.
+          </p>
         </div>
-        <div className="flex items-end">
+        <div className="flex items-center">
           <Button
-            onClick={handleSearchSubmit}
+            onClick={handleResetFilters}
             className="w-full"
             variant="secondary"
             disabled={loading}
           >
-            Apply Filters
+            Reset Filters
           </Button>
         </div>
       </div>

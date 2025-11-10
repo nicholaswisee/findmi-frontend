@@ -3,6 +3,7 @@ import type {
   Bundle,
   Order,
   OrderWithUser,
+  OrdersWithUsersResponse,
   Product,
   UserDepartmentEnum,
   UserWithOrders,
@@ -87,14 +88,27 @@ type ListingOptions = PaginationOptions & {
 
 type UserListingOptions = PaginationOptions & {
   search?: string;
+  department?: UserDepartmentEnum | "all";
+};
+
+type PickupFilterValue = "all" | "taken" | "pending";
+
+type OrderListingOptions = PaginationOptions & {
+  search?: string;
+  department?: UserDepartmentEnum | "all";
+  pickup?: PickupFilterValue;
 };
 
 type AdminState = {
   users: UserWithOrders[];
   loadingUsers: boolean;
   userSearchQuery: string;
+  userDepartmentFilter: UserDepartmentEnum | "all";
   orders: OrderWithUser[];
   loadingOrders: boolean;
+  orderSearchQuery: string;
+  orderDepartmentFilter: UserDepartmentEnum | "all";
+  orderPickupFilter: PickupFilterValue;
   products: Product[];
   bundles: Bundle[];
   loadingProducts: boolean;
@@ -106,6 +120,7 @@ type AdminState = {
   orderPageIndex: number;
   orderPageSize: number;
   orderHasNext: boolean;
+  orderTotal: number;
   productPageIndex: number;
   productPageSize: number;
   productHasNext: boolean;
@@ -115,7 +130,7 @@ type AdminState = {
   fetchUsers: (opts?: UserListingOptions) => Promise<void>;
   fetchProducts: (opts?: ListingOptions) => Promise<void>;
   fetchBundles: (opts?: ListingOptions) => Promise<void>;
-  fetchOrders: (opts?: PaginationOptions) => Promise<void>;
+  fetchOrders: (opts?: OrderListingOptions) => Promise<void>;
   createProduct: (data: CreateProductPayload) => Promise<Product>;
   updateProduct: (id: number, data: UpdateProductPayload) => Promise<Product>;
   updateProductStock: (
@@ -136,8 +151,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   users: [],
   loadingUsers: false,
   userSearchQuery: "",
+  userDepartmentFilter: "all",
   orders: [],
   loadingOrders: false,
+  orderSearchQuery: "",
+  orderDepartmentFilter: "all",
+  orderPickupFilter: "all",
   products: [],
   bundles: [],
   loadingProducts: false,
@@ -149,6 +168,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   orderPageIndex: 0,
   orderPageSize: 10,
   orderHasNext: false,
+  orderTotal: 0,
   productPageIndex: 0,
   productPageSize: 10,
   productHasNext: false,
@@ -165,7 +185,18 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       typeof providedSearch === "string"
         ? providedSearch.trim()
         : current.userSearchQuery;
-    set({ loadingUsers: true });
+    const requestedDepartment =
+      typeof opts?.department === "undefined"
+        ? current.userDepartmentFilter
+        : opts.department;
+    const normalizedDepartment =
+      requestedDepartment && requestedDepartment !== "all"
+        ? requestedDepartment
+        : undefined;
+    set({
+      loadingUsers: true,
+      userDepartmentFilter: requestedDepartment,
+    });
     try {
       const params = new URLSearchParams({
         limit: String(limit),
@@ -173,6 +204,9 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       });
       if (normalizedSearch) {
         params.set("search", normalizedSearch);
+      }
+      if (normalizedDepartment) {
+        params.set("department", normalizedDepartment);
       }
       const data = await apiRequest<UsersWithOrdersResponse>(
         `/user?${params.toString()}`,
@@ -186,6 +220,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         userHasNext: hasNext,
         userTotal: data.total,
         userSearchQuery: normalizedSearch,
+        userDepartmentFilter: requestedDepartment,
       });
     } finally {
       set({ loadingUsers: false });
@@ -196,21 +231,57 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     const current = get();
     const limit = opts?.limit ?? current.orderPageSize;
     const offset = opts?.offset ?? current.orderPageIndex * limit;
-    set({ loadingOrders: true });
+    const providedSearch = opts?.search;
+    const normalizedSearch =
+      typeof providedSearch === "string"
+        ? providedSearch.trim()
+        : current.orderSearchQuery;
+    const requestedDepartment =
+      typeof opts?.department === "undefined"
+        ? current.orderDepartmentFilter
+        : opts.department;
+    const requestedPickup =
+      typeof opts?.pickup === "undefined"
+        ? current.orderPickupFilter
+        : opts.pickup;
+
+    set({
+      loadingOrders: true,
+      orderDepartmentFilter: requestedDepartment,
+      orderPickupFilter: requestedPickup,
+    });
+
     try {
       const params = new URLSearchParams({
         limit: String(limit),
         offset: String(offset),
       });
-      const data = await apiRequest<OrderWithUser[]>(
-        `/order/admin?${params.toString()}`,
+
+      if (normalizedSearch) {
+        params.set("search", normalizedSearch);
+      }
+      if (requestedDepartment && requestedDepartment !== "all") {
+        params.set("department", requestedDepartment);
+      }
+      if (requestedPickup && requestedPickup !== "all") {
+        params.set("pickup", requestedPickup);
+      }
+
+      const data = await apiRequest<OrdersWithUsersResponse>(
+        `/order/admin?${params.toString()}`
       );
-      const pageIndex = Math.floor(offset / limit);
+      const pageIndex = Math.floor(data.offset / data.limit);
+      const hasNext = data.offset + data.orders.length < data.total;
+
       set({
-        orders: data,
+        orders: data.orders,
         orderPageIndex: pageIndex,
-        orderPageSize: limit,
-        orderHasNext: data.length === limit,
+        orderPageSize: data.limit,
+        orderHasNext: hasNext,
+        orderTotal: data.total,
+        orderSearchQuery: normalizedSearch ?? "",
+        orderDepartmentFilter: requestedDepartment,
+        orderPickupFilter: requestedPickup,
       });
     } finally {
       set({ loadingOrders: false });
@@ -292,18 +363,28 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   },
 
   createProduct: async (payload) => {
+    const { imageUrl, ...rest } = payload;
+    const apiPayload = {
+      ...rest,
+      image_url: imageUrl,
+    };
     const product = await apiRequest<Product>("/product", {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: JSON.stringify(apiPayload),
     });
     set((state) => ({ products: [...state.products, product] }));
     return product;
   },
 
   updateProduct: async (id, payload) => {
+    const { imageUrl, ...rest } = payload;
+    const apiPayload = {
+      ...rest,
+      image_url: imageUrl,
+    };
     const product = await apiRequest<Product>(`/product/${id}`, {
       method: "PUT",
-      body: JSON.stringify(payload),
+      body: JSON.stringify(apiPayload),
     });
     set((state) => ({
       products: state.products.map((p) => (p.id === id ? product : p)),

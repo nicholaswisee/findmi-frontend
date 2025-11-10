@@ -146,3 +146,42 @@ export type UsersWithOrdersResponse = {
 export type OrderWithUser = Order & {
   user: User;
 };
+
+export type OrdersWithUsersResponse = {
+  orders: OrderWithUser[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
+export type RevenueAnalyticsSummary = {
+  totalRevenue: number;
+  totalOrders: number;
+  averageOrderValue: number;
+};
+
+export type DepartmentRevenueBreakdown = {
+  department: UserDepartmentEnum;
+  revenue: number;
+  orders: number;
+};
+
+export type WeeklyRevenuePoint = {
+  week: string;
+  revenue: number;
+};
+
+export type RecentRevenueOrder = {
+  id: number;
+  total_amount: number;
+  payment_status: OrderPaymentStatusEnum;
+  created_at: string;
+  user: Pick<User, "id" | "name" | "department">;
+};
+
+export type RevenueAnalyticsResponse = {
+  summary: RevenueAnalyticsSummary;
+  weeklyRevenue: WeeklyRevenuePoint[];
+  departmentBreakdown: DepartmentRevenueBreakdown[];
+  recentOrders: RecentRevenueOrder[];
+};

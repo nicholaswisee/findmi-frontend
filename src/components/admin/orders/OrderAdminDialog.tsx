@@ -9,7 +9,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,23 +65,25 @@ export function OrderAdminDialog({
     }
   };
 
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
+    event.preventDefault();
+    await handleSave();
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Edit
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Update Order #{order.id}</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-2">
-          <div className="space-y-2">
+        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+          <DialogHeader>
+            <DialogTitle>Update Order #{order.id}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-3">
             <Label htmlFor={`order-note-${order.id}`}>Admin Notes</Label>
             <Textarea
               id={`order-note-${order.id}`}
-              rows={5}
+              rows={4}
               placeholder="Add pickup notes or reminders..."
               value={note}
               onChange={(event) => setNote(event.target.value)}
@@ -97,15 +98,19 @@ export function OrderAdminDialog({
             />
             Mark as taken
           </label>
-        </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => handleOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={submitting}>
-            Save changes
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => handleOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={submitting}>
+              Save changes
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

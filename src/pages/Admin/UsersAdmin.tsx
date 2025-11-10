@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -16,9 +16,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEPARTMENTS } from "@/constants/departments";
-import type { UserDepartmentEnum } from "@/types/types";
+import type { Order, UserDepartmentEnum, UserWithOrders } from "@/types/types";
 
 type DepartmentFilterValue = UserDepartmentEnum | "all";
+const SEARCH_DEBOUNCE_MS = 1000;
 
 export default function UsersAdmin() {
   const users = useAdminStore((state) => state.users);
@@ -28,8 +29,7 @@ export default function UsersAdmin() {
   const pageSize = useAdminStore((state) => state.userPageSize);
   const hasNextPage = useAdminStore((state) => state.userHasNext);
   const total = useAdminStore((state) => state.userTotal);
-  const [departmentFilter, setDepartmentFilter] =
-    useState<DepartmentFilterValue>("all");
+  const departmentFilter = useAdminStore((state) => state.userDepartmentFilter);
   const [searchTerm, setSearchTerm] = useState("");
   const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ export default function UsersAdmin() {
     if (users.length === 0) {
       fetchUsers().catch((err) => {
         toast.error(
-          err instanceof Error ? err.message : "Failed to load users",
+          err instanceof Error ? err.message : "Failed to load users"
         );
       });
     }
@@ -49,12 +49,29 @@ export default function UsersAdmin() {
       limit: pageSize,
       offset: pageIndex * pageSize,
       search: appliedSearchTerm,
+      department: departmentFilter,
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to refresh users",
+        err instanceof Error ? err.message : "Failed to refresh users"
       );
     });
-  }, [appliedSearchTerm, fetchUsers, pageIndex, pageSize]);
+  }, [appliedSearchTerm, departmentFilter, fetchUsers, pageIndex, pageSize]);
+
+  const handleDepartmentChange = useCallback(
+    (value: DepartmentFilterValue) => {
+      fetchUsers({
+        limit: pageSize,
+        offset: 0,
+        search: appliedSearchTerm,
+        department: value,
+      }).catch((err) => {
+        toast.error(
+          err instanceof Error ? err.message : "Failed to filter users"
+        );
+      });
+    },
+    [appliedSearchTerm, fetchUsers, pageSize]
+  );
 
   const handleNextPage = useCallback(() => {
     if (loading || !hasNextPage) return;
@@ -62,12 +79,21 @@ export default function UsersAdmin() {
       limit: pageSize,
       offset: (pageIndex + 1) * pageSize,
       search: appliedSearchTerm,
+      department: departmentFilter,
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to load next page",
+        err instanceof Error ? err.message : "Failed to load next page"
       );
     });
-  }, [fetchUsers, hasNextPage, loading, pageIndex, pageSize]);
+  }, [
+    appliedSearchTerm,
+    departmentFilter,
+    fetchUsers,
+    hasNextPage,
+    loading,
+    pageIndex,
+    pageSize,
+  ]);
 
   const handlePreviousPage = useCallback(() => {
     if (loading || pageIndex === 0) return;
@@ -75,48 +101,67 @@ export default function UsersAdmin() {
       limit: pageSize,
       offset: (pageIndex - 1) * pageSize,
       search: appliedSearchTerm,
+      department: departmentFilter,
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to load previous page",
+        err instanceof Error ? err.message : "Failed to load previous page"
       );
     });
-  }, [fetchUsers, loading, pageIndex, pageSize]);
+  }, [
+    appliedSearchTerm,
+    departmentFilter,
+    fetchUsers,
+    loading,
+    pageIndex,
+    pageSize,
+  ]);
 
   const handleOrderClick = useCallback(
-    (orderId: number) => {
-      navigate(`/dashboard/orders?orderId=${orderId}`);
+    (order: Order, user: UserWithOrders) => {
+      navigate(`/dashboard/orders?orderId=${order.id}`, {
+        state: { order: { ...order, user } },
+      });
     },
-    [navigate],
+    [navigate]
   );
 
-  const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      const matchesDepartment =
-        departmentFilter === "all" || user.department === departmentFilter;
-      return matchesDepartment;
-    });
-  }, [departmentFilter, users]);
+  useEffect(() => {
+    const trimmed = searchTerm.trim();
+    if (trimmed === appliedSearchTerm) {
+      return;
+    }
 
-  const handleSearch = useCallback(() => {
-    const term = searchTerm.trim();
-    setAppliedSearchTerm(term);
-    fetchUsers({ limit: pageSize, offset: 0, search: term }).catch((err) => {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to search users",
-      );
-    });
-  }, [fetchUsers, pageSize, searchTerm]);
+    const timeout = window.setTimeout(() => {
+      setAppliedSearchTerm(trimmed);
+      fetchUsers({
+        limit: pageSize,
+        offset: 0,
+        search: trimmed,
+        department: departmentFilter,
+      }).catch((err) => {
+        toast.error(
+          err instanceof Error ? err.message : "Failed to search users"
+        );
+      });
+    }, SEARCH_DEBOUNCE_MS);
 
-  const handleResetFilters = () => {
-    setDepartmentFilter("all");
+    return () => window.clearTimeout(timeout);
+  }, [appliedSearchTerm, departmentFilter, fetchUsers, pageSize, searchTerm]);
+
+  const handleResetFilters = useCallback(() => {
     setSearchTerm("");
     setAppliedSearchTerm("");
-    fetchUsers({ limit: pageSize, offset: 0, search: "" }).catch((err) => {
+    fetchUsers({
+      limit: pageSize,
+      offset: 0,
+      search: "",
+      department: "all",
+    }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to refresh users",
+        err instanceof Error ? err.message : "Failed to refresh users"
       );
     });
-  };
+  }, [fetchUsers, pageSize]);
 
   return (
     <section className="space-y-6">
@@ -138,7 +183,7 @@ export default function UsersAdmin() {
           <Select
             value={departmentFilter}
             onValueChange={(value) =>
-              setDepartmentFilter(value as DepartmentFilterValue)
+              handleDepartmentChange(value as DepartmentFilterValue)
             }
           >
             <SelectTrigger>
@@ -156,24 +201,17 @@ export default function UsersAdmin() {
         </div>
         <div className="space-y-2">
           <Label htmlFor="user-search">Search by name</Label>
-          <div className="flex gap-2">
-            <Input
-              id="user-search"
-              placeholder="Type user name..."
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  handleSearch();
-                }
-              }}
-            />
-            <Button onClick={handleSearch} disabled={loading}>
-              Search
-            </Button>
-          </div>
+          <Input
+            id="user-search"
+            placeholder="Type user name..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">
+            Search updates automatically after a short pause.
+          </p>
         </div>
-        <div className="flex items-end">
+        <div className="flex items-center">
           <Button
             variant="secondary"
             className="w-full"
@@ -189,7 +227,7 @@ export default function UsersAdmin() {
         <Skeleton className="h-64 w-full rounded-xl" />
       ) : (
         <UserOrdersTable
-          data={filteredUsers}
+          data={users}
           pageIndex={pageIndex}
           pageSize={pageSize}
           total={total}

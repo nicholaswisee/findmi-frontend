@@ -7,8 +7,6 @@ import { DataTable } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { OrderWithUser } from "@/types/types";
-import { OrderAdminDialog } from "./OrderAdminDialog";
-
 type OrdersTableProps = {
   data: OrderWithUser[];
   pageIndex?: number;
@@ -17,12 +15,7 @@ type OrdersTableProps = {
   loading?: boolean;
   onNextPage?: () => void;
   onPreviousPage?: () => void;
-  onEditOrder?: (
-    order: OrderWithUser,
-    values: { admin_note?: string | null; is_taken?: boolean },
-  ) => Promise<void>;
-  activeOrderId?: number | null;
-  onDialogOpenChange?: (orderId: number, open: boolean) => void;
+  onSelectOrder?: (order: OrderWithUser) => void;
 };
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
@@ -33,7 +26,7 @@ const currencyFormatter = new Intl.NumberFormat("id-ID", {
 
 const formatCurrency = (value: number | string | null | undefined) =>
   currencyFormatter.format(
-    typeof value === "string" ? Number(value) || 0 : (value ?? 0),
+    typeof value === "string" ? Number(value) || 0 : value ?? 0
   );
 
 const formatDate = (value: string) => {
@@ -56,9 +49,7 @@ export default function OrdersTable({
   loading,
   onNextPage,
   onPreviousPage,
-  onEditOrder,
-  activeOrderId,
-  onDialogOpenChange,
+  onSelectOrder,
 }: OrdersTableProps) {
   const columns = useMemo<ColumnDef<OrderWithUser>[]>(() => {
     return [
@@ -81,7 +72,7 @@ export default function OrdersTable({
           <div className="space-y-1">
             <p className="font-medium">{row.original.user.name}</p>
             <p className="text-xs text-muted-foreground">
-              {row.original.user.department} · {row.original.user.nim}
+              {row.original.user.department} - {row.original.user.nim}
             </p>
           </div>
         ),
@@ -115,29 +106,31 @@ export default function OrdersTable({
       {
         accessorKey: "admin_note",
         header: "Admin Notes",
-        cell: ({ row }) => (
-          <p className="max-w-xs text-sm text-muted-foreground line-clamp-2">
-            {row.original.admin_note || "—"}
-          </p>
-        ),
+        cell: ({ row }) => {
+          const note = row.original.admin_note?.trim() ?? "";
+          return (
+            <p className="max-w-sm break-words whitespace-pre-wrap text-sm text-muted-foreground">
+              {note.length > 0 ? note : "Tidak ada catatan"}
+            </p>
+          );
+        },
       },
       {
         id: "actions",
         header: "Actions",
         cell: ({ row }) =>
-          onEditOrder ? (
-            <OrderAdminDialog
-              order={row.original}
-              open={activeOrderId === row.original.id}
-              onOpenChange={(open) =>
-                onDialogOpenChange?.(row.original.id, open)
-              }
-              onSubmit={(values) => onEditOrder(row.original, values)}
-            />
+          onSelectOrder ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onSelectOrder(row.original)}
+            >
+              Edit
+            </Button>
           ) : null,
       },
     ];
-  }, [activeOrderId, onDialogOpenChange, onEditOrder]);
+  }, [onSelectOrder]);
 
   const manualPagination =
     pageIndex !== undefined && pageSize !== undefined && pageSize > 0;
@@ -146,15 +139,15 @@ export default function OrdersTable({
     manualPagination && data.length > 0
       ? pageIndex! * pageSize! + 1
       : data.length === 0
-        ? 0
-        : 1;
+      ? 0
+      : 1;
   const end =
     manualPagination && data.length > 0
       ? pageIndex! * pageSize! + data.length
       : data.length;
 
   return (
-    <div className="flex h-[88svh] flex-col space-y-4">
+    <div className="flex h-[88svh] min-w-0 flex-col space-y-4">
       <DataTable columns={columns} data={data} />
       {manualPagination && (
         <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">

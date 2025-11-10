@@ -23,7 +23,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CircleEllipsisIcon } from "lucide-react";
+import { DEPARTMENTS } from "@/constants/departments";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -45,12 +53,15 @@ type BundleFormDialogProps = {
   bundle: Bundle;
   onSubmit?: (values: BundleFormValues) => Promise<void> | void;
   trigger?: ReactNode;
+  title?: string;
+  description?: ReactNode;
+  submitLabel?: string;
 };
 
 const toFormValues = (bundle: Bundle): BundleFormValues => ({
   name: bundle.name,
   price: bundle.price,
-  category: bundle.category ?? "",
+  category: bundle.category ?? "none",
   description: bundle.description ?? "",
   image_url: bundle.image_url ?? "",
   is_hidden: bundle.is_hidden,
@@ -67,6 +78,9 @@ export function BundleFormDialog({
   bundle,
   onSubmit,
   trigger,
+  title,
+  description,
+  submitLabel,
 }: BundleFormDialogProps) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -95,6 +109,20 @@ export function BundleFormDialog({
     }
   });
 
+  const dialogTitle = title ?? "Edit bundle";
+  const dialogDescription =
+    description ??
+    (bundle.name ? (
+      <>
+        Update all fields for <strong>{bundle.name}</strong>.
+      </>
+    ) : (
+      "Fill out the details below."
+    ));
+  const primaryActionLabel = submitting
+    ? "Saving..."
+    : submitLabel ?? "Save changes";
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -107,10 +135,8 @@ export function BundleFormDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Edit bundle</DialogTitle>
-            <DialogDescription>
-              Update all fields for <strong>{bundle.name}</strong>.
-            </DialogDescription>
+            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-3 md:grid-cols-2">
@@ -129,8 +155,28 @@ export function BundleFormDialog({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="bundle-category">Category</Label>
-              <Input id="bundle-category" {...register("category")} />
+              <Label>Category</Label>
+              <Controller
+                control={control}
+                name="category"
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? "none"}
+                    onValueChange={(value) => field.onChange(value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DEPARTMENTS.map((dept) => (
+                        <SelectItem key={dept} value={dept}>
+                          {dept}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="bundle-image">Image URL</Label>
@@ -200,7 +246,7 @@ export function BundleFormDialog({
               </Button>
             </DialogClose>
             <Button type="submit" disabled={submitting}>
-              {submitting ? "Saving..." : "Save changes"}
+              {primaryActionLabel}
             </Button>
           </DialogFooter>
         </form>

@@ -1,8 +1,18 @@
-import { BadgeDollarSign, Box, Home, ShoppingBag, Users } from "lucide-react";
+import {
+  BadgeDollarSign,
+  Box,
+  Home,
+  LogOut,
+  ShoppingBag,
+  Users,
+} from "lucide-react";
+import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -10,6 +20,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/store/authStore";
 
 const items = [
   {
@@ -40,6 +52,21 @@ const items = [
 ];
 
 export function AppSidebar() {
+  const navigate = useNavigate();
+  const logout = useAuthStore((state) => state.logout);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = useCallback(async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } finally {
+      setLoggingOut(false);
+    }
+  }, [loggingOut, logout, navigate]);
+
   return (
     <Sidebar className="h-full">
       <SidebarContent>
@@ -61,6 +88,17 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter className="border-t border-border px-4 py-4">
+        <Button
+          variant="ghost"
+          className="w-full justify-start gap-2"
+          onClick={handleLogout}
+          disabled={loggingOut}
+        >
+          <LogOut className="h-4 w-4" />
+          {loggingOut ? "Logging out..." : "Logout"}
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 }

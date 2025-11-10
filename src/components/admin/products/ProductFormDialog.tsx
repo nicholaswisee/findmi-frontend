@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { CircleEllipsisIcon } from "lucide-react";
 
 import type { Product } from "@/types/types";
@@ -19,6 +19,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DEPARTMENTS } from "@/constants/departments";
 
 export type ProductFormValues = {
   name: string;
@@ -33,12 +41,15 @@ type ProductFormDialogProps = {
   product: Product;
   onSubmit?: (values: ProductFormValues) => Promise<void> | void;
   trigger?: ReactNode;
+  title?: string;
+  description?: ReactNode;
+  submitLabel?: string;
 };
 
 const toFormValues = (product: Product): ProductFormValues => ({
   name: product.name,
   price: product.price,
-  category: product.category ?? "",
+  category: product.category ?? "none",
   description: product.description ?? "",
   image_url: product.image_url ?? "",
   remaining_stock: product.remaining_stock,
@@ -48,11 +59,14 @@ export function ProductFormDialog({
   product,
   onSubmit,
   trigger,
+  title,
+  description,
+  submitLabel,
 }: ProductFormDialogProps) {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const { register, handleSubmit, reset } = useForm<ProductFormValues>({
+  const { register, handleSubmit, reset, control } = useForm<ProductFormValues>({
     defaultValues: toFormValues(product),
   });
 
@@ -70,6 +84,20 @@ export function ProductFormDialog({
     }
   });
 
+  const dialogTitle = title ?? "Edit product";
+  const dialogDescription =
+    description ??
+    (product.name ? (
+      <>
+        Update the details for <strong>{product.name}</strong>.
+      </>
+    ) : (
+      "Fill out the details below."
+    ));
+  const primaryActionLabel = submitting
+    ? "Saving..."
+    : submitLabel ?? "Save changes";
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -82,10 +110,8 @@ export function ProductFormDialog({
       <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>Edit product</DialogTitle>
-            <DialogDescription>
-              Update the details for <strong>{product.name}</strong>.
-            </DialogDescription>
+            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-3">
@@ -105,8 +131,28 @@ export function ProductFormDialog({
           </div>
 
           <div className="grid gap-3">
-            <Label htmlFor="product-category">Category</Label>
-            <Input id="product-category" {...register("category")} />
+            <Label>Category</Label>
+            <Controller
+              control={control}
+              name="category"
+              render={({ field }) => (
+                <Select
+                  value={field.value ?? "none"}
+                  onValueChange={(value) => field.onChange(value)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DEPARTMENTS.map((dept) => (
+                      <SelectItem key={dept} value={dept}>
+                        {dept}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
           <div className="grid gap-3">
@@ -140,7 +186,7 @@ export function ProductFormDialog({
               </Button>
             </DialogClose>
             <Button type="submit" disabled={submitting}>
-              {submitting ? "Saving..." : "Save changes"}
+              {primaryActionLabel}
             </Button>
           </DialogFooter>
         </form>

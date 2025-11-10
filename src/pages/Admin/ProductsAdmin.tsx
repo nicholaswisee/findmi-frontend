@@ -1,11 +1,14 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProductTable from "@/components/admin/products/ProductTable";
+import {
+  ProductFormDialog,
+  type ProductFormValues,
+} from "@/components/admin/products/ProductFormDialog";
 import { useAdminStore } from "@/store/adminStore";
-import type { ProductFormValues } from "@/components/admin/products/ProductFormDialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,9 +19,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEPARTMENTS } from "@/constants/departments";
-import type { UserDepartmentEnum } from "@/types/types";
+import type { Product, UserDepartmentEnum } from "@/types/types";
 
 type DepartmentFilterValue = UserDepartmentEnum | "all";
+const SEARCH_DEBOUNCE_MS = 1000;
 
 export default function ProductsAdmin() {
   const products = useAdminStore((state) => state.products);
@@ -28,16 +32,30 @@ export default function ProductsAdmin() {
   const pageSize = useAdminStore((state) => state.productPageSize);
   const hasNextPage = useAdminStore((state) => state.productHasNext);
   const updateProduct = useAdminStore((state) => state.updateProduct);
+  const createProduct = useAdminStore((state) => state.createProduct);
 
   const [departmentFilter, setDepartmentFilter] =
     useState<DepartmentFilterValue>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState("");
+  const emptyProduct = useMemo<Product>(
+    () => ({
+      id: 0,
+      name: "",
+      price: 0,
+      category: "none",
+      description: "",
+      image_url: "",
+      remaining_stock: 0,
+    }),
+    []
+  );
 
   useEffect(() => {
     if (products.length === 0) {
       fetchProducts().catch((err) => {
         toast.error(
-          err instanceof Error ? err.message : "Failed to load products",
+          err instanceof Error ? err.message : "Failed to load products"
         );
       });
     }
@@ -49,7 +67,7 @@ export default function ProductsAdmin() {
       limit: pageSize,
       offset: (pageIndex + 1) * pageSize,
       department: departmentFilter,
-      search: searchTerm,
+      search: appliedSearchTerm,
     });
   };
 
@@ -59,7 +77,7 @@ export default function ProductsAdmin() {
       limit: pageSize,
       offset: (pageIndex - 1) * pageSize,
       department: departmentFilter,
-      search: searchTerm,
+      search: appliedSearchTerm,
     });
   };
 
@@ -81,7 +99,7 @@ export default function ProductsAdmin() {
           limit: pageSize,
           offset: pageIndex * pageSize,
           department: departmentFilter,
-          search: searchTerm,
+          search: appliedSearchTerm,
         });
         toast.success("Product updated");
       } catch (err) {
@@ -93,9 +111,44 @@ export default function ProductsAdmin() {
       fetchProducts,
       pageIndex,
       pageSize,
-      searchTerm,
+      appliedSearchTerm,
       updateProduct,
-    ],
+    ]
+  );
+
+  const handleCreateProduct = useCallback(
+    async (values: ProductFormValues) => {
+      const mapString = (value?: string) =>
+        value && value.trim().length > 0 ? value.trim() : undefined;
+
+      try {
+        await createProduct({
+          name: values.name,
+          price: values.price,
+          category: mapString(values.category),
+          description: mapString(values.description),
+          imageUrl: mapString(values.image_url),
+          stock: values.remaining_stock,
+        });
+        toast.success("Product created");
+        await fetchProducts({
+          limit: pageSize,
+          offset: pageIndex * pageSize,
+          department: departmentFilter,
+          search: appliedSearchTerm,
+        });
+      } catch (err) {
+        toast.error((err as Error).message ?? "Failed to create product");
+      }
+    },
+    [
+      appliedSearchTerm,
+      createProduct,
+      departmentFilter,
+      fetchProducts,
+      pageIndex,
+      pageSize,
+    ]
   );
 
   const handleDepartmentChange = (value: DepartmentFilterValue) => {
@@ -104,23 +157,55 @@ export default function ProductsAdmin() {
       limit: pageSize,
       offset: 0,
       department: value,
-      search: searchTerm,
+      search: appliedSearchTerm,
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to apply filter",
+        err instanceof Error ? err.message : "Failed to apply filter"
       );
     });
   };
 
-  const handleSearchSubmit = () => {
+  useEffect(() => {
+    const trimmed = searchTerm.trim();
+    if (trimmed === appliedSearchTerm) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setAppliedSearchTerm(trimmed);
+      fetchProducts({
+        limit: pageSize,
+        offset: 0,
+        department: departmentFilter,
+        search: trimmed,
+      }).catch((err) => {
+        toast.error(
+          err instanceof Error ? err.message : "Failed to apply search"
+        );
+      });
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => window.clearTimeout(timeout);
+  }, [
+    appliedSearchTerm,
+    departmentFilter,
+    fetchProducts,
+    pageSize,
+    searchTerm,
+  ]);
+
+  const handleResetFilters = () => {
+    setDepartmentFilter("all");
+    setSearchTerm("");
+    setAppliedSearchTerm("");
     fetchProducts({
       limit: pageSize,
       offset: 0,
-      department: departmentFilter,
-      search: searchTerm,
+      department: "all",
+      search: "",
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to apply search",
+        err instanceof Error ? err.message : "Failed to reset filters"
       );
     });
   };
@@ -131,24 +216,38 @@ export default function ProductsAdmin() {
         <div>
           <p className="text-2xl font-semibold">Product Catalog</p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => {
-            fetchProducts({
-              limit: pageSize,
-              offset: pageIndex * pageSize,
-              department: departmentFilter,
-              search: searchTerm,
-            }).catch((err) => {
-              toast.error(
-                err instanceof Error ? err.message : "Failed to refresh",
-              );
-            });
-          }}
-          disabled={loading}
-        >
-          Refresh
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <ProductFormDialog
+            product={emptyProduct}
+            onSubmit={handleCreateProduct}
+            trigger={
+              <Button type="button">
+                Add Product
+              </Button>
+            }
+            title="Add new product"
+            description="Fill out the details to add a new product."
+            submitLabel="Create product"
+          />
+          <Button
+            variant="outline"
+            onClick={() => {
+              fetchProducts({
+                limit: pageSize,
+                offset: pageIndex * pageSize,
+                department: departmentFilter,
+                search: appliedSearchTerm,
+              }).catch((err) => {
+                toast.error(
+                  err instanceof Error ? err.message : "Failed to refresh"
+                );
+              });
+            }}
+            disabled={loading}
+          >
+            Refresh
+          </Button>
+        </div>
       </header>
 
       <div className="grid gap-4 sm:grid-cols-[200px_1fr_auto]">
@@ -180,21 +279,19 @@ export default function ProductsAdmin() {
             placeholder="Type product name..."
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                handleSearchSubmit();
-              }
-            }}
           />
+          <p className="text-xs text-muted-foreground">
+            Search updates automatically after a short pause.
+          </p>
         </div>
-        <div className="flex items-end">
+        <div className="flex items-center">
           <Button
-            onClick={handleSearchSubmit}
+            onClick={handleResetFilters}
             className="w-full"
             variant="secondary"
             disabled={loading}
           >
-            Apply Filters
+            Reset Filters
           </Button>
         </div>
       </div>

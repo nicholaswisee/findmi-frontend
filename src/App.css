@@ -189,3 +189,30 @@
 body {
   font-family: "Inter";
 }
+
+.admin-page input,
+.admin-page textarea,
+.admin-page select,
+.admin-page .badge,
+.admin-page label,
+.admin-page p,
+.admin-page span,
+.admin-page button {
+  white-space: normal;
+  word-break: break-word;
+}
+
+.admin-page input,
+.admin-page textarea,
+.admin-page select {
+  width: 100%;
+  max-width: 100%;
+}
+
+.admin-page .space-y-2,
+.admin-page .space-y-4,
+.admin-page .space-y-6,
+.admin-page .grid {
+  min-width: 0;
+  width: 100%;
+}
