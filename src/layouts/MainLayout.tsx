@@ -16,7 +16,7 @@ export default function MainLayout() {
         closeButton={true}
         position="bottom-right"
       />
-      <main className="w-full flex-1 px-4 min-h-[calc(100svh-5rem)]">
+      <main className="w-full flex-1 px-4 min-h-[calc(100svh-5rem)] bg-plain-green text-[#ffdb8c]">
         <Outlet />
       </main>
       <Footer />

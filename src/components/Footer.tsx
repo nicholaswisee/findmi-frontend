@@ -65,7 +65,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="relative overflow-hidden text-center py-8">
+    <footer className="relative overflow-hidden text-center py-8 text-[#ffdb8c]">
       <img
         src="/global/background-plain-ungu.webp"
         className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
@@ -75,7 +75,7 @@ export default function Footer() {
         <header className="flex gap-6 justify-start items-center">
           <img className="h-12" src="/global/Logo.png" alt="AMI 2026" />
           <Link to={"/"}>
-            <h4 className="text-center mt-2">FINDMI 2026</h4>
+            <h4 className="text-center mt-2 ">FINDMI 2026</h4>
           </Link>
         </header>
         <div className="flex pt-4 gap-4">

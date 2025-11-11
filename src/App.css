@@ -68,41 +68,41 @@
   }
 
   h1 {
-    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl;
+    @apply font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl;
   }
 
   h2 {
-    @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl;
+    @apply font-heading text-2xl sm:text-3xl md:text-4xl lg:text-5xl;
   }
 
   h3 {
-    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl;
+    @apply font-heading text-xl sm:text-2xl md:text-3xl lg:text-4xl;
   }
 
   h4 {
-    @apply text-lg sm:text-xl md:text-2xl lg:text-3xl;
+    @apply font-heading text-lg sm:text-xl md:text-2xl lg:text-3xl;
   }
 
   h5 {
-    @apply text-base sm:text-lg md:text-xl lg:text-2xl;
+    @apply font-heading text-base sm:text-lg md:text-xl lg:text-2xl;
   }
 
   h6 {
-    @apply text-sm sm:text-base md:text-lg lg:text-xl;
+    @apply font-heading text-sm sm:text-base md:text-lg lg:text-xl;
   }
-  /* 
+
   p.lead {
     @apply font-medium text-base sm:text-lg md:text-xl;
-  } */
+  }
 
-  /* p.small,
+  p.small,
   * {
     @apply text-sm sm:text-base md:text-lg;
-  } */
+  }
 
-  /* * {
+  * {
     @apply leading-normal;
-  } */
+  }
 }
 
 @theme inline {
@@ -181,39 +181,8 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
+  .bg-plain-green {
     background-image: url("/global/background-plain-hijau.webp");
     @apply text-foreground bg-cover;
   }
-}
-
-body {
-  font-family: "Inter";
-}
-
-.admin-page input,
-.admin-page textarea,
-.admin-page select,
-.admin-page .badge,
-.admin-page label,
-.admin-page p,
-.admin-page span,
-.admin-page button {
-  white-space: normal;
-  word-break: break-word;
-}
-
-.admin-page input,
-.admin-page textarea,
-.admin-page select {
-  width: 100%;
-  max-width: 100%;
-}
-
-.admin-page .space-y-2,
-.admin-page .space-y-4,
-.admin-page .space-y-6,
-.admin-page .grid {
-  min-width: 0;
-  width: 100%;
 }

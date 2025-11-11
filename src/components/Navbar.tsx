@@ -40,7 +40,7 @@ export default function Navbar() {
   }, [isAuthenticated, user]);
 
   return (
-    <div className="h-fit sticky top-0 w-full z-50 p-2 drop-shadow-2xl">
+    <div className="h-fit sticky top-0 w-full z-50 p-2 drop-shadow-2xl text-[#ffdb8c]">
       <img
         src="/global/background-plain-ungu.webp"
         className="absolute inset-0 w-full h-full object-cover -z-10 pointer-events-none"
@@ -49,7 +49,7 @@ export default function Navbar() {
       <header className="z-50 flex gap-3 justify-center items-center">
         <img className="h-12" src="/global/Logo.png" alt="AMI 2026" />
         <Link to={"/"}>
-          <h4 className="text-center mt-2">FINDMI 2026</h4>
+          <h4 className="text-center mt-2 ">FINDMI 2026</h4>
         </Link>
       </header>
       <nav className="place-self-end">
