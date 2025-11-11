@@ -19,7 +19,7 @@ export default function AuthPage() {
   }
 
   return (
-    <section className="flex min-h-screen flex-col items-center justify-center px-4 py-10">
+    <section className="flex flex-col items-center justify-center px-4 py-10">
       <div className="w-full max-w-xl rounded-xl bg-[#463b8b]/20 p-8">
         <header className="mb-8 space-y-2 text-center">
           <h1 className="text-4xl">LOG IN</h1>

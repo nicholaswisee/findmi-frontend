@@ -70,10 +70,6 @@ export default function LoginForm() {
         />
       </div>
 
-      {error ? (
-        <p className="text-sm font-medium text-[#ff9c9c]">{error}</p>
-      ) : null}
-
       <Button
         type="submit"
         disabled={loading}
