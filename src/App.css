@@ -91,7 +91,7 @@
   }
 
   * {
-    @apply leading-normal;
+    @apply leading-normal text-[#ffdb8c];
   }
 }
 
@@ -172,6 +172,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    background-image: url("/global/background-plain-hijau.webp");
+    @apply text-foreground bg-cover;
   }
 }
