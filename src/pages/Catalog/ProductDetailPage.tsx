@@ -327,11 +327,11 @@ export default function ProductDetailPage() {
             {/* Quantity & Add to Cart */}
             <div className="flex items-center gap-3">
               {/* Quantity Selector */}
-              <div className="flex items-center border-2 border-teal-700 rounded-full overflow-hidden bg-teal-100/50">
+              <div className="flex items-center border-2 border-teal-700 rounded-full overflow-hidden bg-teal-100/50 shrink-0">
                 <button
                   type="button"
                   onClick={decrementQuantity}
-                  className="px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 sm:px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                   disabled={quantity <= 1}
                 >
                   -
@@ -342,12 +342,12 @@ export default function ProductDetailPage() {
                   onChange={handleQuantityChange}
                   min="1"
                   max={getStock()}
-                  className="py-2 font-bold min-w-[60px] text-center text-teal-900 bg-transparent border-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="px-2 sm:px-5 py-2 font-bold w-[50px] sm:min-w-[60px] text-center text-teal-900 bg-transparent border-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <button
                   type="button"
                   onClick={incrementQuantity}
-                  className="px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 sm:px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                   disabled={!product || quantity >= getStock()}
                 >
                   +
