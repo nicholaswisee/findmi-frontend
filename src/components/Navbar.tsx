@@ -40,7 +40,7 @@ export default function Navbar() {
   }, [isAuthenticated, user]);
 
   return (
-    <div className=" h-fit sticky top-0 w-full z-50 p-2">
+    <div className="h-fit sticky top-0 w-full z-50 p-2 drop-shadow-2xl">
       <img
         src="/global/background-plain-ungu.webp"
         className="absolute inset-0 w-full h-full object-cover -z-10 pointer-events-none"

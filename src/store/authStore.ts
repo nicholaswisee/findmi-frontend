@@ -6,6 +6,11 @@ interface User {
   id: number;
   name: string;
   nim: string;
+  department: string;
+  line_id: string;
+  no_wa: string;
+  email?: string;
+  avatarUrl?: string;
   role?: string;
 }
 
@@ -47,7 +52,7 @@ export const useAuthStore = create<AuthState>()(
           }
           const data = await res.json();
           set({
-            user: data.data,
+            user: data.data.user,
             isAuthenticated: true,
             lastFetched: now,
           });
