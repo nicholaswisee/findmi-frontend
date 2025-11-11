@@ -26,6 +26,10 @@ export const routes: RouteObject[] = [
         element: <ProductDetailPage />,
       },
       {
+        path: "catalog/bundle/:bundle_id",
+        element: <ProductDetailPage />,
+      },
+      {
         path: "cart",
         element: (
           <PrivateRoute>

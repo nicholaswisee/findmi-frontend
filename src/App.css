@@ -81,17 +81,17 @@
     @apply font-heading text-sm sm:text-base md:text-lg lg:text-xl;
   }
 
-  p.lead,
-  * {
-    @apply font-medium text-lg sm:text-xl md:text-2xl;
+  p.lead {
+    @apply font-medium text-base sm:text-lg md:text-xl;
   }
 
-  p.small {
-    @apply text-sm sm:text-base md:text-base;
+  p.small,
+  * {
+    @apply text-sm sm:text-base md:text-lg;
   }
 
   * {
-    @apply leading-normal;
+    @apply leading-normal text-[#ffdb8c];
   }
 }
 
@@ -172,6 +172,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    background-image: url("/global/background-plain-hijau.webp");
+    @apply text-foreground bg-cover;
   }
 }
