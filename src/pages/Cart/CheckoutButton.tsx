@@ -4,7 +4,6 @@ export function CheckoutButton() {
   const { createOrder, cart, isLoading, error } = useCartStore();
 
   const handleCheckout = async () => {
-    console.log('DIPENCET');
     if (!cart) return;
     const items = cart.items.map((item) => ({
       productId: item.product_id,
@@ -22,11 +21,11 @@ export function CheckoutButton() {
   return (
     <button onClick={handleCheckout} disabled={isLoading} className="
       inline-flex flex-col items-center justify-center
-      gap-2 px-36 py-0.5
+      w-[320px] h-[40px] md:w-[431px] md:h-[38px] 
       rounded-2xl
-      drop-shadow-lg
+      drop-shadow-md/50
       bg-[#AC166C] hover:brightness-90 active:brightness-75
-      text-orange-200 text-xl font-bold
+      text-orange-200 text-[14px] md:text-sm font-bold 
       transition-all
     ">
       {isLoading ? "Processing..." : "Bayar Sekarang"}

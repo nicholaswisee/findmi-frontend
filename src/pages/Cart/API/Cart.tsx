@@ -21,7 +21,7 @@ interface CartBundle {
   is_hidden: boolean;
 };
 
-interface CartItem {
+interface CartItemInterface {
   id: number;
   cart_id: number;
   product_id: number;
@@ -33,7 +33,7 @@ interface CartItem {
   bundle?: CartBundle;
 };
 
-interface CartSummary {
+interface CartSummaryInterface {
   total_quantity: number;
   total_amount: number;
 };
@@ -44,17 +44,17 @@ interface CartData {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-  items: CartItem[];
-  summary: CartSummary;
+  items: CartItemInterface[];
+  summary: CartSummaryInterface;
 };
 
-type OrderItemRequest = {
+interface OrderItemRequest {
   productId: number;
   bundleId: number;
   quantity: number;
 };
 
-type OrderResponse = {
+interface OrderResponse {
   order: any;
   payment: any;
 };
@@ -129,7 +129,7 @@ export const useCartStore = create<CartState>((set) => ({
       });
     }
   },
-
+  
   createOrder: async (items) => {
     set({ isLoading: true, error: null });
     try {
