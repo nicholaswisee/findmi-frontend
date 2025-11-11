@@ -5,8 +5,9 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  stock: number;
-  imageUrl: string;
+  category: string;
+  remaining_stock: number;
+  image_url: string;
 }
 
 interface ProductState {
@@ -28,7 +29,7 @@ export const useProductStore = create<ProductState>((set) => ({
       if (!res.ok) throw new Error("Failed to fetch product");
 
       const data = await res.json();
-      set({ products: data.data, isLoading: false });
+      set({ products: data.data.products, isLoading: false });
     } catch (err) {
       console.error(`${err}"`);
       set({
