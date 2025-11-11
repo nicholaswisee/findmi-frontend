@@ -40,25 +40,41 @@ export default function Navbar() {
   }, [isAuthenticated, user]);
 
   return (
-    <header className="bg-gray-200 h-fit fixed top-0 w-full z-50 flex flex-col justify-between items-center py-2 px-4">
-      <h5 className="text-center">
-        <Link to={"/"}>FINDMI 2026</Link>
-      </h5>
+    <div className=" h-fit fixed top-0 w-full z-50 p-2">
+      <img
+        src="/global/background-plain-ungu.webp"
+        className="absolute inset-0 w-full h-full object-cover -z-10 pointer-events-none"
+        alt="Background Image"
+      />
+      <header className="z-50 flex gap-3 justify-center items-center">
+        <img className="h-12" src="/global/Logo.png" alt="AMI 2026" />
+        <Link to={"/"}>
+          <h4 className="text-center mt-2">FINDMI 2026</h4>
+        </Link>
+      </header>
       <nav className="place-self-end">
         <ul className="flex gap-4 items-center">
           {links.map((link) => (
             <li key={link.path}>
               {link.path === "/login" ? (
-                <Button type="button" variant="default">
-                  <Link to={link.path}>{link.label}</Link>
+                <Button
+                  type="button"
+                  variant="default"
+                  className="bg-[#5f92e0] hover:bg-[#76abe8]  text-[#ffeabb] rounded-full"
+                >
+                  <Link className="font-semibold px-2" to={link.path}>
+                    {link.label}
+                  </Link>
                 </Button>
               ) : (
-                <Link to={link.path}>{link.icon ? link.icon : link.label}</Link>
+                <Link className="font-semibold" to={link.path}>
+                  {link.icon ? link.icon : link.label}
+                </Link>
               )}
             </li>
           ))}
         </ul>
       </nav>
-    </header>
+    </div>
   );
 }
