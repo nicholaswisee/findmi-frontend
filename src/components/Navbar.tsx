@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useMemo } from "react";
 import { useAuthStore } from "../store/authStore";
 import { ShoppingBasket, CircleUser } from "lucide-react";
-import { Button } from "./ui/button";
+import Button from "./shared/Button";
 
 export default function Navbar() {
   const { isAuthenticated, user } = useAuthStore();
@@ -10,7 +10,7 @@ export default function Navbar() {
   type NavLink = {
     path: string;
     label: string;
-    icon: React.ReactNode | null;
+    icon: React.ReactNode | React.HTMLElementType | null;
   };
 
   const links = useMemo<NavLink[]>(() => {
@@ -37,7 +37,11 @@ export default function Navbar() {
         ),
       });
     } else {
-      base.push({ path: "/login", label: "Login", icon: null });
+      base.push({
+        path: "/login",
+        label: "Login",
+        icon: null,
+      });
     }
 
     if (user && user.role?.includes("admin")) {
@@ -60,18 +64,12 @@ export default function Navbar() {
         </Link>
       </header>
       <nav className="place-self-end">
-        <ul className="flex gap-4 items-center">
+        <ul className="flex gap-4 items-center pb-1">
           {links.map((link) => (
             <li key={link.path}>
               {link.path === "/login" ? (
-                <Button
-                  type="button"
-                  variant="default"
-                  className="bg-[#5f92e0] hover:bg-[#76abe8]  text-[#ffd88c] rounded-full"
-                >
-                  <Link className="font-semibold px-2" to={link.path}>
-                    {link.label}
-                  </Link>
+                <Button url={link.path} className="rounded-full" variant="blue">
+                  {link.label}
                 </Button>
               ) : (
                 <Link className="font-semibold lead" to={link.path}>

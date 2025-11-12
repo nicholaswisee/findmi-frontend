@@ -79,6 +79,7 @@ export type Product = {
 export type BundleItem = {
   product_id: number;
   amount: number;
+  product?: Product;
 };
 
 export type Bundle = {

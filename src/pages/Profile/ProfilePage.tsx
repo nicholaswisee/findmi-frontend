@@ -14,8 +14,8 @@ export default function ProfilePage() {
     ...(user?.department !== "none"
       ? [{ label: "Bidang", value: user?.department }]
       : []),
-    { label: "ID Line", value: user?.line_id },
-    { label: "No. WhatsApp", value: user?.no_wa },
+    { label: "ID Line", value: user?.line_id || "-" },
+    { label: "No. WhatsApp", value: user?.no_wa || "-" },
   ];
 
   useEffect(() => {
@@ -34,9 +34,9 @@ export default function ProfilePage() {
           Kembali
         </button>
 
-        <div className="rounded-2xl p-6 text-white sm:p-10 flex flex-col items-center gap-8">
+        <div className="rounded-2xl text-white flex flex-col items-center gap-8">
           <header className="text-center">
-            <h1 className="mt-1 text-4xl text-[#ffdb8c]">PROFIL</h1>
+            <h1 className="text-[#ffdb8c]">PROFIL</h1>
           </header>
           <div className="rounded-2xl flex w-full min-h-36 bg-[#dafff6]/20 p-4">
             <table className="w-full table-fixed text-left">

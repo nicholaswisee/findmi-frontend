@@ -33,8 +33,7 @@ const STATUS_STYLES: Record<
   Refunded: { label: "Dana Dikembalikan", className: "text-[#ffdb8c]" },
 };
 
-const FALLBACK_IMAGE =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='18' fill='%23d4def5'/%3E%3Cpath d='M36 84h56v8H36zm8-48h40l12 32H32z' fill='%23204065'/%3E%3C/svg%3E";
+const FALLBACK_IMAGE = "/global/background-plain-ungu.webp";
 
 export default function OrderHistoryPage() {
   const navigate = useNavigate();
@@ -109,12 +108,39 @@ export default function OrderHistoryPage() {
     return STATUS_STYLES[order.payment_status];
   };
 
+  const truncateDescription = (text?: string | null) => {
+    if (!text) return "-";
+    const trimmed = text.trim();
+    if (trimmed.length <= 50) return trimmed;
+    return `${trimmed.substring(0, 50)}...`;
+  };
+
+  const buildBundleDescription = (bundle?: OrderItem["bundle"]) => {
+    if (!bundle) return "";
+    const productNames =
+      bundle.bundle_items
+        ?.map((bundleItem) => bundleItem.product?.name?.trim())
+        .filter(
+          (name): name is string => typeof name === "string" && name.length > 0
+        ) ?? [];
+
+    if (productNames.length > 0) {
+      return productNames.join(", ");
+    }
+
+    return bundle.description ?? "";
+  };
+
   const describeItem = (item: OrderItem) => {
     const isProduct = Boolean(item.product);
     const source = item.product ?? item.bundle;
+    const rawDescription = isProduct
+      ? item.product?.description ?? ""
+      : buildBundleDescription(item.bundle);
+
     return {
       name: source?.name ?? "Item tanpa nama",
-      type: isProduct ? "Produk" : item.bundle ? "Bundel" : "Item",
+      description: truncateDescription(rawDescription),
       image: source?.image_url || "",
     };
   };
@@ -132,12 +158,7 @@ export default function OrderHistoryPage() {
         </button>
 
         <header className="text-center">
-          <p className="text-sm font-semibold tracking-[0.3em] text-[#ffe5b9]">
-            DAFTAR TRANSAKSI
-          </p>
-          <h1 className="text-3xl font-extrabold text-[#ffdb8c] sm:text-4xl">
-            Riwayat Pesananmu
-          </h1>
+          <h1>Riwayat Transaksi</h1>
         </header>
 
         {loading ? (
@@ -165,15 +186,12 @@ export default function OrderHistoryPage() {
               return (
                 <article
                   key={order.id}
-                  className="space-y-4 rounded-3xl border border-white/15 bg-white/10 p-5 text-[#0b1f3a] backdrop-blur"
+                  className="space-y-4 text-[#1b165e] rounded-3xl border border-white/15 bg-white/10 p-5 text-[#0b1f3a] backdrop-blur"
                 >
                   <header className="flex flex-col gap-3 text-[#102044] sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="text-xs font-semibold tracking-[0.4em] text-[#264873]">
-                        ID PESANAN
-                      </p>
                       <p className="text-2xl font-bold text-[#102044]">
-                        #{order.id}
+                        Order #{order.id}
                       </p>
                       <p className="text-sm font-semibold text-[#264873]">
                         {formatDate(order.created_at)}
@@ -188,14 +206,14 @@ export default function OrderHistoryPage() {
 
                   <div className="space-y-3">
                     {order.items.map((item) => {
-                      const { name, type, image } = describeItem(item);
+                      const { name, description, image } = describeItem(item);
                       const displayImage = image || FALLBACK_IMAGE;
                       return (
                         <div
                           key={item.id}
-                          className="flex flex-col gap-3 rounded-2xl bg-white/20 p-3 text-[#162b4f] shadow-inner shadow-black/10 sm:flex-row sm:items-center"
+                          className="flex flex-col gap-3 rounded-2xl bg-white/10 p-3 text-[#1b165e] sm:flex-row sm:items-center"
                         >
-                          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/70">
+                          <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/70">
                             <img
                               src={displayImage}
                               alt={name}
@@ -211,8 +229,8 @@ export default function OrderHistoryPage() {
                               <p className="font-semibold text-[#0e1c32]">
                                 {name}
                               </p>
-                              <p className="text-xs uppercase tracking-[0.4em] text-[#3c5787]">
-                                {type}
+                              <p className="text-sm text-[#3f4971]">
+                                {description}
                               </p>
                             </div>
                             <p className="text-sm font-semibold text-[#0e1c32]">
@@ -226,9 +244,7 @@ export default function OrderHistoryPage() {
                   </div>
 
                   <footer className="flex items-center justify-between border-t border-white/20 pt-3 text-[#102044]">
-                    <span className="text-sm font-semibold uppercase tracking-[0.3em] text-[#4675b1]">
-                      Total Harga
-                    </span>
+                    <span>Total Harga</span>
                     <span className="text-xl font-bold">
                       {formatCurrency(order.total_amount)}
                     </span>
