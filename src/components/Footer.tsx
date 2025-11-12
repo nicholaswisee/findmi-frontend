@@ -65,32 +65,9 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="relative overflow-hidden text-center py-8">
-      <img
-        src="/global/background-plain-ungu.webp"
-        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
-        alt="Background Image"
-      />
-      <div className="relative z-10 container mx-auto px-4">
-        <header className="flex gap-6 justify-start items-center">
-          <img className="h-12" src="/global/Logo.png" alt="AMI 2026" />
-          <Link to={"/"}>
-            <h4 className="text-center mt-2">FINDMI 2026</h4>
-          </Link>
-        </header>
-        <div className="flex pt-4 gap-4">
-          {socialMedia.map((item, i) => (
-            <Link to={item.url} key={i}>
-              {item.icon}
-            </Link>
-          ))}
-        </div>
-        <div className="w-full flex">
-          <Link className="text-start w-fit font-bold" to={"/faq"}>
-            Bantuan & FAQ
-          </Link>
-        </div>
-      </div>
+    <footer className="text-center">
+      <h1>Aku Masuk ITB 2026</h1>
+      <p className="lead">Copyright &copy; Aku Masuk ITB 2026.</p>
     </footer>
   );
 }

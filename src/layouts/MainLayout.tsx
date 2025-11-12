@@ -5,18 +5,10 @@ import { Toaster } from "sonner";
 
 export default function MainLayout() {
   return (
-    <div className="flex flex-col  text-gray-900 font-body">
+    <div className="min-h-screen flex flex-col text-gray-900 font-body">
       <Navbar />
-      <Toaster
-        toastOptions={{
-          style: {
-            background: 'url("/global/background-plain-ungu.webp")',
-          },
-        }}
-        closeButton={true}
-        position="bottom-right"
-      />
-      <main className="w-full flex-1 px-4 min-h-[calc(100svh-5rem)]">
+      <Toaster closeButton position="bottom-right" />
+      <main className="flex-1 px-4 py-6 pt-16 sm:pt-18 lg:pt-22">
         <Outlet />
       </main>
       <Footer />
