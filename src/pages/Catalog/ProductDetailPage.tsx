@@ -237,10 +237,10 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-6xl">
+    <div className="container mx-auto px-4 py-6 max-w-4xl">
       {/* Product Detail Card */}
-      <div className=" backdrop-blur-sm rounded-lg shadow-lg border-2 border-dashed border-teal-600 p-6 md:p-10">
-        <div className="flex flex-col md:flex-row gap-8">
+      <div className=" backdrop-blur-sm rounded-lg shadow-lg p-6 md:p-10">
+        <div className="flex flex-col  justify-center md:flex-row gap-20">
           {/* Left: Product Images */}
           <div className="md:w-[45%]">
             {/* Main Image */}
