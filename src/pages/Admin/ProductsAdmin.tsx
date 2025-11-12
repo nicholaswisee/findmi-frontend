@@ -56,7 +56,7 @@ export default function ProductsAdmin() {
     if (products.length === 0) {
       fetchProducts().catch((err) => {
         toast.error(
-          err instanceof Error ? err.message : "Failed to load products"
+          err instanceof Error ? err.message : "Gagal memuat produk"
         );
       });
     }
@@ -102,9 +102,9 @@ export default function ProductsAdmin() {
           department: departmentFilter,
           search: appliedSearchTerm,
         });
-        toast.success("Product updated");
+        toast.success("Produk berhasil diperbarui");
       } catch (err) {
-        toast.error((err as Error).message ?? "Failed to update product");
+        toast.error((err as Error).message ?? "Gagal memperbarui produk");
       }
     },
     [
@@ -131,7 +131,7 @@ export default function ProductsAdmin() {
           imageUrl: mapString(values.image_url),
           stock: values.remaining_stock,
         });
-        toast.success("Product created");
+        toast.success("Produk berhasil dibuat");
         await fetchProducts({
           limit: pageSize,
           offset: pageIndex * pageSize,
@@ -139,7 +139,7 @@ export default function ProductsAdmin() {
           search: appliedSearchTerm,
         });
       } catch (err) {
-        toast.error((err as Error).message ?? "Failed to create product");
+        toast.error((err as Error).message ?? "Gagal membuat produk");
       }
     },
     [
@@ -161,7 +161,7 @@ export default function ProductsAdmin() {
       search: appliedSearchTerm,
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to apply filter"
+        err instanceof Error ? err.message : "Gagal menerapkan filter"
       );
     });
   };
@@ -181,7 +181,7 @@ export default function ProductsAdmin() {
         search: trimmed,
       }).catch((err) => {
         toast.error(
-          err instanceof Error ? err.message : "Failed to apply search"
+          err instanceof Error ? err.message : "Gagal menerapkan pencarian"
         );
       });
     }, SEARCH_DEBOUNCE_MS);
@@ -206,7 +206,7 @@ export default function ProductsAdmin() {
       search: "",
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to reset filters"
+        err instanceof Error ? err.message : "Gagal mengatur ulang filter"
       );
     });
   };
@@ -240,7 +240,7 @@ export default function ProductsAdmin() {
                 search: appliedSearchTerm,
               }).catch((err) => {
                 toast.error(
-                  err instanceof Error ? err.message : "Failed to refresh"
+                  err instanceof Error ? err.message : "Gagal memuat ulang data"
                 );
               });
             }}

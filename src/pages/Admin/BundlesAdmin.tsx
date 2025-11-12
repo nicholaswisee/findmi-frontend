@@ -57,7 +57,7 @@ export default function BundlesAdmin() {
     if (bundles.length === 0) {
       fetchBundles().catch((err) => {
         toast.error(
-          err instanceof Error ? err.message : "Failed to load bundles"
+          err instanceof Error ? err.message : "Gagal memuat bundel"
         );
       });
     }
@@ -99,9 +99,9 @@ export default function BundlesAdmin() {
           bundle_items: values.bundle_items,
         });
         await refetchCurrentPage();
-        toast.success("Bundle updated");
+        toast.success("Bundel berhasil diperbarui");
       } catch (err) {
-        toast.error((err as Error).message ?? "Failed to update bundle");
+        toast.error((err as Error).message ?? "Gagal memperbarui bundel");
       }
     },
     [refetchCurrentPage, updateBundle]
@@ -124,10 +124,10 @@ export default function BundlesAdmin() {
             amount: item.amount,
           })),
         });
-        toast.success("Bundle created");
+        toast.success("Bundel berhasil dibuat");
         await fetchWithFilters({ offset: 0 });
       } catch (err) {
-        toast.error((err as Error).message ?? "Failed to create bundle");
+        toast.error((err as Error).message ?? "Gagal membuat bundel");
       }
     },
     [createBundle, fetchWithFilters]
@@ -137,7 +137,7 @@ export default function BundlesAdmin() {
     setDepartmentFilter(value);
     fetchWithFilters({ offset: 0, department: value }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to apply filter"
+        err instanceof Error ? err.message : "Gagal menerapkan filter"
       );
     });
   };
@@ -152,7 +152,7 @@ export default function BundlesAdmin() {
       setAppliedSearchTerm(trimmed);
       fetchWithFilters({ offset: 0, search: trimmed }).catch((err) => {
         toast.error(
-          err instanceof Error ? err.message : "Failed to apply search"
+          err instanceof Error ? err.message : "Gagal menerapkan pencarian"
         );
       });
     }, SEARCH_DEBOUNCE_MS);
@@ -170,7 +170,7 @@ export default function BundlesAdmin() {
       search: "",
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to reset filters"
+        err instanceof Error ? err.message : "Gagal mengatur ulang filter"
       );
     });
   };
@@ -178,14 +178,16 @@ export default function BundlesAdmin() {
   const handleNextPage = () => {
     if (loading || !hasNextPage) return;
     fetchWithFilters({ offset: (pageIndex + 1) * pageSize }).catch((err) => {
-      toast.error((err as Error).message ?? "Failed to load next page");
+      toast.error((err as Error).message ?? "Gagal memuat halaman berikutnya");
     });
   };
 
   const handlePreviousPage = () => {
     if (loading || pageIndex === 0) return;
     fetchWithFilters({ offset: (pageIndex - 1) * pageSize }).catch((err) => {
-      toast.error((err as Error).message ?? "Failed to load previous page");
+      toast.error(
+        (err as Error).message ?? "Gagal memuat halaman sebelumnya"
+      );
     });
   };
 

@@ -1,30 +1,22 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import Button from "@/components/shared/Button";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, logout, refreshUser } = useAuthStore();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const profileFields = [
     { label: "Nama", value: user?.name },
     { label: "Email", value: user?.email },
-    ...(user?.role !== "none"
+    ...(user?.department !== "none"
       ? [{ label: "Bidang", value: user?.department }]
       : []),
+    { label: "ID Line", value: user?.line_id },
+    { label: "No. WhatsApp", value: user?.no_wa },
   ];
-
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await logout();
-      navigate("/");
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
 
   useEffect(() => {
     refreshUser();
@@ -42,29 +34,31 @@ export default function ProfilePage() {
           Kembali
         </button>
 
-        <div className="rounded-2xl p-6 text-white sm:p-10">
+        <div className="rounded-2xl p-6 text-white sm:p-10 flex flex-col items-center gap-8">
           <header className="text-center">
             <h1 className="mt-1 text-4xl text-[#ffdb8c]">PROFIL</h1>
           </header>
           <div className="rounded-2xl flex w-full min-h-36 bg-[#dafff6]/20 p-4">
             <table className="w-full table-fixed text-left">
               <tbody>
-                {profileFields.map(({ label, value }) => (
-                  <tr
-                    key={label}
-                    className="border-b border-white/10 last:border-b-0"
-                  >
-                    <th
-                      scope="row"
-                      className="w-1/3 text-[#302a77] py-4 pr-4 font-semibold"
+                {profileFields.map(({ label, value }) => {
+                  return (
+                    <tr
+                      key={label}
+                      className="border-b border-white/10 last:border-b-0"
                     >
-                      {label}
-                    </th>
-                    <td className="py-4 text-[#302a77] font-semibold">
-                      {value}
-                    </td>
-                  </tr>
-                ))}
+                      <th
+                        scope="row"
+                        className="w-1/3 text-[#302a77] py-4 pr-4 font-semibold"
+                      >
+                        {label}
+                      </th>
+                      <td className="py-4 text-[#302a77] font-semibold">
+                        {value}
+                      </td>
+                    </tr>
+                  );
+                })}
                 <tr className="border-b border-white/10 last:border-b-0">
                   <th
                     scope="row"
@@ -73,17 +67,17 @@ export default function ProfilePage() {
                     Riwayat Transaksi
                   </th>
                   <td className="py-4 text-[#302a77] font-semibold">
-                    <Link
-                      to="/profile/history"
-                      className="pt-1 pb-2 px-4 rounded-2xl text-[#ffeabb] bg-[#5f92e0] mb-2"
-                    >
+                    <Button variant="blue" url="/profile/history">
                       Lihat riwayat transaksi
-                    </Link>
+                    </Button>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <Button className="w-fit" variant="red" onClick={logout}>
+            Log out
+          </Button>
         </div>
       </div>
     </section>

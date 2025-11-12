@@ -85,7 +85,7 @@ export default function OrdersAdmin() {
       department: departmentFilter,
       pickup: pickupFilter,
     }).catch((err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to load orders");
+      toast.error(err instanceof Error ? err.message : "Gagal memuat pesanan");
     });
   }, [debouncedSearch, departmentFilter, pickupFilter, fetchOrders, pageSize]);
 
@@ -178,7 +178,7 @@ export default function OrdersAdmin() {
       department: departmentFilter,
       pickup: pickupFilter,
     }).catch((err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to refresh");
+      toast.error(err instanceof Error ? err.message : "Gagal memuat ulang data");
     });
   };
 
@@ -191,7 +191,7 @@ export default function OrdersAdmin() {
       department: departmentFilter,
       pickup: pickupFilter,
     }).catch((err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to load page");
+      toast.error(err instanceof Error ? err.message : "Gagal memuat halaman");
     });
   };
 
@@ -204,7 +204,7 @@ export default function OrdersAdmin() {
       department: departmentFilter,
       pickup: pickupFilter,
     }).catch((err) => {
-      toast.error(err instanceof Error ? err.message : "Failed to load page");
+      toast.error(err instanceof Error ? err.message : "Gagal memuat halaman");
     });
   };
 
@@ -215,9 +215,9 @@ export default function OrdersAdmin() {
     ) => {
       try {
         await updateOrderAdmin(orderId, values);
-        toast.success("Order updated");
+        toast.success("Pesanan berhasil diperbarui");
       } catch (err) {
-        toast.error((err as Error).message ?? "Failed to update order");
+        toast.error((err as Error).message ?? "Gagal memperbarui pesanan");
       }
     },
     [updateOrderAdmin]

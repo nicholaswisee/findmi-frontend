@@ -38,7 +38,7 @@ export default function UsersAdmin() {
     if (users.length === 0) {
       fetchUsers().catch((err) => {
         toast.error(
-          err instanceof Error ? err.message : "Failed to load users"
+          err instanceof Error ? err.message : "Gagal memuat pengguna"
         );
       });
     }
@@ -52,7 +52,7 @@ export default function UsersAdmin() {
       department: departmentFilter,
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to refresh users"
+        err instanceof Error ? err.message : "Gagal memuat ulang pengguna"
       );
     });
   }, [appliedSearchTerm, departmentFilter, fetchUsers, pageIndex, pageSize]);
@@ -66,7 +66,7 @@ export default function UsersAdmin() {
         department: value,
       }).catch((err) => {
         toast.error(
-          err instanceof Error ? err.message : "Failed to filter users"
+          err instanceof Error ? err.message : "Gagal memfilter pengguna"
         );
       });
     },
@@ -82,7 +82,7 @@ export default function UsersAdmin() {
       department: departmentFilter,
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to load next page"
+        err instanceof Error ? err.message : "Gagal memuat halaman berikutnya"
       );
     });
   }, [
@@ -104,7 +104,7 @@ export default function UsersAdmin() {
       department: departmentFilter,
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to load previous page"
+        err instanceof Error ? err.message : "Gagal memuat halaman sebelumnya"
       );
     });
   }, [
@@ -140,7 +140,7 @@ export default function UsersAdmin() {
         department: departmentFilter,
       }).catch((err) => {
         toast.error(
-          err instanceof Error ? err.message : "Failed to search users"
+          err instanceof Error ? err.message : "Gagal mencari pengguna"
         );
       });
     }, SEARCH_DEBOUNCE_MS);
@@ -158,7 +158,7 @@ export default function UsersAdmin() {
       department: "all",
     }).catch((err) => {
       toast.error(
-        err instanceof Error ? err.message : "Failed to refresh users"
+        err instanceof Error ? err.message : "Gagal memuat ulang pengguna"
       );
     });
   }, [fetchUsers, pageSize]);
