@@ -1,8 +1,8 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { ShoppingCart, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import CatalogPage from "./CatalogPage";
 
 // Types based on API response
 type Product = {
@@ -237,9 +237,9 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <div className="container mx-auto px-4 py-6 flex flex-col">
       {/* Breadcrumb Navigation */}
-      <nav className="mb-6">
+      <nav className="mb-6 px-20">
         <ol className="flex items-center gap-2 text-sm text-white/80">
           <li>
             <Link to="/" className="hover:text-white transition-colors">
@@ -258,147 +258,150 @@ export default function ProductDetailPage() {
           </li>
         </ol>
       </nav>
-
       {/* Product Detail Card */}
-      <div className=" backdrop-blur-sm rounded-lg shadow-lg p-6 md:p-10">
-        <div className="flex flex-col  justify-center md:flex-row gap-15">
-          {/* Left: Product Images */}
-          <div className="md:w-[45%]">
-            {/* Main Image */}
-            <div className="bg-white rounded-lg mb-3 aspect-square flex items-center justify-center overflow-hidden border border-gray-200">
-              <img
-                src={getProductImages(product.image_url)[selectedImage] || product.image_url}
-                alt={product.name}
-                className="w-full h-full object-contain p-4"
-              />
-            </div>
+      <div className="flex justify-center items-center">
+        <div className=" backdrop-blur-sm rounded-lg shadow-lg p-6 md:p-10 max-w-4xl">
+          <div className="flex flex-col  justify-center md:flex-row gap-15">
+            {/* Left: Product Images */}
+            <div className="md:w-[45%]">
+              {/* Main Image */}
+              <div className="bg-white rounded-lg mb-3 aspect-square flex items-center justify-center overflow-hidden border border-gray-200">
+                <img
+                  src={getProductImages(product.image_url)[selectedImage] || product.image_url}
+                  alt={product.name}
+                  className="w-full h-full object-contain p-4"
+                />
+              </div>
 
-            {/* Thumbnail Images */}
-            <div className="flex gap-2">
-              {getProductImages(product.image_url).map((image: string, index: number) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`bg-white rounded aspect-square flex items-center justify-center overflow-hidden border-2 transition-all flex-1 ${
-                    selectedImage === index
-                      ? "border-teal-500"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <img
-                    src={image}
-                    alt={`${product.name} ${index + 1}`}
-                    className="w-full h-full object-contain p-2"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Right: Product Info */}
-          <div className="flex flex-col">
-            {/* Merch Type & Stock */}
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">
-                {product.category}
-              </span>
-              <span className="text-xs font-semibold text-gray-700">
-                {getStock() > 0 ? `Tersedia (Stock: ${getStock()})` : "Habis"}
-              </span>
-            </div>
-
-            {/* Product Name */}
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-              {product.name}
-            </h1>
-
-            {/* Price */}
-            <p className="text-2xl md:text-3xl font-bold text-red-600 mb-5">
-              {product.price.toLocaleString("id-ID")}
-            </p>
-
-            {/* Size Selection */}
-            <div className="mb-5">
-              <h3 className="font-bold text-sm mb-2 text-gray-900">SIZE</h3>
-              <div className="flex flex-wrap gap-2">
-                {availableSizes.map((size) => (
+              {/* Thumbnail Images */}
+              <div className="flex gap-2">
+                {getProductImages(product.image_url).map((image: string, index: number) => (
                   <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`px-4 py-1.5 rounded-full border-2 font-semibold text-sm transition-colors ${
-                      selectedSize === size
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-transparent text-gray-700 border-blue-600 hover:bg-blue-50"
+                    key={index}
+                    onClick={() => setSelectedImage(index)}
+                    className={`bg-white rounded aspect-square flex items-center justify-center overflow-hidden border-2 transition-all flex-1 ${
+                      selectedImage === index
+                        ? "border-teal-500"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
-                    {size}
+                    <img
+                      src={image}
+                      alt={`${product.name} ${index + 1}`}
+                      className="w-full h-full object-contain p-2"
+                    />
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Product Description */}
-            <div className="mb-6 grow">
-              <h3 className="font-bold text-sm mb-2 text-gray-900">PRODUCT DESCRIPTION</h3>
-              <p className="text-xs text-gray-700 leading-relaxed">
-                {product.description}
-              </p>
-            </div>
-
-            {/* Quantity & Add to Cart */}
-            <div className="flex items-center gap-3">
-              {/* Quantity Selector */}
-              <div className="flex items-center border-2 border-teal-700 rounded-full overflow-hidden bg-teal-100/50 shrink-0">
-                <button
-                  type="button"
-                  onClick={decrementQuantity}
-                  className="px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                  disabled={quantity <= 1}
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={handleQuantityChange}
-                  min="1"
-                  max={getStock()}
-                  className="px-4 py-2 font-bold w-[70px] text-center text-teal-900 bg-transparent border-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                />
-                <button
-                  type="button"
-                  onClick={incrementQuantity}
-                  className="px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                  disabled={!product || quantity >= getStock()}
-                >
-                  +
-                </button>
+            {/* Right: Product Info */}
+            <div className="flex flex-col">
+              {/* Merch Type & Stock */}
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                  {product.category}
+                </span>
+                <span className="text-xs font-semibold text-gray-700">
+                  {getStock() > 0 ? `Tersedia (Stock: ${getStock()})` : "Habis"}
+                </span>
               </div>
 
-              {/* Wishlist Button */}
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-2xl border-2 border-pink-500 bg-pink-500 text-white hover:bg-pink-600 hover:border-pink-600 h-12 w-12 shrink-0"
-              >
-                <ShoppingCart className="size-5" />
-              </Button>
+              {/* Product Name */}
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                {product.name}
+              </h1>
 
-              {/* Add to Cart Button */}
-              <button
-                onClick={handleAddToCart}
-                disabled={getStock() === 0}
-                className={`flex-1 h-12 px-5 text-md font-semibold rounded-xl  shadow-lg drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all uppercase tracking-wide ${
-                  getStock() === 0
-                    ? "bg-[#E13B25] text-[#FFE59A] cursor-not-allowed"
-                    : "bg-[#C11B7D] text-[#FFE59A] hover:shadow-xl active:ring-2 active:ring-[#FFE59A]"
-                }`}
-              >
-                {getStock() === 0 ? "STOK HABIS" : "ADD TO CART"}
-              </button>
+              {/* Price */}
+              <p className="text-2xl md:text-3xl font-bold text-red-600 mb-5">
+                {product.price.toLocaleString("id-ID")}
+              </p>
+
+              {/* Size Selection */}
+              <div className="mb-5">
+                <h3 className="font-bold text-sm mb-2 text-gray-900">SIZE</h3>
+                <div className="flex flex-wrap gap-2">
+                  {availableSizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className={`px-4 py-1.5 rounded-full border-2 font-semibold text-sm transition-colors ${
+                        selectedSize === size
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-transparent text-gray-700 border-blue-600 hover:bg-blue-50"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Product Description */}
+              <div className="mb-6 grow">
+                <h3 className="font-bold text-sm mb-2 text-gray-900">PRODUCT DESCRIPTION</h3>
+                <p className="text-xs text-gray-700 leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+
+              {/* Quantity & Add to Cart */}
+              <div className="flex items-center gap-3">
+                {/* Quantity Selector */}
+                <div className="flex items-center border-2 border-teal-700 rounded-full overflow-hidden bg-teal-100/50 shrink-0">
+                  <button
+                    type="button"
+                    onClick={decrementQuantity}
+                    className="px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                    disabled={quantity <= 1}
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={handleQuantityChange}
+                    min="1"
+                    max={getStock()}
+                    className="px-4 py-2 font-bold w-[70px] text-center text-teal-900 bg-transparent border-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={incrementQuantity}
+                    className="px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                    disabled={!product || quantity >= getStock()}
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Wishlist Button */}
+                <button
+                  className="rounded-xl h-12 w-12 shrink-0 bg-[#C11B7D] text-[#FFE59A] shadow-lg drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] hover:shadow-xl active:ring-2 active:ring-[#FFE59A] transition-all flex items-center justify-center"
+                >
+                  <ShoppingCart className="size-5" />
+                </button>
+
+                {/* Add to Cart Button */}
+                <button
+                  onClick={handleAddToCart}
+                  disabled={getStock() === 0}
+                  className={`flex-1 h-12 px-5 text-md font-semibold rounded-xl  shadow-lg drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all uppercase tracking-wide ${
+                    getStock() === 0
+                      ? "bg-[#E13B25] text-[#FFE59A] cursor-not-allowed"
+                      : "bg-[#C11B7D] text-[#FFE59A] hover:shadow-xl active:ring-2 active:ring-[#FFE59A]"
+                  }`}
+                >
+                  {getStock() === 0 ? "STOK HABIS" : "ADD TO CART"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
+      </div>
+      <div className="flex flex-col justify-center items-center py-20">
+        <h2>Pilihan Untuk Kamu</h2>
+        <CatalogPage />
       </div>
     </div>
   );
