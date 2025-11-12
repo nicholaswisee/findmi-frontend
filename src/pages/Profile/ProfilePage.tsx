@@ -46,48 +46,43 @@ export default function ProfilePage() {
           <header className="text-center">
             <h1 className="mt-1 text-4xl text-[#ffdb8c]">PROFIL</h1>
           </header>
-          <div className="rounded-4xl flex w-full min-h-36 bg-[#dafff6]/20">
-            <div className="flex-1 flex justify-center items-center">
-              Nanti profpic
-            </div>
-            <div className="w-[70%]">
-              <table className="w-full table-fixed text-left">
-                <tbody>
-                  {profileFields.map(({ label, value }) => (
-                    <tr
-                      key={label}
-                      className="border-b border-white/10 last:border-b-0"
-                    >
-                      <th
-                        scope="row"
-                        className="w-1/3 text-[#302a77] py-4 pr-4 font-semibold"
-                      >
-                        {label}
-                      </th>
-                      <td className="py-4 text-[#302a77] font-semibold">
-                        {value}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="border-b border-white/10 last:border-b-0">
+          <div className="rounded-2xl flex w-full min-h-36 bg-[#dafff6]/20 p-4">
+            <table className="w-full table-fixed text-left">
+              <tbody>
+                {profileFields.map(({ label, value }) => (
+                  <tr
+                    key={label}
+                    className="border-b border-white/10 last:border-b-0"
+                  >
                     <th
                       scope="row"
                       className="w-1/3 text-[#302a77] py-4 pr-4 font-semibold"
                     >
-                      Riwayat Transaksi
+                      {label}
                     </th>
                     <td className="py-4 text-[#302a77] font-semibold">
-                      <Link
-                        to="/profile/history"
-                        className="pt-1 pb-2 px-4 rounded-2xl text-[#ffeabb] bg-[#5f92e0] mb-2"
-                      >
-                        Lihat riwayat transaksi
-                      </Link>
+                      {value}
                     </td>
                   </tr>
-                </tbody>
-              </table>
-            </div>
+                ))}
+                <tr className="border-b border-white/10 last:border-b-0">
+                  <th
+                    scope="row"
+                    className="w-1/3 text-[#302a77] py-4 pr-4 font-semibold"
+                  >
+                    Riwayat Transaksi
+                  </th>
+                  <td className="py-4 text-[#302a77] font-semibold">
+                    <Link
+                      to="/profile/history"
+                      className="pt-1 pb-2 px-4 rounded-2xl text-[#ffeabb] bg-[#5f92e0] mb-2"
+                    >
+                      Lihat riwayat transaksi
+                    </Link>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

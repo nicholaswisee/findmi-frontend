@@ -66,9 +66,11 @@ export function ProductFormDialog({
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const { register, handleSubmit, reset, control } = useForm<ProductFormValues>({
-    defaultValues: toFormValues(product),
-  });
+  const { register, handleSubmit, reset, control } = useForm<ProductFormValues>(
+    {
+      defaultValues: toFormValues(product),
+    }
+  );
 
   useEffect(() => {
     reset(toFormValues(product));
@@ -88,9 +90,7 @@ export function ProductFormDialog({
   const dialogDescription =
     description ??
     (product.name ? (
-      <>
-        Update the details for <strong>{product.name}</strong>.
-      </>
+      <>Update the details for {product.name}.</>
     ) : (
       "Fill out the details below."
     ));
@@ -110,7 +110,7 @@ export function ProductFormDialog({
       <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogTitle className="font-sans">{dialogTitle}</DialogTitle>
             <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
 

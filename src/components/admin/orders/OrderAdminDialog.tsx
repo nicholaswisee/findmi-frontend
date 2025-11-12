@@ -77,7 +77,9 @@ export function OrderAdminDialog({
       <DialogContent className="sm:max-w-lg">
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           <DialogHeader>
-            <DialogTitle>Update Order #{order.id}</DialogTitle>
+            <DialogTitle className="font-sans">
+              Update Order #{order.id}
+            </DialogTitle>
           </DialogHeader>
           <div className="grid gap-3">
             <Label htmlFor={`order-note-${order.id}`}>Admin Notes</Label>

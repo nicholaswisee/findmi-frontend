@@ -11,6 +11,8 @@ export default function MainLayout() {
         toastOptions={{
           style: {
             background: 'url("/global/background-plain-ungu.webp")',
+            stroke: "#302a77",
+            color: "#ffdb8c",
           },
         }}
         closeButton={true}

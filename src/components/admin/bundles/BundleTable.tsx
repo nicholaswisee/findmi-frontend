@@ -67,7 +67,9 @@ export default function BundleTable({
           <div className="space-y-1">
             <p className="font-medium">{row.original.name}</p>
             <p className="text-xs text-muted-foreground line-clamp-2">
-              {row.original.description || "No description"}
+              {row.original.description.length > 50
+                ? row.original.description.substring(0, 50) + "..."
+                : row.original.description || "No description"}
             </p>
           </div>
         ),

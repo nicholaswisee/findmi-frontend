@@ -6,7 +6,7 @@ export default function AdminLayout() {
   return (
     <SidebarProvider defaultOpen>
       <AppSidebar />
-      <main className="admin-page flex w-full overflow-x-hidden">
+      <main className="flex w-full overflow-x-hidden">
         <div className="border-r-2 p-2">
           <SidebarTrigger />
         </div>

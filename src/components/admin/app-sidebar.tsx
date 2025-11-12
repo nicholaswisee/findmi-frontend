@@ -7,7 +7,7 @@ import {
   Users,
 } from "lucide-react";
 import { useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   Sidebar,
@@ -51,6 +51,24 @@ const items = [
   },
 ];
 
+const publicItems = [
+  {
+    title: "Landing",
+    url: "/",
+    icon: Home,
+  },
+  {
+    title: "Catalog",
+    url: "/catalog",
+    icon: ShoppingBag,
+  },
+  {
+    title: "Profile",
+    url: "/profile",
+    icon: Users,
+  },
+];
+
 export function AppSidebar() {
   const navigate = useNavigate();
   const logout = useAuthStore((state) => state.logout);
@@ -75,6 +93,23 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <a href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Client Menu</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {publicItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a href={item.url}>

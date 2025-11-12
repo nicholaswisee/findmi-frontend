@@ -113,9 +113,7 @@ export function BundleFormDialog({
   const dialogDescription =
     description ??
     (bundle.name ? (
-      <>
-        Update all fields for <strong>{bundle.name}</strong>.
-      </>
+      <>Update all fields for {bundle.name}.</>
     ) : (
       "Fill out the details below."
     ));
@@ -135,7 +133,7 @@ export function BundleFormDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogTitle className="font-sans">{dialogTitle}</DialogTitle>
             <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
 

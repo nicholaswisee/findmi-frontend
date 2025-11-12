@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
 import { useAuthStore } from "../store/authStore";
-import { ShoppingCart, UserRound } from "lucide-react";
+import { ShoppingBasket, CircleUser } from "lucide-react";
 import { Button } from "./ui/button";
 
 export default function Navbar() {
@@ -22,12 +22,19 @@ export default function Navbar() {
       base.push({
         path: "/cart",
         label: "Cart",
-        icon: <ShoppingCart className="size-4 md:size-5 lg:size-6 mt-1" />,
+        icon: <ShoppingBasket className="size-5 md:size-6 lg:size-8 mt-1" />,
       });
       base.push({
         path: "/profile",
         label: "Profile",
-        icon: <UserRound className="size-4 md:size-5 lg:size-6 mt-1" />,
+        icon: (
+          <div className=" border-2 border-[#ffd88c] bg-plain-green text-[#ffd88c] rounded-xl">
+            <span className="flex items-center gap-2 py-2 px-4 bg-[#463b8b]/50 rounded-xl">
+              <CircleUser className="size-5 md:size-6 lg:size-8 mt-1" />
+              <p>Hi, {user?.name.trim().split(" ")[0]}</p>
+            </span>
+          </div>
+        ),
       });
     } else {
       base.push({ path: "/login", label: "Login", icon: null });
@@ -40,7 +47,7 @@ export default function Navbar() {
   }, [isAuthenticated, user]);
 
   return (
-    <div className="h-fit sticky top-0 w-full z-50 p-2 drop-shadow-2xl text-[#ffdb8c]">
+    <div className="h-fit sticky top-0 w-full z-50 p-2 drop-shadow-2xl text-[#ffd88c]">
       <img
         src="/global/background-plain-ungu.webp"
         className="absolute inset-0 w-full h-full object-cover -z-10 pointer-events-none"
@@ -60,14 +67,14 @@ export default function Navbar() {
                 <Button
                   type="button"
                   variant="default"
-                  className="bg-[#5f92e0] hover:bg-[#76abe8]  text-[#ffeabb] rounded-full"
+                  className="bg-[#5f92e0] hover:bg-[#76abe8]  text-[#ffd88c] rounded-full"
                 >
                   <Link className="font-semibold px-2" to={link.path}>
                     {link.label}
                   </Link>
                 </Button>
               ) : (
-                <Link className="font-semibold" to={link.path}>
+                <Link className="font-semibold text-xl" to={link.path}>
                   {link.icon ? link.icon : link.label}
                 </Link>
               )}
