@@ -1,8 +1,10 @@
 import { useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useProductStore, INITIAL_CATEGORY } from "./Mutation";
 import SearchBar from "../Catalog/components/SearchBar";
 
 export default function CatalogPage() {
+  const navigate = useNavigate();
   const status = useProductStore((s) => s.status);
   const error = useProductStore((s) => s.error);
   const fetchProducts = useProductStore((s) => s.fetchProducts);
@@ -39,7 +41,7 @@ export default function CatalogPage() {
   const fmt = new Intl.NumberFormat("id-ID");
   return (
     <div className="min-h-screen bg-transparent-100">
-      <div className="absolute top-[118px] left-0 w-full z-40 bg-gradient-to-r from-[#E97E3F] via-[#E88240] to-[#E97E3F] shadow-md">
+      <div className="absolute top-[118px] left-0 w-full z-40 bg-linear-to-r from-[#E97E3F] via-[#E88240] to-[#E97E3F] shadow-md">
         <div className="flex items-center justify-between px-10 py-3">
           <button>
             <svg
@@ -84,11 +86,17 @@ export default function CatalogPage() {
               <img
                 src={p.image_url || "/placeholder.png"}
                 alt={p.name || "Produk"}
-                className="w-full h-50 object-cover rounded-xl mb-1.5"
+                className="w-full h-50 object-cover rounded-xl mb-1.5 cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => navigate(`/catalog/${p.id}`)}
               />
               <div className="mx-auto text-left w-[85%] space-y-0.5 mb-3">
                 <p className="text-[#FFD88C] text-sm mb-1.5 leading-none">{p.category ?? "-"}</p>
-                <h2 className="text-[#FFC76E] text-base font-light mt-2 leading-none">{p.name ?? "-"}</h2>
+                <h2 
+                  className="text-[#FFC76E] text-base font-light mt-2 leading-none cursor-pointer hover:underline"
+                  onClick={() => navigate(`/catalog/${p.id}`)}
+                >
+                  {p.name ?? "-"}
+                </h2>
                 <p className="text-[#FFEABB] font-bold mb-1 leading-none">
                   Rp {fmt.format(Number(p.price ?? 0))}
                 </p>
