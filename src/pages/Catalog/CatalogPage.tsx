@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProductStore, INITIAL_CATEGORY } from "./Mutation";
 import SearchBar from "../Catalog/components/SearchBar";
+import { toast } from "sonner";
 
 export default function CatalogPage() {
   const navigate = useNavigate();
@@ -38,6 +39,45 @@ export default function CatalogPage() {
 
   if (status === "loading") return <div className="p-8">Memuat…</div>;
   if (status === "error") return <div className="p-8 text-red-600">Error: {error}</div>;
+  
+  const handleAddToCart = async (productId: number | string, productName: string) => {
+    try {
+      const requestBody = {
+        productId: typeof productId === 'string' ? parseInt(productId, 10) : productId,
+        bundleId: null,
+        quantity: 1
+      };
+
+      console.log("Adding to cart:", requestBody);
+
+      const response = await fetch("https://api.akumasukitb.com/cart/items", {
+        method: "POST",
+        credentials: 'include',
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log("Add to cart response status:", response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Add to cart error:", errorData);
+        throw new Error(errorData.message || "Failed to add to cart");
+      }
+
+      const result = await response.json();
+      console.log("Add to cart success:", result);
+      
+      toast.success(`Added 1x ${productName} to cart!`);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error(`Failed to add to cart: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   const fmt = new Intl.NumberFormat("id-ID");
   return (
     <div className="min-h-screen bg-transparent-100">
@@ -104,9 +144,11 @@ export default function CatalogPage() {
               </div>
               <button
                 onClick={(e) => {
+                  e.stopPropagation();
                   const btn = e.currentTarget;
                   btn.classList.add("ring-2", "ring-[#FFE59A]");
                   setTimeout(() => btn.classList.remove("ring-2", "ring-[#FFE59A]"), 500);
+                  handleAddToCart(p.id, p.name ?? "Product");
                 }}
                 disabled={p.remaining_stock === 0}
                 className={`block mt-auto mx-auto w-[85%] text-md font-semibold rounded-xl py-0.5 shadow-lg drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all

@@ -261,7 +261,7 @@ export default function ProductDetailPage() {
 
       {/* Product Detail Card */}
       <div className=" backdrop-blur-sm rounded-lg shadow-lg p-6 md:p-10">
-        <div className="flex flex-col  justify-center md:flex-row gap-20">
+        <div className="flex flex-col  justify-center md:flex-row gap-15">
           {/* Left: Product Images */}
           <div className="md:w-[45%]">
             {/* Main Image */}
@@ -385,13 +385,17 @@ export default function ProductDetailPage() {
               </Button>
 
               {/* Add to Cart Button */}
-              <Button
+              <button
                 onClick={handleAddToCart}
                 disabled={getStock() === 0}
-                className="flex-1 bg-linear-to-r h-12 from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white rounded-full py-3 font-bold text-base uppercase tracking-wide shadow-md"
+                className={`flex-1 h-12 px-5 text-md font-semibold rounded-xl  shadow-lg drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all uppercase tracking-wide ${
+                  getStock() === 0
+                    ? "bg-[#E13B25] text-[#FFE59A] cursor-not-allowed"
+                    : "bg-[#C11B7D] text-[#FFE59A] hover:shadow-xl active:ring-2 active:ring-[#FFE59A]"
+                }`}
               >
-                ADD TO CART
-              </Button>
+                {getStock() === 0 ? "STOK HABIS" : "ADD TO CART"}
+              </button>
             </div>
           </div>
         </div>
