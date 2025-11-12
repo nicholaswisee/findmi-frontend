@@ -14,6 +14,11 @@ export default function CatalogPage() {
   const query = useProductStore((s) => s.query);
   const category = useProductStore((s) => s.category);
 
+  const handleNavigateToProduct = (productId: number | string) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    navigate(`/catalog/${productId}`);
+  };
+
   useEffect(() => {
     if (status === "idle") fetchProducts();
     }, [status, fetchProducts]);
@@ -127,13 +132,13 @@ export default function CatalogPage() {
                 src={p.image_url || "/placeholder.png"}
                 alt={p.name || "Produk"}
                 className="w-full h-50 object-cover rounded-xl mb-1.5 cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => navigate(`/catalog/${p.id}`)}
+                onClick={() => handleNavigateToProduct(p.id)}
               />
               <div className="mx-auto text-left w-[85%] space-y-0.5 mb-3">
                 <p className="text-[#FFD88C] text-sm mb-1.5 leading-none">{p.category ?? "-"}</p>
                 <h2 
                   className="text-[#FFC76E] text-base font-light mt-2 leading-none cursor-pointer hover:underline"
-                  onClick={() => navigate(`/catalog/${p.id}`)}
+                  onClick={() => handleNavigateToProduct(p.id)}
                 >
                   {p.name ?? "-"}
                 </h2>
