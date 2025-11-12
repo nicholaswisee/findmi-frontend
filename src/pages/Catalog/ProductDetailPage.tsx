@@ -357,13 +357,13 @@ export default function ProductDetailPage() {
               </div>
 
               {/* Quantity & Add to Cart */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {/* Quantity Selector */}
                 <div className="flex items-center border-2 border-teal-700 rounded-full overflow-hidden bg-teal-100/50 shrink-0">
                   <button
                     type="button"
                     onClick={decrementQuantity}
-                    className="px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                    className="px-3 sm:px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                     disabled={quantity <= 1}
                   >
                     -
@@ -374,12 +374,12 @@ export default function ProductDetailPage() {
                     onChange={handleQuantityChange}
                     min="1"
                     max={getStock()}
-                    className="px-4 py-2 font-bold w-[70px] text-center text-teal-900 bg-transparent border-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="px-2 sm:px-4 py-2 font-bold w-[50px] sm:w-[70px] text-center text-teal-900 bg-transparent border-0 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <button
                     type="button"
                     onClick={incrementQuantity}
-                    className="px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                    className="px-3 sm:px-4 py-2 hover:bg-teal-200/50 transition-colors font-bold text-xl text-teal-800 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                     disabled={!product || quantity >= getStock()}
                   >
                     +
@@ -397,7 +397,7 @@ export default function ProductDetailPage() {
                 <button
                   onClick={handleAddToCart}
                   disabled={getStock() === 0}
-                  className={`flex-1 h-12 px-5 text-md font-semibold rounded-xl  shadow-lg drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all uppercase tracking-wide ${
+                  className={`flex-1 h-12 px-3 sm:px-5 text-xs sm:text-md font-semibold rounded-xl shadow-lg drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all uppercase tracking-tight sm:tracking-wide whitespace-nowrap ${
                     getStock() === 0
                       ? "bg-[#E13B25] text-[#FFE59A] cursor-not-allowed"
                       : "bg-[#C11B7D] text-[#FFE59A] hover:shadow-xl active:ring-2 active:ring-[#FFE59A]"
