@@ -2,7 +2,8 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ShoppingCart, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
-import CatalogPage from "./CatalogPage";
+import ProductGrid from "./components/ProductGrid";
+import { useProductStore } from "./Mutation";
 
 // Types based on API response
 type Product = {
@@ -55,6 +56,16 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>("M"); // Default size
   const [quantity, setQuantity] = useState(1);
+
+  const status = useProductStore((s) => s.status);
+  const fetchProducts = useProductStore((s) => s.fetchProducts);
+
+  // Fetch products for recommendation section
+  useEffect(() => {
+    if (status === "idle") {
+      fetchProducts();
+    }
+  }, [status, fetchProducts]);
 
   // Dummy sizes - karena API tidak return sizes
   const availableSizes = ["S", "M", "L", "XL", "XXL"];
@@ -237,9 +248,10 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 flex flex-col">
-      {/* Breadcrumb Navigation */}
-      <nav className="mb-6 px-20">
+    <>
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* Breadcrumb Navigation */}
+        <nav className="mb-6">
         <ol className="flex items-center gap-2 text-sm text-white/80">
           <li>
             <Link to="/" className="hover:text-white transition-colors">
@@ -259,11 +271,10 @@ export default function ProductDetailPage() {
         </ol>
       </nav>
       {/* Product Detail Card */}
-      <div className="flex justify-center items-center">
-        <div className=" backdrop-blur-sm rounded-lg shadow-lg p-6 md:p-10 max-w-4xl">
-          <div className="flex flex-col  justify-center md:flex-row gap-15">
-            {/* Left: Product Images */}
-            <div className="md:w-[45%]">
+      <div className=" backdrop-blur-sm rounded-lg shadow-lg p-6 md:p-10 max-w-4xl mx-auto">
+        <div className="flex flex-col  justify-center md:flex-row gap-20">
+          {/* Left: Product Images */}
+          <div className="md:w-[45%]">
               {/* Main Image */}
               <div className="bg-white rounded-lg mb-3 aspect-square flex items-center justify-center overflow-hidden border border-gray-200">
                 <img
@@ -399,10 +410,10 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col justify-center items-center py-20">
-        <h2>Pilihan Untuk Kamu</h2>
-        <CatalogPage />
+      <div className="container mx-auto px-4 py-20 max-w-7xl">
+        <h2 className="text-3xl font-bold text-[#FFD88C] mb-8 drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)] text-center">Pilihan Untuk Kamu</h2>
+        <ProductGrid showSearch={false} maxItems={30} />
       </div>
-    </div>
+    </>
   );
 }
