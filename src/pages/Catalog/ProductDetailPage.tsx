@@ -1,7 +1,7 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 // Types based on API response
@@ -238,6 +238,27 @@ export default function ProductDetailPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-4xl">
+      {/* Breadcrumb Navigation */}
+      <nav className="mb-6">
+        <ol className="flex items-center gap-2 text-sm text-white/80">
+          <li>
+            <Link to="/" className="hover:text-white transition-colors">
+              Home
+            </Link>
+          </li>
+          <ChevronRight className="w-4 h-4" />
+          <li>
+            <Link to="/catalog" className="hover:text-white transition-colors">
+              Catalog
+            </Link>
+          </li>
+          <ChevronRight className="w-4 h-4" />
+          <li className="text-white font-semibold">
+            {product.name}
+          </li>
+        </ol>
+      </nav>
+
       {/* Product Detail Card */}
       <div className=" backdrop-blur-sm rounded-lg shadow-lg p-6 md:p-10">
         <div className="flex flex-col  justify-center md:flex-row gap-20">
