@@ -74,7 +74,7 @@ export default function Navbar() {
                   </Link>
                 </Button>
               ) : (
-                <Link className="font-semibold text-xl" to={link.path}>
+                <Link className="font-semibold lead" to={link.path}>
                   {link.icon ? link.icon : link.label}
                 </Link>
               )}

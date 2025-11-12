@@ -91,7 +91,8 @@
     @apply font-heading text-sm sm:text-base md:text-lg lg:text-xl;
   }
 
-  p.lead {
+  p.lead,
+  .lead {
     @apply font-medium text-base sm:text-lg md:text-xl;
   }
 
