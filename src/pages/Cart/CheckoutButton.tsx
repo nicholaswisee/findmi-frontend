@@ -21,11 +21,11 @@ export function CheckoutButton() {
   return (
     <button onClick={handleCheckout} disabled={isLoading} className="
       inline-flex flex-col items-center justify-center
-      w-[320px] h-[40px] md:w-[431px] md:h-[38px] 
-      rounded-2xl
+      w-full h-[40px] lg:w-[431px] lg:h-[38px] 
+      rounded-lg lg:rounded-2xl
       drop-shadow-md/50
-      bg-[#AC166C] hover:brightness-90 active:brightness-75
-      text-orange-200 text-[14px] md:text-sm font-bold 
+      bg-[#1E368F] lg:bg-[#AC166C] hover:brightness-90 active:brightness-75
+      text-orange-200 text-[14px] lg:text-sm font-bold 
       transition-all
     ">
       {isLoading ? "Processing..." : "Bayar Sekarang"}

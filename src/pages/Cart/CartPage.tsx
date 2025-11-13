@@ -13,16 +13,15 @@ export default function CatalogPage() {
 
   return (
     <div
-      className="px-[16px] py-[24px] md:px-[80px] md:py-[160px]"
-      style={{ backgroundImage: `url(${bgImg})` }}
+      className="bg-transparent-100 min-h-screen"
     >
-      <div className="flex flex-col gap[20px] md:gap-[80px] justify-between items-center">
+      <div className="flex flex-col gap[20px] lg:gap-[80px] justify-between items-center">
         <h1 className="text-[54px] text-[#FFC76E] drop-shadow-md/50">
           KERANJANGMU
         </h1>
 
-        <div className="flex flex-col md:flex-row w-full gap-[80px] justify-center items-start">
-          <div className="w-[372px] h-[200px] max-h-[200px] md:w-[661px] md:h-[347px] md:max-h-[347px] bg-white/30 rounded-xl flex flex-col px-[16px] py-[24px] gap-[4px] md:p-[40px] md:gap-[24px]">
+        <div className="flex flex-col lg:flex-row w-full gap-[80px] justify-center items-start">
+          <div className="w-[372px] h-[200px] lg:w-[661px] lg:h-[347px] px-[16px] py-[24px] gap-[4px] lg:p-[40px] lg:gap-[24px] lg:max-h-[347px] bg-white/30 rounded-xl flex flex-col">
             <p className="text-xl text-[#1B165E] font-extrabold">
               KERANJANG ({cart?.items.length ?? 0})
             </p>
