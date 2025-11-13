@@ -15,23 +15,23 @@ interface CartItemProps {
 
 export function CartItem({itemId,itemType,name,category,price,quantity,image,}: CartItemProps) {
   const { updateCartItem, deleteCartItem, isLoading } = useCartStore();
-  
+
   const updateLocalQuantity = (newQty: number) => {
-  useCartStore.setState((state) => {
-    if (!state.cart) return state;
-    const updatedItems = state.cart.items.map((item) => {
-      if (item.id === itemId) {
-        if (itemType === "product" && item.product) {
-          return { ...item, quantity: newQty };
-        } else if (itemType === "bundle" && item.bundle) {
-          return { ...item, quantity: newQty };
+    useCartStore.setState((state) => {
+      if (!state.cart) return state;
+      const updatedItems = state.cart.items.map((item) => {
+        if (item.id === itemId) {
+          if (itemType === "product" && item.product_id) {
+            return { ...item, quantity: newQty };
+          } else if (itemType === "bundle" && item.bundle_id) {
+            return { ...item, quantity: newQty };
+          }
         }
-      }
-      return item;
+        return item;
+      });
+      return { cart: { ...state.cart, items: updatedItems } };
     });
-    return { cart: { ...state.cart, items: updatedItems } };
-  });
-};
+  };
 
 
   const handleDecrease = async () => {
@@ -39,7 +39,6 @@ export function CartItem({itemId,itemType,name,category,price,quantity,image,}: 
       updateLocalQuantity(quantity - 1); 
       await updateCartItem(itemId, quantity - 1); 
     } else {
-      // remove item instantly
       useCartStore.setState((state) => {
         if (!state.cart) return state;
         const updatedItems = state.cart.items.filter(
@@ -57,7 +56,7 @@ export function CartItem({itemId,itemType,name,category,price,quantity,image,}: 
   };
 
   return (
-    <div className="flex gap-[20px] items-center">
+    <div className="flex gap-[20px] items-center justify-between">
       <img
         src={image || fallbackImg}
         alt={name}

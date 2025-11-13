@@ -2,62 +2,11 @@ import React, { useEffect } from "react";
 import { useCartStore } from "@/pages/Cart/API/Cart";
 import { CartItem } from "@/pages/Cart/CartItem";
 import { CartSummary } from "@/pages/Cart/CartSummary";
-import bgImg from "@/assets/IMG_9784.png";
-
-const dummyCart = {
-  id: 5,
-  user_id: 42,
-  created_at: "2025-01-01T12:00:00.000Z",
-  updated_at: "2025-01-02T08:15:30.000Z",
-  deleted_at: null,
-  items: [
-    {
-      id: 1,
-      cart_id: 12,
-      product_id: 3,
-      bundle_id: null,
-      quantity: 2,
-      unit_price: 149000,
-      line_total: 298000,
-      product: {
-        id: 1,
-        name: "FindMI Hoodie 2026",
-        price: 149000,
-        category: "Fundraising",
-        description: "Comfortable oversized hoodie with AMI 2026 logo.",
-        image_url: "https://cdn.findmi.akumasukitb.com/products/hoodie.png",
-        remaining_stock: 50,
-      },
-      bundle: {
-        id: 2,
-        name: "Paket AMI Merchandise",
-        price: 250000,
-        category: "Merchandise",
-        description: "Bundle spesial berisi berbagai produk AMI.",
-        image_url: "https://cdn.findmi.akumasukitb.com/bundles/ami-bundle.png",
-        bundle_items: [
-          {
-            product_id: 2,
-            amount: 1,
-          },
-        ],
-        is_hidden: false,
-      },
-    },
-  ],
-  summary: {
-    total_quantity: 4,
-    total_amount: 472000,
-  },
-};
 
 export default function CartPage() {
-  const { cart, fetchCart, isLoading, error } = useCartStore();
+    const { cart, fetchCart, isLoading, error } = useCartStore();
 
-  useEffect(() => {
-    // ✅ Masukkan dummy data ke store
-    useCartStore.setState({ cart: dummyCart });
-  }, []);
+  useEffect(() => {fetchCart();}, [fetchCart]);
 
   return (
     <div className="bg-transparent-100 min-h-screen">
@@ -69,7 +18,7 @@ export default function CartPage() {
         <div className="flex flex-col lg:flex-row w-full gap-[80px] justify-center items-start">
           <div className="w-full h-[200px] lg:w-[661px] lg:h-[347px] px-[16px] py-[24px] gap-[4px] lg:p-[40px] lg:gap-[24px] lg:max-h-[347px] bg-white/30 rounded-xl flex flex-col">
             <p className="text-[16px] lg:text-[32px] text-[#1B165E] font-extrabold">
-              KERANJANG ({cart?.items.length ?? 0})
+              KERANJANG ({cart?.summary.total_quantity ?? 0})
             </p>
 
             <div className="flex flex-col gap-6 w-full overflow-y-auto">
@@ -77,7 +26,6 @@ export default function CartPage() {
               {error && <p className="text-red-500">{error}</p>}
               {!isLoading && cart?.items.length === 0 && <p>Keranjang kosong</p>}
 
-              {/* ✅ Show product and bundle separately */}
               {cart?.items.flatMap((item) => {
                 const elements = [];
 
@@ -86,7 +34,7 @@ export default function CartPage() {
                     <CartItem
                       key={`product-${item.id}`}
                       itemId={item.id}
-                       itemType="product"
+                      itemType="product"
                       name={item.product.name}
                       category={item.product.category}
                       price={item.product.price}
