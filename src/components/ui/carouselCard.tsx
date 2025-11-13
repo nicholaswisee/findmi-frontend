@@ -43,15 +43,32 @@ function CarouselCard() {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <Carousel 
-        className="w-full max-w-3xl"
-        setApi={setApi}
-        opts={{
-          align: "start",
-          loop: true,
-        }}
-      >
-        <CarouselContent className="h-[150px] sm:h-[200px] w-full sm:w-[500px] md:w-[700px] lg:w-[800px]">
+      
+      <div className="relative w-full max-w-3xl rounded-2xl p-1 border-4 border-blue-400 bg-white/30 shadow-sm">
+        {}
+        <img
+          src="/global/Copy of Bunga_1_Jeby.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute -top-[80.79px] -left-[80.79px] w-[219.79px] h-[219.79px] pointer-events-none z-20 select-none"
+          
+        />
+        <img
+          src="/global/Copy of Bunga_1_Jeby.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute -bottom-[80.79px] -right-[80.79px] w-[219.79px] h-[219.79px] pointer-events-none z-20 select-none"
+          style={{ transform: "scaleX(-1)" }}
+        />
+        <Carousel 
+          className="w-full"
+          setApi={setApi}
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+        >
+          <CarouselContent className="h-[150px] sm:h-[200px] w-full sm:w-[500px] md:w-[700px] lg:w-[800px]">
           {Array.from({ length: 5 }).map((_, index) => (
             <CarouselItem key={index}>
               <div className="p-1">
@@ -64,22 +81,32 @@ function CarouselCard() {
             </CarouselItem>
           ))}
         </CarouselContent>
-      </Carousel>
+  </Carousel>
+  </div>
 
-      
       <div className="flex gap-2">
-        {Array.from({ length: count }).map((_, index) => (
-          <button
-            key={index}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              index === current
-                ? "w-8 bg-gray-800"
-                : "w-2 bg-gray-300 hover:bg-gray-400"
-            }`}
-            onClick={() => api?.scrollTo(index)}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
+        {Array.from({ length: count }).map((_, index) => {
+          const isActive = index === current;
+          return (
+            <button
+              key={index}
+            
+              className={`h-2 rounded-full transition-all duration-300 ${isActive ? "w-8" : "w-2"} cursor-pointer focus:outline-none`}
+              
+              style={{
+                backgroundColor: isActive
+                  ? "var(--accent-light-blue, #DAFFF6)"
+                  : "var(--semantic-inactive, #87C1FA)",
+              }}
+              onClick={() => api?.scrollTo(index)}
+              aria-label={`Go to slide ${index + 1}`}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-light-blue, #DAFFF6)")}
+              onMouseLeave={(e) => {
+                if (!isActive) e.currentTarget.style.backgroundColor = "var(--semantic-inactive, #87C1FA)";
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );
