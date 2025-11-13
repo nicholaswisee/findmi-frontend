@@ -77,10 +77,11 @@ export const useCartStore = create<CartState>((set) => ({
   fetchCart: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/cart`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/cart`); 
+      console.log(res.status);
       if (!res.ok) throw new Error("Failed to fetch cart");
 
-      const data = await res.json();
+      const data = await res.json(); 
       set({ cart: data.data, isLoading: false });
     } catch (err: any) {
       set({
