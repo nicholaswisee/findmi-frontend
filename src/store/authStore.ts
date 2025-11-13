@@ -1,39 +1,69 @@
+import { toast } from "sonner";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 
 interface User {
   id: number;
   name: string;
   nim: string;
+  department: string;
+  line_id: string;
+  no_wa: string;
+  email?: string;
+  avatarUrl?: string;
   role?: string;
+  provider?: string;
+}
+
+interface SessionMeta {
+  fingerprint: string;
+  issuedAt: number;
+  expiresAt: number;
 }
 
 interface AuthState {
   user: User | null;
+  session: SessionMeta | null;
   isAuthenticated: boolean;
   loading: boolean;
   lastFetched: number | null; // track revalidation timing
-  refreshUser: () => Promise<void>;
+  refreshUser: (force?: boolean) => Promise<void>;
   login: (nim: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const API_URL = import.meta.env.VITE_API_URL!;
+const REVALIDATE_INTERVAL = 5 * 60 * 1000;
+
+const initialState = {
+  user: null as User | null,
+  session: null as SessionMeta | null,
+  isAuthenticated: false,
+  loading: true,
+  lastFetched: null as number | null,
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
-      user: null,
-      isAuthenticated: false,
-      loading: true,
-      lastFetched: null,
+      ...initialState,
 
-      refreshUser: async () => {
-        const { lastFetched } = get();
+      refreshUser: async (force = false) => {
+        const { lastFetched, session } = get();
         const now = Date.now();
 
-        // Revalidate / 5 mins
-        if (lastFetched && now - lastFetched < 5 * 60 * 1000) return;
+        const sessionExpired =
+          session && session.expiresAt * 1000 <= now + 2000; // 2s leeway
+
+        // Revalidate every 5 mins unless forced or session is close to expiry
+        if (
+          !force &&
+          !sessionExpired &&
+          lastFetched &&
+          now - lastFetched < REVALIDATE_INTERVAL
+        ) {
+          return;
+        }
 
         set({ loading: true });
         try {
@@ -41,20 +71,37 @@ export const useAuthStore = create<AuthState>()(
             credentials: "include",
           });
           if (!res.ok) {
-            set({ user: null, isAuthenticated: false });
+            set({
+              ...initialState,
+              loading: false,
+            });
             return;
           }
           const data = await res.json();
+          const { user, session: serverSession } = data.data ?? {};
+          if (!user || !serverSession) {
+            throw new Error("Malformed session response");
+          }
+
+          const fingerprintMismatch =
+            session && session.fingerprint !== serverSession.fingerprint;
+          if (fingerprintMismatch) {
+            console.warn("Session fingerprint mismatch detected. Resetting.");
+          }
+
           set({
-            user: data.data,
+            user: data.data.user,
+            session: serverSession,
             isAuthenticated: true,
             lastFetched: now,
+            loading: false,
           });
         } catch (err) {
           console.error("Session check failed:", err);
-          set({ user: null, isAuthenticated: false });
-        } finally {
-          set({ loading: false });
+          set({
+            ...initialState,
+            loading: false,
+          });
         }
       },
 
@@ -67,10 +114,11 @@ export const useAuthStore = create<AuthState>()(
             body: JSON.stringify({ nim, password }),
           });
           if (!res.ok) {
-            const err = await res.json();
-            throw new Error(err.message || "Login failed");
+            // const err = await res.json();
+            throw new Error("Autentikasi gagal.");
           }
-          await get().refreshUser();
+          await get().refreshUser(true);
+          toast.success("Autentikasi berhasil.");
         } catch (err) {
           console.error("Login error:", err);
           throw err;
@@ -83,24 +131,41 @@ export const useAuthStore = create<AuthState>()(
             method: "POST",
             credentials: "include",
           });
+          toast.success("Logout berhasil.");
         } catch (err) {
           console.error("Logout failed:", err);
         } finally {
           set({
-            user: null,
-            isAuthenticated: false,
-            lastFetched: null,
+            ...initialState,
+            loading: false,
           });
         }
       },
     }),
     {
       name: "auth-storage", // key in localStorage
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-        lastFetched: state.lastFetched,
+        session: state.session,
       }),
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error("Failed to rehydrate auth store:", error);
+          return;
+        }
+        if (state) {
+          const expired =
+            state.session &&
+            state.session.expiresAt * 1000 <= Date.now() + 2000;
+          if (expired) {
+            state.session = null;
+            state.lastFetched = null;
+          }
+          state.isAuthenticated = false;
+          state.user = null;
+          state.loading = true;
+        }
+      },
     }
   )
 );
