@@ -2,11 +2,20 @@ import React, { useEffect } from "react";
 import { useCartStore } from "@/pages/Cart/API/Cart";
 import { CartItem } from "@/pages/Cart/CartItem";
 import { CartSummary } from "@/pages/Cart/CartSummary";
+import ProductGrid from "@/pages/Catalog/components/ProductGrid";
+import { useProductStore } from "@/pages/Catalog/Mutation";
 
 export default function CartPage() {
     const { cart, fetchCart, isLoading, error } = useCartStore();
+    const status = useProductStore((s) => s.status);
+    const fetchProducts = useProductStore((s) => s.fetchProducts);
 
   useEffect(() => {fetchCart();}, [fetchCart]);
+  useEffect(() => {
+    if (status === "idle") {
+      fetchProducts();
+    }
+  }, [status, fetchProducts]);
 
   return (
     <div className="bg-transparent-100 min-h-screen">
@@ -63,8 +72,15 @@ export default function CartPage() {
               })}
             </div>
           </div>
-
           <CartSummary />
+          </div>
+
+          <div className="container mx-auto px-4 py-20 max-w-7xl">
+            <h2 className="text-3xl font-bold text-[#FFD88C] mb-8 drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)] text-center">
+              Pilihan Untuk Kamu
+            </h2>
+            <ProductGrid showSearch={false} maxItems={30} />
+
         </div>
       </div>
     </div>
