@@ -31,10 +31,10 @@
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --orange-200: #FFD88C;
-    --orange-100: #FFEABB;
-    --info-neutral: #5F92E0;
-    --price-bg: #463B8B;
-    --price-bg-alpha: rgba(70,59,139,0.25);
+  --orange-100: #FFEABB;
+  --info-neutral: #5F92E0;
+  --price-bg: #463B8B;
+  --price-bg-alpha: rgba(70,59,139,0.25);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -178,5 +178,9 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  .bg-plain-green {
+    background-image: url("/global/background-plain-hijau.png");
+    @apply text-foreground bg-cover bg-center;
   }
 }

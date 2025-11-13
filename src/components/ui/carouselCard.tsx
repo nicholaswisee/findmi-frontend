@@ -47,17 +47,24 @@ function CarouselCard() {
       <div className="relative w-full max-w-3xl rounded-2xl p-1 border-4 border-blue-400 bg-white/30 shadow-sm">
         {}
         <img
-          src="/global/Copy of Bunga_1_Jeby.png"
+          src="/global/bunga-jeby-1.png"
           alt=""
           aria-hidden="true"
-          className="absolute -top-[80.79px] -left-[80.79px] w-[219.79px] h-[219.79px] pointer-events-none z-20 select-none"
-          
+        className="absolute pointer-events-none z-20 select-none
+                    -top-8 -left-8 w-20 h-20
+                    sm:-top-12 sm:-left-12 sm:w-28 sm:h-28
+                    md:-top-12 md:-left-12 md:w-36 md:h-36
+                    lg:-top-20 lg:-left-20 lg:w-44 lg:h-44"
         />
         <img
-          src="/global/Copy of Bunga_1_Jeby.png"
+          src="/global/bunga-jeby-1.png"
           alt=""
           aria-hidden="true"
-          className="absolute -bottom-[80.79px] -right-[80.79px] w-[219.79px] h-[219.79px] pointer-events-none z-20 select-none"
+          className="absolute pointer-events-none z-20 select-none
+                    -bottom-8 -right-8 w-20 h-20
+                    sm:-bottom-12 sm:-right-12 sm:w-28 sm:h-28
+                    md:-bottom-12 md:-right-12 md:w-30 md:h-36
+                    lg:-bottom-20 lg:-right-20 lg:w-44 lg:h-44"
           style={{ transform: "scaleX(-1)" }}
         />
         <Carousel 
