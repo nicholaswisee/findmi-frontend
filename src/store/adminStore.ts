@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { apiRequest } from "@/lib/api";
 import type {
   Bundle,
   BundlesResponse,
@@ -11,45 +12,6 @@ import type {
   UserWithOrders,
   UsersWithOrdersResponse,
 } from "@/types/types";
-
-const API_URL = import.meta.env.VITE_API_URL;
-
-if (!API_URL) {
-  throw new Error("VITE_API_URL is not defined");
-}
-
-type ApiResponse<T> = {
-  success: boolean;
-  message: string;
-  data: T;
-};
-
-type RequestOptions = RequestInit & { body?: BodyInit | null };
-
-async function apiRequest<T>(path: string, options: RequestOptions = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers ?? {}),
-    },
-    ...options,
-  });
-
-  if (!res.ok) {
-    let msg = "Request failed";
-    try {
-      const err = await res.json();
-      if (err?.message) msg = err.message;
-    } catch {
-      // ignore JSON errors
-    }
-    throw new Error(msg);
-  }
-
-  const payload = (await res.json()) as ApiResponse<T>;
-  return payload.data;
-}
 
 export type CreateProductPayload = {
   name: string;
@@ -115,6 +77,7 @@ type AdminState = {
   bundles: Bundle[];
   loadingProducts: boolean;
   loadingBundles: boolean;
+  searchProducts: (keyword: string, signal?: AbortSignal) => Promise<Product[]>;
   userPageIndex: number;
   userPageSize: number;
   userHasNext: boolean;
@@ -333,6 +296,17 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     } finally {
       set({ loadingProducts: false });
     }
+  },
+
+  searchProducts: async (keyword, signal) => {
+    const trimmed = keyword.trim();
+    if (!trimmed) return [];
+    const params = new URLSearchParams({
+      keyword: trimmed,
+    });
+    return apiRequest<Product[]>(`/product/search?${params.toString()}`, {
+      signal,
+    });
   },
 
   fetchBundles: async (opts) => {

@@ -1,13 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Order, OrderItem } from "@/types/types";
-
-type OrdersResponse = {
-  success: boolean;
-  message: string;
-  data: Order[];
-};
+import { useOrderHistoryStore } from "@/store/orderHistoryStore";
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -37,51 +32,18 @@ const FALLBACK_IMAGE = "/global/background-plain-ungu.webp";
 
 export default function OrderHistoryPage() {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const orders = useOrderHistoryStore((state) => state.orders);
+  const loading = useOrderHistoryStore((state) => state.loadingOrders);
+  const error = useOrderHistoryStore((state) => state.orderHistoryError);
+  const fetchOrderHistory = useOrderHistoryStore(
+    (state) => state.fetchOrderHistory
+  );
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    async function fetchOrders() {
-      try {
-        setLoading(true);
-        setError(null);
-        const apiUrl = import.meta.env.VITE_API_URL;
-        if (!apiUrl) {
-          throw new Error("URL API tidak tersedia.");
-        }
-        const res = await fetch(`${apiUrl}/order?limit=100`, {
-          credentials: "include",
-          signal: controller.signal,
-        });
-
-        if (!res.ok) {
-          let message = "Gagal memuat riwayat pesanan.";
-          try {
-            const payload = (await res.json()) as { message?: string };
-            if (payload?.message) message = payload.message;
-          } catch {
-            // ignore parse errors
-          }
-          throw new Error(message);
-        }
-
-        const payload = (await res.json()) as OrdersResponse;
-        setOrders(Array.isArray(payload?.data) ? payload.data : []);
-      } catch (err) {
-        if ((err as Error).name === "AbortError") return;
-        setError((err as Error).message ?? "Gagal memuat riwayat pesanan.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchOrders();
-
-    return () => controller.abort();
-  }, []);
+    fetchOrderHistory().catch(() => {
+      // error state handled in store
+    });
+  }, [fetchOrderHistory]);
 
   const sortedOrders = useMemo(
     () =>

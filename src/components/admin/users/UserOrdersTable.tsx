@@ -5,7 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTable } from "../data-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { TablePagination } from "@/components/shared/TablePagination";
 import type { Order, UserWithOrders } from "@/types/types";
 
 type UserOrdersTableProps = {
@@ -171,38 +171,24 @@ export default function UserOrdersTable({
       ? pageIndex! * pageSize! + data.length
       : data.length;
 
+  const resolvedTotal =
+    typeof total === "number" ? total : pageIndex! * pageSize! + data.length;
+
   return (
     <div className="flex h-[88svh] flex-col space-y-4">
       <DataTable columns={columns} data={data} />
       {manualPagination && (
-        <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            {data.length === 0
-              ? "No entries on this page"
-              : `Showing ${start}-${end}${
-                  typeof total === "number" ? ` of ${total}` : ""
-                }`}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onPreviousPage}
-              disabled={!onPreviousPage || loading || pageIndex === 0}
-            >
-              Previous
-            </Button>
-            <span className="text-xs sm:text-sm">Page {pageIndex! + 1}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onNextPage}
-              disabled={!onNextPage || loading || !hasNextPage}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
+        <TablePagination
+          pageIndex={pageIndex!}
+          pageSize={pageSize!}
+          total={resolvedTotal}
+          currentCount={data.length}
+          hasNextPage={hasNextPage}
+          loading={loading}
+          onNext={onNextPage}
+          onPrevious={onPreviousPage}
+          label="users"
+        />
       )}
     </div>
   );
