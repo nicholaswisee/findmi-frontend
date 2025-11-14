@@ -11,6 +11,7 @@ type OrdersTableProps = {
   data: OrderWithUser[];
   pageIndex?: number;
   pageSize?: number;
+  total?: number;
   hasNextPage?: boolean;
   loading?: boolean;
   onNextPage?: () => void;
@@ -45,6 +46,7 @@ export default function OrdersTable({
   data,
   pageIndex,
   pageSize,
+  total,
   hasNextPage,
   loading,
   onNextPage,
@@ -154,7 +156,9 @@ export default function OrdersTable({
           <p>
             {data.length === 0
               ? "No entries on this page"
-              : `Showing ${start}-${end}`}
+              : `Showing ${start}-${end}${
+                  typeof total === "number" ? ` of ${total}` : ""
+                }`}
           </p>
           <div className="flex items-center gap-2">
             <Button

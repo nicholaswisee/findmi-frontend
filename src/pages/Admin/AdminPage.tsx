@@ -265,7 +265,7 @@ export default function AdminPage() {
               <SelectContent className="max-h-72 w-64">
                 <SelectItem
                   value="all"
-                  className="whitespace-normal break-words text-left"
+                  className="whitespace-normal wrap-break-word text-left"
                 >
                   All Departments
                 </SelectItem>
@@ -273,7 +273,7 @@ export default function AdminPage() {
                   <SelectItem
                     key={dept}
                     value={dept}
-                    className="whitespace-normal break-words text-left"
+                    className="whitespace-normal wrap-break-word text-left"
                   >
                     {dept}
                   </SelectItem>
@@ -453,7 +453,7 @@ export default function AdminPage() {
               <CardHeader>
                 <CardTitle>Department Contribution</CardTitle>
               </CardHeader>
-              <CardContent className="overflow-x-auto lg:max-h-[360px] lg:overflow-y-auto lg:pr-2">
+              <CardContent className="overflow-x-auto lg:max-h-[400px] lg:overflow-y-auto lg:pr-2">
                 {data.departmentBreakdown.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     No department data available for this filter.

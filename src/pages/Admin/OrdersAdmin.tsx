@@ -29,6 +29,7 @@ export default function OrdersAdmin() {
   const pageIndex = useAdminStore((state) => state.orderPageIndex);
   const pageSize = useAdminStore((state) => state.orderPageSize);
   const hasNextPage = useAdminStore((state) => state.orderHasNext);
+  const totalOrders = useAdminStore((state) => state.orderTotal);
   const storedOrderSearch = useAdminStore((state) => state.orderSearchQuery);
   const storedOrderDepartment = useAdminStore(
     (state) => state.orderDepartmentFilter
@@ -340,6 +341,7 @@ export default function OrdersAdmin() {
           data={orders}
           pageIndex={pageIndex}
           pageSize={pageSize}
+          total={totalOrders}
           hasNextPage={hasNextPage}
           loading={loading}
           onNextPage={handleNextPage}

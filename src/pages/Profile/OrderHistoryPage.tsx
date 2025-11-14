@@ -186,7 +186,7 @@ export default function OrderHistoryPage() {
               return (
                 <article
                   key={order.id}
-                  className="space-y-4 text-[#1b165e] rounded-3xl border border-white/15 bg-white/10 p-5 text-[#0b1f3a] backdrop-blur"
+                  className="space-y-4 text-[#1b165e] rounded-3xl border border-white/15 bg-white/10 p-5  backdrop-blur"
                 >
                   <header className="flex flex-col gap-3 text-[#102044] sm:flex-row sm:items-start sm:justify-between">
                     <div>
