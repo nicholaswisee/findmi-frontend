@@ -4,10 +4,16 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./App.css";
 
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <BrowserRouter basename="/">
-      <App />
-    </BrowserRouter>
-  </React.StrictMode>
+const root = createRoot(document.getElementById("root")!);
+
+const app = (
+  <BrowserRouter basename="/">
+    <App />
+  </BrowserRouter>
 );
+
+if (import.meta.env.DEV) {
+  root.render(<React.StrictMode>{app}</React.StrictMode>);
+} else {
+  root.render(app);
+}
