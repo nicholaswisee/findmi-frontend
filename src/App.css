@@ -56,6 +56,16 @@
     src: url("./assets/fonts/[SUBHEADING\ BODY]\ DarkerGrotesque-Variable.ttf");
   }
 
+  @font-face {
+    font-family: "Geologica";
+    src: url("./assets/fonts/Geologica-VariableFont_CRSV,SHRP,slnt,wght.ttf");
+  }
+
+  @font-face {
+    font-family: "Inter";
+    src: url("./assets/fonts/Inter-VariableFont_opsz,wght.ttf");
+  }
+
   @theme {
     --font-heading: var(--font-heading);
     --font-subheading: var(--font-subheading);
@@ -86,7 +96,8 @@
     @apply font-heading text-sm sm:text-base md:text-lg lg:text-xl;
   }
 
-  p.lead {
+  p.lead,
+  .lead {
     @apply font-medium text-base sm:text-lg md:text-xl;
   }
 
@@ -176,8 +187,9 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
+  .bg-plain-green {
+    background-image: url("/global/background-plain-hijau.webp");
+    @apply text-foreground bg-cover bg-center;
   }
   .bg-plain-green {
     background-image: url("/global/background-plain-hijau.png");
