@@ -72,24 +72,20 @@ export default function Footer() {
         alt="Background Image"
       />
       <div className="relative z-10 container mx-auto px-4">
-        <header className="flex gap-6 justify-start items-center">
-          <img className="h-12" src="/global/Logo.png" alt="AMI 2026" />
           <Link to={"/"}>
-            <h4 className="text-center mt-2 ">FINDMI 2026</h4>
+            <div className="flex items-center gap-4 justify-center">
+                <img className="h-12" src="/global/Logo.png" alt="AMI 2026" />
+                <h4 className="text-center text-3xl mt-2 ">FINDMI 2026</h4>
+            </div>
           </Link>
-        </header>
-        <div className="flex pt-4 gap-4">
+        <div className="flex pt-4 gap-4 justify-center">
           {socialMedia.map((item, i) => (
             <Link to={item.url} key={i}>
               {item.icon}
             </Link>
           ))}
         </div>
-        <div className="w-full flex">
-          <Link className="text-start w-fit font-bold" to={"/faq"}>
-            Bantuan & FAQ
-          </Link>
-        </div>
+        <p className="mt-4">© Aku Masuk ITB 2026. All Rights Reserved. </p>
       </div>
     </footer>
   );

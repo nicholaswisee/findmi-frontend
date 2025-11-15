@@ -96,7 +96,7 @@ export default function SearchBar({
         placeholder="Cari nama produk…"
         value={localQuery}
         onChange={(e) => setLocalQuery(e.target.value)}
-        className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+        className="flex-1 rounded-md border text-black font-bold border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
       />
 
       {/* tombol */}

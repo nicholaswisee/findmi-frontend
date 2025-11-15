@@ -111,7 +111,7 @@ export function PaginatedList<T>({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 text-black">
       {currentCount === 0 ? (
         emptyState ?? (
           <p className="text-sm text-muted-foreground">
@@ -126,13 +126,14 @@ export function PaginatedList<T>({
           })}
         </div>
       )}
-      <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <p>
+      <div className="flex flex-col gap-3 text-sm">
+        <p className="font-bold text-left">
           {resolvedTotal === 0 || currentCount === 0
             ? "No entries on this page"
             : `Showing ${start}-${end} of ${displayTotal} ${label}`}
         </p>
-        <Pagination className="w-fit sm:justify-end">
+
+        <Pagination className="mx-auto font-bold">
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious

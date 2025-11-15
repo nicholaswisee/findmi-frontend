@@ -169,51 +169,19 @@ export default function CatalogPage() {
         className={`mx-auto mt-auto block w-[85%] rounded-xl py-0.5 text-md font-semibold shadow-lg drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all ${
           item.remaining_stock === 0
             ? "cursor-not-allowed bg-[#E13B25] text-[#FFE59A]"
-            : "bg-[#C11B7D] text-[#FFE59A] hover:shadow-lg active:ring-2 active:ring-[#FFE59A]"
+            : "bg-[#C11B7D] hover:bg-[#8d175c] hover:cursor-pointer text-[#FFE59A] hover:shadow-lg active:ring-2 active:ring-[#FFE59A]"
         }`}
       >
-        {item.remaining_stock === 0 ? "STOK HABIS" : "ADD TO CART"}
+        {item.remaining_stock === 0 ? "STOK HABIS" : "ADD TO CART +"}
       </button>
     </div>
   );
 
   return (
     <div className="min-h-screen bg-transparent-100">
-      <div className="bg-linear-to-r from-[#E97E3F] via-[#E88240] to-[#E97E3F] shadow-md absolute left-0 top-[118px] z-40 w-full">
-        <div className="flex items-center justify-between px-10 py-3">
-          <button>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="#16245D"
-              className="h-5 w-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3 5h18M6 12h12M10 19h4"
-              />
-            </svg>
-          </button>
-          <div className="flex gap-20">
-            <button className="text-base font-bold text-[#16245D] hover:underline hover:opacity-90">
-              Merchandise
-            </button>
-            <button className="text-base font-bold text-[#16245D] hover:underline hover:opacity-90">
-              Collaborations
-            </button>
-            <button className="text-base font-bold text-[#16245D] hover:underline hover:opacity-90">
-              Merchandise Panitia
-            </button>
-          </div>
-          <div className="w-10" />
-        </div>
-      </div>
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 flex justify-center">
-          <h1 className="text-5xl font-extrabold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
+          <h1 className="mt-4 text-5xl font-extrabold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
             CATALOG
           </h1>
         </div>
@@ -222,27 +190,29 @@ export default function CatalogPage() {
           <SearchBar />
         </div>
 
-        <PaginatedList<Product>
-          data={paginatedItems}
-          component={ProductCard}
-          pageIndex={pageIndex}
-          pageSize={PAGE_SIZE}
-          total={items.length}
-          hasNextPage={hasNextPage}
-          loading={loading}
-          onNext={handleNext}
-          onPrevious={handlePrevious}
-          onPageChange={handlePageChange}
-          label="products"
-          layout="grid"
-          layoutClassName="grid grid-cols-2 gap-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 justify-items-center items-start"
-          emptyState={
-            <div className="col-span-full text-center font-bold text-[#FFD88C]">
-              Tidak ada produk yang cocok.
-            </div>
-          }
-          getItemKey={(item) => item.id}
-        />
+        <div className="mb-6 mx-auto  ">
+          <PaginatedList<Product>
+            data={paginatedItems}
+            component={ProductCard}
+            pageIndex={pageIndex}
+            pageSize={PAGE_SIZE}
+            total={items.length}
+            hasNextPage={hasNextPage}
+            loading={loading}
+            onNext={handleNext}
+            onPrevious={handlePrevious}
+            onPageChange={handlePageChange}
+            label="products"
+            layout="grid"
+            layoutClassName="grid grid-cols-2 gap-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 justify-items-center items-start"
+            emptyState={
+              <div className="col-span-full text-center font-bold text-[#FFD88C]">
+                Tidak ada produk yang cocok.
+              </div>
+            }
+            getItemKey={(item) => item.id}
+          />
+          </div>
       </div>
     </div>
   );
