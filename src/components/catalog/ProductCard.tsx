@@ -3,14 +3,14 @@ import { useProductStore } from "@/store/catalogStore";
 import type { Product } from "@/store/catalogStore";
 
 export interface ProductDetailPageProps {
-  product : Product;
+  product: Product;
   status: "loading" | "error" | "success";
 }
 
 export default function ProductListPage() {
   const status = useProductStore((s) => s.status);
   const error = useProductStore((s) => s.error);
-  const products = useProductStore((s) => s.products);        
+  const products = useProductStore((s) => s.products);
   const fetchProducts = useProductStore((s) => s.fetchProducts);
 
   useEffect(() => {
@@ -18,7 +18,8 @@ export default function ProductListPage() {
   }, [status, fetchProducts]);
 
   if (status === "loading") return <p>Loading products...</p>;
-  if (status === "error") return <p className="text-red-600">Failed to load products: {error}</p>;
+  if (status === "error")
+    return <p className="text-red-600">Failed to load products: {error}</p>;
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -39,7 +40,9 @@ export default function ProductListPage() {
             <p className="text-green-600 font-bold mb-1">
               Rp {p.price?.toLocaleString("id-ID")}
             </p>
-            <p className="text-sm text-gray-600 line-clamp-2">{p.description}</p>
+            <p className="text-sm text-gray-600 line-clamp-2">
+              {p.description}
+            </p>
           </div>
         ))}
       </div>

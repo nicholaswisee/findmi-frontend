@@ -14,7 +14,7 @@ interface CartItemProps {
 }
 
 export function CartItem({itemId,itemType,name,category,price,quantity,image,}: CartItemProps) {
-  const { updateCartItem, deleteCartItem, isLoading } = useCartStore();
+  const { updateCartItem, deleteCartItem, isMutating } = useCartStore();
 
   const updateLocalQuantity = (newQty: number) => {
     useCartStore.setState((state) => {
@@ -71,7 +71,7 @@ export function CartItem({itemId,itemType,name,category,price,quantity,image,}: 
       <div className="hidden lg:flex flex items-center">
         <button
           onClick={handleDecrease}
-          disabled={isLoading}
+          disabled={isMutating}
           aria-label="Kurangi jumlah"
           className="hidden lg:flex hover:bg-black/30 active:brightness-150 flex w-[40px] h-[44px] border-2 border-[#050836] border-r-0 rounded-l-xl items-center justify-center"
         >
@@ -86,7 +86,7 @@ export function CartItem({itemId,itemType,name,category,price,quantity,image,}: 
 
         <button
           onClick={handleIncrease}
-          disabled={isLoading}
+          disabled={isMutating}
           aria-label="Tambah jumlah"
           className="hidden lg:flex hover:bg-white/30 active:brightness-300 flex w-[40px] h-[44px] border-2 border-[#050836] border-l-0 rounded-r-xl items-center justify-center"
         >

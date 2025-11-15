@@ -1,14 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
 
 type PaginatedListProps<T> = {
   data: T[];
@@ -45,19 +37,22 @@ export function PaginatedList<T>({
   layout = "list",
   layoutClassName,
 }: PaginatedListProps<T>) {
+  const bodyFontStyle = {
+    fontFamily: "var(--font-subheading, 'Darker Grotesque')",
+  };
   const currentCount = data.length;
   const fallbackTotal = pageIndex * pageSize + currentCount;
   const resolvedTotal =
     typeof total === "number" && !Number.isNaN(total) ? total : fallbackTotal;
   const start =
     resolvedTotal === 0 || currentCount === 0 ? 0 : pageIndex * pageSize + 1;
-  const end =
-    currentCount === 0 ? 0 : pageIndex * pageSize + currentCount;
+  const end = currentCount === 0 ? 0 : pageIndex * pageSize + currentCount;
   const computedHasNext =
     typeof hasNextPage === "boolean" ? hasNextPage : end < resolvedTotal;
-  const disablePrev = loading || pageIndex === 0 || !onPrevious;
-  const disableNext = loading || !computedHasNext || !onNext;
-  const disablePageChange = loading || !onPageChange;
+  const hasPrevHandler = Boolean(onPrevious ?? onPageChange);
+  const hasNextHandler = Boolean(onNext ?? onPageChange);
+  const disablePrev = loading || pageIndex === 0 || !hasPrevHandler;
+  const disableNext = loading || !computedHasNext || !hasNextHandler;
   const containerClass =
     layout === "grid"
       ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
@@ -77,39 +72,6 @@ export function PaginatedList<T>({
       ? `${resolvedTotal}+`
       : `${resolvedTotal}`;
 
-  const pageNumbers = React.useMemo(() => {
-    const pages: Array<number | "ellipsis"> = [];
-    if (pageCount <= 5) {
-      for (let i = 0; i < pageCount; i++) pages.push(i);
-      return pages;
-    }
-
-    pages.push(0);
-
-    const start = Math.max(1, pageIndex - 1);
-    const endRange = Math.min(pageCount - 2, pageIndex + 1);
-
-    if (start > 1) {
-      pages.push("ellipsis");
-    }
-
-    for (let i = start; i <= endRange; i++) {
-      pages.push(i);
-    }
-
-    if (endRange < pageCount - 2) {
-      pages.push("ellipsis-end");
-    }
-
-    pages.push(pageCount - 1);
-    return pages;
-  }, [pageCount, pageIndex]);
-
-  const handlePageClick = (page: number) => {
-    if (disablePageChange || page === pageIndex) return;
-    onPageChange?.(page);
-  };
-
   return (
     <div className="space-y-4 text-black">
       {currentCount === 0 ? (
@@ -126,70 +88,66 @@ export function PaginatedList<T>({
           })}
         </div>
       )}
-      <div className="flex flex-col gap-3 text-sm">
-        <p className="font-bold text-left">
+      <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between text-muted-foreground">
+        <p
+          className="font-semibold text-left text-[#FFD88C] drop-shadow-[0_1px_1px_rgba(0,0,0,0.25)]"
+          style={bodyFontStyle}
+        >
           {resolvedTotal === 0 || currentCount === 0
-            ? "No entries on this page"
-            : `Showing ${start}-${end} of ${displayTotal} ${label}`}
+            ? "Tidak ada entri pada halaman ini"
+            : `Memperlihatkan ${start}-${end} dari ${displayTotal} ${label}`}
         </p>
-
-        <Pagination className="mx-auto font-bold">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(event) => {
-                  event.preventDefault();
-                  if (disablePrev) return;
-                  onPrevious?.();
-                }}
-                className={cn({
-                  "pointer-events-none opacity-50": disablePrev,
-                })}
-                aria-disabled={disablePrev}
-              />
-            </PaginationItem>
-            {pageNumbers.map((page, idx) =>
-              typeof page === "number" ? (
-                <PaginationItem key={`page-${page}`}>
-                  <PaginationLink
-                    href="#"
-                    isActive={page === pageIndex}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      handlePageClick(page);
-                    }}
-                    className={cn({
-                      "pointer-events-none opacity-50":
-                        disablePageChange && page !== pageIndex,
-                    })}
-                    aria-disabled={disablePageChange && page !== pageIndex}
-                  >
-                    {page + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ) : (
-                <PaginationItem key={`${page}-${idx}`}>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              )
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className={cn(
+              "rounded-xl border-[#FFD88C]/60 bg-transparent px-4 font-semibold text-[#FFD88C] hover:text-[#ffd88c] transition hover:bg-[#FFD88C]/10",
+              disablePrev && "opacity-60"
             )}
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(event) => {
-                  event.preventDefault();
-                  if (disableNext) return;
-                  onNext?.();
-                }}
-                className={cn({
-                  "pointer-events-none opacity-50": disableNext,
-                })}
-                aria-disabled={disableNext}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+            onClick={() => {
+              if (disablePrev) return;
+              if (pageIndex > 0) {
+                if (onPrevious) {
+                  onPrevious();
+                } else {
+                  onPageChange?.(pageIndex - 1);
+                }
+              }
+            }}
+            disabled={disablePrev}
+          >
+            Previous
+          </Button>
+          <span
+            className="text-xs sm:text-sm font-semibold text-[#FFD88C]"
+            style={bodyFontStyle}
+          >
+            Halaman {pageIndex + 1}
+            {pageCount ? ` dari ${pageCount}` : ""}
+          </span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className={cn(
+              "rounded-xl border-[#FFD88C]/60 bg-transparent px-4 font-semibold text-[#FFD88C] hover:text-[#ffd88c] transition hover:bg-[#FFD88C]/10",
+              disableNext && "opacity-60"
+            )}
+            onClick={() => {
+              if (disableNext) return;
+              if (onNext) {
+                onNext();
+              } else {
+                onPageChange?.(pageIndex + 1);
+              }
+            }}
+            disabled={disableNext}
+          >
+            Next
+          </Button>
+        </div>
       </div>
     </div>
   );

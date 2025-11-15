@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
-import SearchBar from "../Catalog/components/SearchBar";
+import SearchBar from "@/components/catalog/SearchBar";
+import { useCartStore } from "@/store/cartStore";
 import {
   INITIAL_CATEGORY,
   useProductStore,
@@ -21,6 +22,7 @@ export default function CatalogPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const loading = status === "loading";
   const fmt = useMemo(() => new Intl.NumberFormat("id-ID"), []);
+  const fetchCart = useCartStore((s) => s.fetchCart);
 
   useEffect(() => {
     if (status === "idle") {
@@ -131,54 +133,61 @@ export default function CatalogPage() {
   }
 
   const ProductCard = ({ item }: { item: Product }) => (
-    <div className="w-full rounded-2xl border border-white/0 bg-[#463B8B]/15 p-2.5 pb-6">
-      <img
-        src={item.image_url || "/placeholder.png"}
-        alt={item.name || "Produk"}
-        className="mb-1.5 h-50 w-full cursor-pointer rounded-xl object-cover transition-opacity hover:opacity-90"
+    <div className="flex h-full w-full flex-col rounded-2xl border border-white/0 bg-[#463B8B]/15 p-2.5 pb-4">
+      <div
+        className="mb-2 w-full cursor-pointer overflow-hidden rounded-xl bg-[#1d114d]/40"
         onClick={() => handleNavigateToProduct(item.id)}
-      />
-      <div className="mx-auto mb-3 w-[85%] space-y-0.5 text-left">
-        <p className="mb-1.5 text-sm text-[#FFD88C] leading-none">
+      >
+        <img
+          src={item.image_url || "/placeholder.png"}
+          alt={item.name || "Produk"}
+          className="aspect-4/5 w-full object-cover transition-opacity duration-200 hover:opacity-90"
+        />
+      </div>
+      <div className="mx-auto mb-3 flex w-[85%] flex-1 flex-col space-y-1 text-left">
+        <p className="text-sm text-[#FFD88C] leading-none">
           {item.category ?? "-"}
         </p>
         <h2
-          className="mt-2 cursor-pointer text-base font-light text-[#FFC76E] leading-none hover:underline"
+          className="cursor-pointer text-base font-light text-[#FFC76E] leading-tight hover:underline"
           onClick={() => handleNavigateToProduct(item.id)}
         >
           {item.name ?? "-"}
         </h2>
-        <p className="mb-1 font-bold text-[#FFEABB] leading-none">
+        <p className="font-bold text-[#FFEABB] leading-none">
           Rp {fmt.format(Number(item.price ?? 0))}
         </p>
-        <p className="line-clamp-2 text-sm text-gray-300 leading-none">
+        <p className="line-clamp-2 text-sm text-[#FFEABB]/80 leading-snug">
           {item.description ?? "-"}
         </p>
       </div>
       <button
         onClick={(event) => {
           event.stopPropagation();
+          if (item.remaining_stock === 0) return;
           const btn = event.currentTarget;
           btn.classList.add("ring-2", "ring-[#FFE59A]");
           window.setTimeout(() => {
             btn.classList.remove("ring-2", "ring-[#FFE59A]");
           }, 500);
           handleAddToCart(item.id, item.name ?? "Product");
+          fetchCart();
         }}
         disabled={item.remaining_stock === 0}
-        className={`mx-auto mt-auto block w-[85%] rounded-xl py-0.5 text-md font-semibold shadow-lg drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all ${
-          item.remaining_stock === 0
-            ? "cursor-not-allowed bg-[#E13B25] text-[#FFE59A]"
-            : "bg-[#C11B7D] hover:bg-[#8d175c] hover:cursor-pointer text-[#FFE59A] hover:shadow-lg active:ring-2 active:ring-[#FFE59A]"
-        }`}
+        className={`mx-auto mt-auto block w-[95%] rounded-lg py-1 px-2 cursor-pointer text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all
+          ${
+            item.remaining_stock === 0
+              ? "cursor-not-allowed bg-[#7a1644] text-[#ffeabb]/60 opacity-80"
+              : "bg-[#c62d76] text-[#ffeabb] hover:brightness-105 active:brightness-95"
+          }`}
       >
-        {item.remaining_stock === 0 ? "STOK HABIS" : "ADD TO CART +"}
+        {item.remaining_stock === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
       </button>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-transparent-100">
+    <div className="min-h-svh pt-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 flex justify-center">
           <h1 className="mt-4 text-5xl font-extrabold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
@@ -202,9 +211,9 @@ export default function CatalogPage() {
             onNext={handleNext}
             onPrevious={handlePrevious}
             onPageChange={handlePageChange}
-            label="products"
+            label="produk"
             layout="grid"
-            layoutClassName="grid grid-cols-2 gap-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 justify-items-center items-start"
+            layoutClassName="grid grid-cols-2 gap-3 sm:gap-6 md:gap-8 lg:gap-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 justify-items-center items-start"
             emptyState={
               <div className="col-span-full text-center font-bold text-[#FFD88C]">
                 Tidak ada produk yang cocok.
@@ -212,7 +221,7 @@ export default function CatalogPage() {
             }
             getItemKey={(item) => item.id}
           />
-          </div>
+        </div>
       </div>
     </div>
   );

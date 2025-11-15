@@ -1,10 +1,11 @@
-import { useCartStore } from "@/store/cartStore"
+import { useCartStore } from "@/store/cartStore";
 
 export function CheckoutButton() {
-  const { createOrder, cart, isLoading, error } = useCartStore();
+  const { createOrder, cart, isMutating } = useCartStore();
+  const hasItems = (cart?.items?.length ?? 0) > 0;
 
   const handleCheckout = async () => {
-    if (!cart) return;
+    if (!cart || !hasItems || isLoading) return;
     const items = cart.items.map((item) => {
       if (item.bundle_id && item.bundle_id > 0) {
         return { bundleId: item.bundle_id, quantity: item.quantity };
@@ -19,17 +20,23 @@ export function CheckoutButton() {
     }
   };
 
+  const disabled = isMutating || !hasItems;
+
   return (
-    <button onClick={handleCheckout} disabled={isLoading} className="
-      inline-flex flex-col items-center justify-center
-      w-full h-[40px] lg:w-[431px] lg:h-[38px] 
-      rounded-lg lg:rounded-2xl
-      drop-shadow-md/50
-      bg-[#1E368F] lg:bg-[#AC166C] hover:brightness-90 active:brightness-75
-      text-orange-200 text-[14px] lg:text-sm font-bold 
-      transition-all
-    ">
-      {isLoading ? "Processing..." : "Bayar Sekarang"}
+    <button
+      onClick={handleCheckout}
+      disabled={disabled}
+      className={`mx-auto mt-4 block w-full rounded-lg py-1 px-2 text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all ${
+        disabled
+          ? "cursor-not-allowed bg-[#7a1644] text-[#ffeabb]/60 opacity-80"
+          : "bg-[#c62d76] text-[#ffeabb] hover:brightness-105 active:brightness-95"
+      }`}
+    >
+      {isMutating
+        ? "Processing..."
+        : hasItems
+        ? "Bayar Sekarang"
+        : "Keranjang kosong"}
     </button>
   );
 }

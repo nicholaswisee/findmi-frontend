@@ -130,9 +130,9 @@ export default function ProductTable({
         <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>
             {data.length === 0
-              ? "No entries on this page"
-              : `Showing ${start}-${end}${
-                  typeof total === "number" ? ` of ${total}` : ""
+              ? "Tidak ada entri pada halaman ini"
+              : `Memperlihatkan ${start}-${end}${
+                  typeof total === "number" ? ` dari ${total}` : ""
                 }`}
           </p>
           <div className="flex items-center gap-2">

@@ -1,16 +1,18 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { CartItem } from "@/pages/Cart/CartItem";
 import { CartSummary } from "@/pages/Cart/CartSummary";
-import ProductGrid from "@/pages/Catalog/components/ProductGrid";
-import { useProductStore } from "@/pages/Catalog/Mutation";
+import ProductGrid from "@/components/catalog/ProductGrid";
+import { useProductStore } from "@/store/catalogStore";
 
 export default function CartPage() {
-    const { cart, fetchCart, isLoading, error } = useCartStore();
-    const status = useProductStore((s) => s.status);
-    const fetchProducts = useProductStore((s) => s.fetchProducts);
+  const { cart, fetchCart, isLoading, error } = useCartStore();
+  const status = useProductStore((s) => s.status);
+  const fetchProducts = useProductStore((s) => s.fetchProducts);
 
-  useEffect(() => {fetchCart();}, [fetchCart]);
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
   useEffect(() => {
     if (status === "idle") {
       fetchProducts();
@@ -18,22 +20,26 @@ export default function CartPage() {
   }, [status, fetchProducts]);
 
   return (
-    <div className="bg-transparent-100 min-h-screen">
-      <div className="flex flex-col px-[16px] py-[40px] gap[20px] lg:px-[80px] lg:py-[160px] lg:gap-[80px] justify-between items-center">
-        <h1 className="text-[26px] lg:text-[54px] text-[#FFC76E] drop-shadow-md/50">
-          KERANJANGMU
-        </h1>
+    <div className="min-h-svh pt-8">
+      <div className="mx-auto flex max-w-7xl flex-col px-4 sm:px-6">
+        <div className="mb-10 flex justify-center">
+          <h1 className="mt-4 text-5xl font-extrabold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
+            KERANJANGMU
+          </h1>
+        </div>
 
-        <div className="flex flex-col lg:flex-row w-full gap-[80px] justify-center items-start">
-          <div className="w-full h-[200px] lg:w-[661px] lg:h-[347px] px-[16px] py-[24px] gap-[4px] lg:p-[40px] lg:gap-[24px] lg:max-h-[347px] bg-white/30 rounded-xl flex flex-col">
-            <p className="text-[16px] lg:text-[32px] text-[#1B165E] font-extrabold">
+        <div className="mb-16 flex flex-col gap-8 lg:flex-row lg:items-start">
+          <div className="w-full rounded-3xl border border-white/15 bg-white/10 p-4 text-[#1B165E] shadow-lg backdrop-blur sm:p-6 lg:p-10">
+            <p className="text-lg font-extrabold text-[#1B165E] sm:text-2xl lg:text-3xl">
               KERANJANG ({cart?.summary.total_quantity ?? 0})
             </p>
 
-            <div className="flex flex-col gap-6 w-full overflow-y-auto">
+            <div className="mt-6 flex max-h-112 flex-col gap-6 overflow-y-auto">
               {isLoading && <p>Loading cart...</p>}
               {error && <p className="text-red-500">{error}</p>}
-              {!isLoading && cart?.items.length === 0 && <p>Keranjang kosong</p>}
+              {!isLoading && cart?.items.length === 0 && (
+                <p className="text-[#1b165e]">Keranjang kosong</p>
+              )}
 
               {cart?.items.flatMap((item) => {
                 const elements = [];
@@ -72,15 +78,16 @@ export default function CartPage() {
               })}
             </div>
           </div>
-          <CartSummary />
+          <div className="w-full lg:max-w-sm">
+            <CartSummary />
           </div>
+        </div>
 
-          <div className="container mx-auto px-4 py-20 max-w-7xl">
-            <h2 className="text-3xl font-bold text-[#FFD88C] mb-8 drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)] text-center">
-              Pilihan Untuk Kamu
-            </h2>
-            <ProductGrid showSearch={false} maxItems={30} />
-
+        <div className="mb-12">
+          <h2 className="mb-8 text-center text-3xl font-bold text-[#FFC76E] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
+            Pilihan Untuk Kamu
+          </h2>
+          <ProductGrid showSearch={false} maxItems={30} />
         </div>
       </div>
     </div>

@@ -62,6 +62,7 @@ interface OrderResponse {
 interface CartState {
   cart: CartData | null;
   isLoading: boolean;
+  isMutating: boolean;
   error: string | null;
   fetchCart: () => Promise<void>;
   updateCartItem: (itemId: number, quantity: number) => Promise<void>;
@@ -71,9 +72,23 @@ interface CartState {
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const reorderItems = (
+  items: CartItemInterface[],
+  previous?: CartItemInterface[]
+) => {
+  if (!previous?.length) return items;
+  const order = new Map(previous.map((item, idx) => [item.id, idx]));
+  return [...items].sort(
+    (a, b) =>
+      (order.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+      (order.get(b.id) ?? Number.MAX_SAFE_INTEGER)
+  );
+};
+
 export const useCartStore = create<CartState>((set) => ({
   cart: null,
   isLoading: false,
+  isMutating: false,
   error: null,
 
   fetchCart: async () => {
@@ -95,7 +110,7 @@ export const useCartStore = create<CartState>((set) => ({
   },
 
   updateCartItem: async (itemId, quantity) => {
-    set({ isLoading: true, error: null });
+    set({ isMutating: true, error: null });
     try {
       const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
         method: "PATCH",
@@ -105,19 +120,31 @@ export const useCartStore = create<CartState>((set) => ({
       });
 
       if (!res.ok) throw new Error("Failed to update cart item");
-
       const data = await res.json();
-      set({ cart: data.data, isLoading: false });
+      set((state) => {
+        const incoming = data.data;
+        if (!incoming) {
+          return { cart: null, isMutating: false };
+        }
+        const prevItems = state.cart?.items;
+        return {
+          cart: {
+            ...incoming,
+            items: reorderItems(incoming.items ?? [], prevItems),
+          },
+          isMutating: false,
+        };
+      });
     } catch (err: any) {
       set({
-        isLoading: false,
+        isMutating: false,
         error: err?.message || "Gagal mengupdate item keranjang.",
       });
     }
   },
 
   deleteCartItem: async (itemId) => {
-    set({ isLoading: true, error: null });
+    set({ isMutating: true, error: null });
     try {
       const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
         method: "DELETE",
@@ -127,17 +154,30 @@ export const useCartStore = create<CartState>((set) => ({
       if (!res.ok) throw new Error("Failed to delete cart item");
 
       const data = await res.json();
-      set({ cart: data.data, isLoading: false });
+      set((state) => {
+        const incoming = data.data;
+        if (!incoming) {
+          return { cart: null, isMutating: false };
+        }
+        const prevItems = state.cart?.items;
+        return {
+          cart: {
+            ...incoming,
+            items: reorderItems(incoming.items ?? [], prevItems),
+          },
+          isMutating: false,
+        };
+      });
     } catch (err: any) {
       set({
-        isLoading: false,
+        isMutating: false,
         error: err?.message || "Gagal menghapus item keranjang.",
       });
     }
   },
 
   createOrder: async (items) => {
-    set({ isLoading: true, error: null });
+    set({ isMutating: true, error: null });
     try {
       const res = await fetch(`${API_URL}/order`, {
         method: "POST",
@@ -149,11 +189,11 @@ export const useCartStore = create<CartState>((set) => ({
       if (!res.ok) throw new Error("Failed to create order");
 
       const data = await res.json();
-      set({ isLoading: false });
+      set({ isMutating: false });
       return data.data;
     } catch (err: any) {
       set({
-        isLoading: false,
+        isMutating: false,
         error: err?.message || "Gagal membuat order.",
       });
       return null;

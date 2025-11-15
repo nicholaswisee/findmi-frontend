@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, SquarePen, X, Check } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import Button from "@/components/shared/Button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 const API_URL = import.meta.env.VITE_API_URL!;
@@ -61,7 +62,7 @@ export default function ProfilePage() {
       if (!response.ok) {
         const contentType = response.headers.get("content-type");
         let errorMessage = "Gagal menyimpan perubahan";
-        
+
         if (contentType && contentType.includes("application/json")) {
           const error = await response.json();
           errorMessage = error.message || errorMessage;
@@ -87,7 +88,7 @@ export default function ProfilePage() {
   };
 
   const profileFields = [
-    { label: "Nama", value: user?.name, field: "name", editable: true },
+    { label: "Nama", value: user?.name, field: "name", editable: false },
     { label: "Email", value: user?.email, field: "email", editable: false },
     ...(user?.department !== "none"
       ? [
@@ -136,7 +137,7 @@ export default function ProfilePage() {
               <Button
                 variant="blue"
                 onClick={handleEdit}
-                className="rounded-full flex justify-end items-center text-xl font-bold gap-2 bg-[#5f92e0] py-1 px-4 shadow-xl hover:cursor-pointer hover:bg-[#4a7bc8] transition"
+                className="rounded-full flex justify-end items-center text-xl font-bold gap-2 bg-[#5f92e0] py-1 px-5 shadow-xl hover:cursor-pointer  transition"
               >
                 Edit profil <SquarePen className="size-4" />
               </Button>
@@ -160,7 +161,10 @@ export default function ProfilePage() {
               </div>
             )}
           </header>
-          <div className="rounded-2xl flex w-full min-h-36 bg-[#dafff6]/20 p-4">
+          <div
+            className="flex w-full min-h-36 rounded-3xl border border-white/15 bg-white/10 shadow-lg backdrop-blur
+ py-2 px-6"
+          >
             <table className="w-full table-fixed text-left">
               <tbody>
                 {profileFields.map(({ label, value, field, editable }) => {
@@ -177,12 +181,10 @@ export default function ProfilePage() {
                       </th>
                       <td className="py-4 text-[#302a77] font-semibold">
                         {isEditing && editable ? (
-                          <input
+                          <Input
                             type="text"
                             value={
-                              editedData[
-                                field as keyof typeof editedData
-                              ] || ""
+                              editedData[field as keyof typeof editedData] || ""
                             }
                             onChange={(e) =>
                               setEditedData({
@@ -190,7 +192,7 @@ export default function ProfilePage() {
                                 [field]: e.target.value,
                               })
                             }
-                            className="w-full rounded-lg border border-[#302a77] bg-white px-3 py-2 text-[#302a77] font-semibold outline-none focus:ring-2 focus:ring-[#5f92e0]"
+                            className="h-10 w-full rounded-xl border border-white/30 bg-white/80 px-3 text-sm font-semibold text-[#302a77] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5F92E0]"
                           />
                         ) : (
                           value

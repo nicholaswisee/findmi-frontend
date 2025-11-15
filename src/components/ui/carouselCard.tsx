@@ -16,7 +16,7 @@ function CarouselCard() {
     if (!api) {
       return;
     }
-    
+
     setCount(api.scrollSnapList().length);
     setCurrent(api.selectedScrollSnap());
 
@@ -34,23 +34,21 @@ function CarouselCard() {
       if (api.canScrollNext()) {
         api.scrollNext();
       } else {
-        api.scrollTo(0); 
+        api.scrollTo(0);
       }
-    }, 3000); 
+    }, 3000);
 
     return () => clearInterval(intervalId);
   }, [api]);
 
   return (
     <div className="flex flex-col items-center gap-4">
-      
-      <div className="relative w-full max-w-3xl rounded-2xl p-1 border-4 border-blue-400 bg-white/30 shadow-sm">
-        {}
+      <div className="relative w-full max-w-3xl rounded-2xl border-4 border-blue-400 bg-white/30 shadow-sm">
         <img
           src="/global/bunga-jeby-1.png"
           alt=""
           aria-hidden="true"
-        className="absolute pointer-events-none z-20 select-none
+          className="absolute pointer-events-none z-20 select-none
                     -top-8 -left-8 w-20 h-20
                     sm:-top-12 sm:-left-12 sm:w-28 sm:h-28
                     md:-top-12 md:-left-12 md:w-36 md:h-36
@@ -67,7 +65,7 @@ function CarouselCard() {
                     lg:-bottom-20 lg:-right-20 lg:w-44 lg:h-44"
           style={{ transform: "scaleX(-1)" }}
         />
-        <Carousel 
+        <Carousel
           className="w-full"
           setApi={setApi}
           opts={{
@@ -75,21 +73,23 @@ function CarouselCard() {
             loop: true,
           }}
         >
-          <CarouselContent className="h-[150px] sm:h-[200px] w-full sm:w-[500px] md:w-[700px] lg:w-[800px]">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <CarouselItem key={index}>
-              <div className="p-1">
-                <Card>
-                  <CardContent className="flex items-center justify-center p-6">
-                    <span className="text-4xl font-semibold">{index + 1}</span>
-                  </CardContent>
-                </Card>
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-  </Carousel>
-  </div>
+          <CarouselContent className="h-[190px] sm:h-[230px] md:h-[280px] lg:h-80 w-full ml-0">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <CarouselItem key={index} className="h-full pl-0">
+                <div className="px-6 h-full">
+                  <Card className="h-full overflow-hidden border-none bg-transparent shadow-none">
+                    <CardContent className="flex h-full w-full items-center justify-center rounded-xl bg-white/80 px-0 py-0">
+                      <span className="text-4xl font-semibold">
+                        {index + 1}
+                      </span>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+      </div>
 
       <div className="flex gap-2">
         {Array.from({ length: count }).map((_, index) => {
@@ -97,9 +97,9 @@ function CarouselCard() {
           return (
             <button
               key={index}
-            
-              className={`h-2 rounded-full transition-all duration-300 ${isActive ? "w-8" : "w-2"} cursor-pointer focus:outline-none`}
-              
+              className={`h-2 rounded-full transition-all duration-300 ${
+                isActive ? "w-8" : "w-2"
+              } cursor-pointer focus:outline-none`}
               style={{
                 backgroundColor: isActive
                   ? "var(--accent-light-blue, #DAFFF6)"
@@ -107,9 +107,14 @@ function CarouselCard() {
               }}
               onClick={() => api?.scrollTo(index)}
               aria-label={`Go to slide ${index + 1}`}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--accent-light-blue, #DAFFF6)")}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor =
+                  "var(--accent-light-blue, #DAFFF6)")
+              }
               onMouseLeave={(e) => {
-                if (!isActive) e.currentTarget.style.backgroundColor = "var(--semantic-inactive, #87C1FA)";
+                if (!isActive)
+                  e.currentTarget.style.backgroundColor =
+                    "var(--semantic-inactive, #87C1FA)";
               }}
             />
           );

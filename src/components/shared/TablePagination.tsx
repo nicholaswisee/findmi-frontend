@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -29,12 +28,9 @@ export function TablePagination({
 }: TablePaginationProps) {
   const start =
     total === 0 || currentCount === 0 ? 0 : pageIndex * pageSize + 1;
-  const end =
-    currentCount === 0 ? 0 : pageIndex * pageSize + currentCount;
+  const end = currentCount === 0 ? 0 : pageIndex * pageSize + currentCount;
   const computedHasNext =
-    typeof hasNextPage === "boolean"
-      ? hasNextPage
-      : end < total;
+    typeof hasNextPage === "boolean" ? hasNextPage : end < total;
   const disablePrev = loading || pageIndex === 0 || !onPrevious;
   const disableNext = loading || !computedHasNext || !onNext;
 
@@ -47,8 +43,8 @@ export function TablePagination({
     >
       <p>
         {total === 0 || currentCount === 0
-          ? "No entries on this page"
-          : `Showing ${start}-${end} of ${total} ${label}`}
+          ? "Tidak ada entri pada halaman ini"
+          : `Memperlihatkan ${start}-${end} dari ${total} ${label}`}
       </p>
       <div className="flex items-center gap-2">
         <Button

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProductStore, INITIAL_CATEGORY } from "@/store/catalogStore";
 import { toast } from "sonner";
+import { useCartStore } from "@/store/cartStore";
 
 interface ProductGridProps {
   showSearch?: boolean;
@@ -16,6 +17,7 @@ export default function ProductGrid({
   const products = useProductStore((s) => s.products);
   const query = useProductStore((s) => s.query);
   const category = useProductStore((s) => s.category);
+  const fetchCart = useCartStore((s) => s.fetchCart);
 
   const handleNavigateToProduct = (productId: number | string) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -57,7 +59,8 @@ export default function ProductGrid({
       const result = await response.json();
       console.log("Add to cart success:", result);
 
-      toast.success(`Berhasil menambahkan 1x ${productName} ke keranjang!`);
+      toast.success(`Berhasil menambahkan ${productName} ke keranjang!`);
+      fetchCart();
     } catch (error) {
       console.error("Error adding to cart:", error);
       toast.error(
@@ -95,55 +98,59 @@ export default function ProductGrid({
   const fmt = new Intl.NumberFormat("id-ID");
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-12 justify-items-center items-start">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6 md:gap-8 lg:gap-12 justify-items-center items-start">
       {items.map((p) => (
         <div
           key={p.id}
-          className="bg-[#463B8B]/15 rounded-2xl p-2.5 w-full border border-white/0 pb-6"
+          className="flex h-full w-full flex-col rounded-2xl border border-white/0 bg-[#463B8B]/15 p-2.5 pb-4"
         >
-          <img
-            src={p.image_url || "/placeholder.png"}
-            alt={p.name || "Produk"}
-            className="w-full h-50 object-cover rounded-xl mb-1.5 cursor-pointer hover:opacity-90 transition-opacity"
+          <div
+            className="mb-2 w-full cursor-pointer overflow-hidden rounded-xl bg-[#1d114d]/40"
             onClick={() => handleNavigateToProduct(p.id)}
-          />
-          <div className="mx-auto text-left w-[85%] space-y-0.5 mb-3">
-            <p className="text-[#FFD88C] text-sm mb-1.5 leading-none">
+          >
+            <img
+              src={p.image_url || "/placeholder.png"}
+              alt={p.name || "Produk"}
+              className="aspect-4/5 w-full object-cover transition-opacity duration-200 hover:opacity-90"
+            />
+          </div>
+          <div className="mx-auto mb-3 flex w-[85%] flex-1 flex-col space-y-1 text-left">
+            <p className="text-sm text-[#FFD88C] leading-none">
               {p.category ?? "-"}
             </p>
             <h2
-              className="text-[#FFC76E] text-base font-light mt-2 leading-none cursor-pointer hover:underline"
+              className="cursor-pointer text-base font-light text-[#FFC76E] leading-tight hover:underline"
               onClick={() => handleNavigateToProduct(p.id)}
             >
               {p.name ?? "-"}
             </h2>
-            <p className="text-[#FFEABB] font-bold mb-1 leading-none">
+            <p className="font-bold text-[#FFEABB] leading-none">
               Rp {fmt.format(Number(p.price ?? 0))}
             </p>
-            <p className="text-sm text-gray-600 line-clamp-2 leading-none">
+            <p className="line-clamp-2 text-sm text-[#FFEABB]/80 leading-snug">
               {p.description ?? "-"}
             </p>
           </div>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              const btn = e.currentTarget;
+            onClick={(event) => {
+              event.stopPropagation();
+              if (p.remaining_stock === 0) return;
+              const btn = event.currentTarget;
               btn.classList.add("ring-2", "ring-[#FFE59A]");
-              setTimeout(
-                () => btn.classList.remove("ring-2", "ring-[#FFE59A]"),
-                500
-              );
+              window.setTimeout(() => {
+                btn.classList.remove("ring-2", "ring-[#FFE59A]");
+              }, 500);
               handleAddToCart(p.id, p.name ?? "Product");
             }}
             disabled={p.remaining_stock === 0}
-            className={`block mt-auto mx-auto w-[85%] text-md font-semibold rounded-xl py-0.5 shadow-lg drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all
+            className={`mx-auto mt-auto block w-[95%] rounded-lg py-1 px-2 cursor-pointer text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all
               ${
                 p.remaining_stock === 0
-                  ? "bg-[#E13B25] text-[#FFE59A] cursor-not-allowed"
-                  : "bg-[#C11B7D] text-[#FFE59A] hover:shadow-lg active:ring-2 active:ring-[#FFE59A]"
+                  ? "cursor-not-allowed bg-[#7a1644] text-[#ffeabb]/60 opacity-80"
+                  : "bg-[#c62d76] text-[#ffeabb] hover:brightness-105 active:brightness-95"
               }`}
           >
-            {p.remaining_stock === 0 ? "STOK HABIS" : "ADD TO CART"}
+            {p.remaining_stock === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
           </button>
         </div>
       ))}

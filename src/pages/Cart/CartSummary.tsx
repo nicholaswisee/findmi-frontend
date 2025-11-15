@@ -4,28 +4,62 @@ import { useCartStore } from "@/store/cartStore";
 export function CartSummary() {
   const { cart, isLoading, error } = useCartStore();
 
-  const totalAmount = cart?.summary.total_amount ?? 0;
-  
+  const totalQuantity = cart?.summary.total_quantity ?? 0;
+  const subtotal = cart?.summary.total_amount ?? 0;
+  const tax = Math.round(subtotal * 0.11);
+  const grandTotal = subtotal + tax;
+
   return (
-    <div className="w-full h-[134px] px-[16px] py-[18px] gap-[4px] lg:w-[511px] lg:h-[237px] lg:p-[40px] lg:gap-[20px] bg-white/30 rounded-xl flex flex-col shadow-md backdrop-blur-sm">
-      <p className="text-[16px] lg:text-[32px] text-[#1B165E] font-extrabold">
+    <div className="w-full rounded-3xl border border-white/15 bg-white/10 p-4 text-[#1B165E] shadow-lg backdrop-blur sm:p-6 lg:p-10">
+      <p className="text-lg font-extrabold text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)] sm:text-2xl lg:text-3xl">
         RINGKASAN BELANJA
       </p>
 
       {isLoading ? (
-        <p className="text-[#1B165E] text-[24px]">Memuat...</p>
+        <p className="text-xl text-[#1B165E]">Memuat...</p>
       ) : error ? (
-        <p className="text-red-500 text-[24px]">{error}</p>
+        <p className="text-xl text-red-500">{error}</p>
       ) : (
         <>
-          <div className="flex justify-between items-center px-[8px]">
-            <p className="text-[16px] lg:text-[24px] text-[#1B165E] font-bold">Total</p>
-            <p className="text-[16px] lg:text-[24px] text-[#1B165E] font-bold">
-              Rp {totalAmount.toLocaleString("id-ID")}
-            </p>
+          <div className="mt-6 space-y-3">
+            <div className="flex items-center justify-between text-[#1B165E]">
+              <span className="text-sm font-semibold sm:text-base">
+                Jumlah Item
+              </span>
+              <span className="text-sm font-semibold sm:text-base">
+                {totalQuantity}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[#1B165E]">
+              <span className="text-sm font-semibold sm:text-base">
+                Subtotal
+              </span>
+              <span className="text-sm font-semibold sm:text-base">
+                Rp {subtotal.toLocaleString("id-ID")}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[#1B165E]">
+              <span className="text-sm font-semibold sm:text-base">
+                PPN (11%)
+              </span>
+              <span className="text-sm font-semibold sm:text-base">
+                Rp {tax.toLocaleString("id-ID")}
+              </span>
+            </div>
+            <div className="h-px bg-[#1B165E]/20" />
+            <div className="flex items-center justify-between text-[#1B165E]">
+              <span className="text-lg font-bold sm:text-xl lg:text-2xl">
+                Total
+              </span>
+              <span className="text-lg font-bold sm:text-xl lg:text-2xl">
+                Rp {grandTotal.toLocaleString("id-ID")}
+              </span>
+            </div>
           </div>
 
-          <CheckoutButton />
+          <div className="mt-6">
+            <CheckoutButton />
+          </div>
         </>
       )}
     </div>
