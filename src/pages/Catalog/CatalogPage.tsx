@@ -3,7 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import SearchBar from "../Catalog/components/SearchBar";
-import { INITIAL_CATEGORY, useProductStore, type Product } from "./Mutation";
+import {
+  INITIAL_CATEGORY,
+  useProductStore,
+  type Product,
+} from "@/store/catalogStore";
 import { PaginatedList } from "@/components/shared/PaginatedList";
 
 const PAGE_SIZE = 10;
@@ -11,12 +15,8 @@ const API_URL = import.meta.env.VITE_API_URL ?? "https://api.akumasukitb.com";
 
 export default function CatalogPage() {
   const navigate = useNavigate();
-  const status = useProductStore((state) => state.status);
-  const error = useProductStore((state) => state.error);
-  const products = useProductStore((state) => state.products);
-  const query = useProductStore((state) => state.query);
-  const category = useProductStore((state) => state.category);
-  const fetchProducts = useProductStore((state) => state.fetchProducts);
+  const { status, error, products, query, category, fetchProducts } =
+    useProductStore();
 
   const [pageIndex, setPageIndex] = useState(0);
   const loading = status === "loading";
@@ -67,6 +67,15 @@ export default function CatalogPage() {
     if (pageIndex === 0 || loading) return;
     setPageIndex((prev) => Math.max(prev - 1, 0));
   }, [pageIndex, loading]);
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      if (loading) return;
+      setPageIndex(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    [loading]
+  );
 
   const handleNavigateToProduct = useCallback(
     (productId: number | string) => {
@@ -223,6 +232,7 @@ export default function CatalogPage() {
           loading={loading}
           onNext={handleNext}
           onPrevious={handlePrevious}
+          onPageChange={handlePageChange}
           label="products"
           layout="grid"
           layoutClassName="grid grid-cols-2 gap-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 justify-items-center items-start"

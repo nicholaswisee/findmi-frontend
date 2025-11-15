@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { ShoppingCart, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import ProductGrid from "./components/ProductGrid";
-import { useProductStore } from "./Mutation";
+import { useProductStore } from "@/store/catalogStore";
 
 // Types based on API response
 type Product = {

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useProductStore } from "@/pages/Catalog/Mutation";
-import type { Product } from "@/pages/Catalog/Mutation";
+import { useProductStore } from "@/store/catalogStore";
+import type { Product } from "@/store/catalogStore";
 
 export interface ProductDetailPageProps {
   product : Product;

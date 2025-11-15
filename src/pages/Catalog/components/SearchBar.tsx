@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useProductStore, INITIAL_CATEGORY } from "../Mutation";
+import { useProductStore, INITIAL_CATEGORY } from "@/store/catalogStore";
 
 export interface SearchBarProps {
   defaultCategoryLabel?: string;

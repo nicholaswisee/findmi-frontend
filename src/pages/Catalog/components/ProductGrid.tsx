@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProductStore, INITIAL_CATEGORY } from "../Mutation";
+import { useProductStore, INITIAL_CATEGORY } from "@/store/catalogStore";
 import { toast } from "sonner";
 
 interface ProductGridProps {

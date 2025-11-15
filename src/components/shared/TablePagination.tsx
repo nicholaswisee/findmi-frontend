@@ -1,11 +1,5 @@
 import * as React from "react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type TablePaginationProps = {
@@ -44,18 +38,6 @@ export function TablePagination({
   const disablePrev = loading || pageIndex === 0 || !onPrevious;
   const disableNext = loading || !computedHasNext || !onNext;
 
-  const handlePrevious = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    if (disablePrev) return;
-    onPrevious?.();
-  };
-
-  const handleNext = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    if (disableNext) return;
-    onNext?.();
-  };
-
   return (
     <div
       className={cn(
@@ -68,30 +50,25 @@ export function TablePagination({
           ? "No entries on this page"
           : `Showing ${start}-${end} of ${total} ${label}`}
       </p>
-      <Pagination className="w-fit sm:justify-end">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href="#"
-              onClick={handlePrevious}
-              className={cn({
-                "pointer-events-none opacity-50": disablePrev,
-              })}
-              aria-disabled={disablePrev}
-            />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={handleNext}
-              className={cn({
-                "pointer-events-none opacity-50": disableNext,
-              })}
-              aria-disabled={disableNext}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onPrevious}
+          disabled={disablePrev}
+        >
+          Previous
+        </Button>
+        <span className="text-xs sm:text-sm">Page {pageIndex + 1}</span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onNext}
+          disabled={disableNext}
+        >
+          Next
+        </Button>
+      </div>
     </div>
   );
 }

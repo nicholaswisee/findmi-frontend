@@ -5,6 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTable } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { TablePagination } from "@/components/shared/TablePagination";
 import type { OrderWithUser } from "@/types/types";
 type OrdersTableProps = {
