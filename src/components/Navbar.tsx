@@ -64,12 +64,12 @@ export default function Navbar() {
         className="absolute inset-0 w-full h-full object-cover -z-10 pointer-events-none"
         alt="Background Image"
       />
-      <header className="z-50 flex gap-3 justify-center items-center">
-        <img className="h-12" src="/global/Logo.png" alt="AMI 2026" />
         <Link to={"/"}>
-          <h4 className="text-center mt-2 ">FINDMI 2026</h4>
+          <header className="z-50 flex gap-3 justify-center items-center">
+            <img className="h-12" src="/global/Logo.png" alt="AMI 2026" />
+            <h4 className="text-center mt-2 text-4xl">FINDMI 2026</h4>
+          </header>
         </Link>
-      </header>
       <nav className="place-self-end">
         <ul className="flex gap-4 items-center pb-1">
           {links.map((link) => (
