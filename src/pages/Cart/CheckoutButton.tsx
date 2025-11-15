@@ -1,15 +1,16 @@
-import { useCartStore } from "@/pages/Cart/API/Cart"
+import { useCartStore } from "@/store/cartStore"
 
 export function CheckoutButton() {
   const { createOrder, cart, isLoading, error } = useCartStore();
 
   const handleCheckout = async () => {
     if (!cart) return;
-    const items = cart.items.map((item) => ({
-      productId: item.product_id,
-      bundleId: item.bundle_id ?? 0,
-      quantity: item.quantity,
-    }));
+    const items = cart.items.map((item) => {
+      if (item.bundle_id && item.bundle_id > 0) {
+        return { bundleId: item.bundle_id, quantity: item.quantity };
+      }
+      return { productId: item.product_id, quantity: item.quantity };
+    });
 
     const result = await createOrder(items);
     if (result) {

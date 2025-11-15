@@ -134,8 +134,8 @@ export default function ProductDetailPage() {
           error
         );
         toast.error(
-          `Failed to load ${isBundle ? "bundle" : "product"}: ${
-            error instanceof Error ? error.message : "Unknown error"
+          `Gagal memuat ${isBundle ? "bundel" : "produk"}: ${
+            error instanceof Error ? error.message : "Kesalahan tidak diketahui"
           }`
         );
         navigate("/catalog");
@@ -151,14 +151,20 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (!selectedSize && !isProductBundle(product)) {
-      toast.error("Please select a size");
+      toast.error("Silakan pilih ukuran terlebih dahulu");
       return;
     }
 
     try {
       const requestBody = isProductBundle(product)
-        ? { productId: null, bundleId: product.id, quantity }
-        : { productId: product?.id, bundleId: null, quantity };
+        ? { bundleId: product.id, quantity }
+        : product
+        ? { productId: product.id, quantity }
+        : null;
+
+      if (!requestBody) {
+        throw new Error("Produk tidak ditemukan");
+      }
 
       console.log("Adding to cart:", requestBody);
 
@@ -177,18 +183,22 @@ export default function ProductDetailPage() {
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Add to cart error:", errorData);
-        throw new Error(errorData.message || "Failed to add to cart");
+        throw new Error(
+          errorData.message || "Gagal menambahkan produk ke keranjang"
+        );
       }
 
       const result = await response.json();
       console.log("Add to cart success:", result);
 
-      toast.success(`Added ${quantity}x ${product?.name} to cart!`);
+      toast.success(
+        `Berhasil menambahkan ${quantity}x ${product?.name} ke keranjang!`
+      );
     } catch (error) {
       console.error("Error adding to cart:", error);
       toast.error(
-        `Failed to add to cart: ${
-          error instanceof Error ? error.message : "Unknown error"
+        `Gagal menambahkan ke keranjang: ${
+          error instanceof Error ? error.message : "Kesalahan tidak diketahui"
         }`
       );
     }

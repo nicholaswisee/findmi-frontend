@@ -1,4 +1,4 @@
-import { useCartStore } from "@/pages/Cart/API/Cart";
+import { useCartStore } from "@/store/cartStore";
 import minusImg from "@/assets/icon-minus.png";
 import plusImg from "@/assets/icon-plus.png";
 import fallbackImg from "@/assets/Property1=Default.png";

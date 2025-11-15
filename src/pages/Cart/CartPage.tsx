@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useCartStore } from "@/pages/Cart/API/Cart";
+import { useCartStore } from "@/store/cartStore";
 import { CartItem } from "@/pages/Cart/CartItem";
 import { CartSummary } from "@/pages/Cart/CartSummary";
 import ProductGrid from "@/pages/Catalog/components/ProductGrid";

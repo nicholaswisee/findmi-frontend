@@ -88,10 +88,10 @@ export default function CatalogPage() {
   const handleAddToCart = useCallback(
     async (productId: number | string, productName: string) => {
       try {
+        const normalizedProductId =
+          typeof productId === "string" ? parseInt(productId, 10) : productId;
         const requestBody = {
-          productId:
-            typeof productId === "string" ? parseInt(productId, 10) : productId,
-          bundleId: null,
+          productId: normalizedProductId,
           quantity: 1,
         };
 
@@ -110,11 +110,11 @@ export default function CatalogPage() {
           throw new Error(errorData.message || "Failed to add to cart");
         }
 
-        toast.success(`Added 1x ${productName} to cart!`);
+        toast.success(`Berhasil menambahkan ${productName} ke keranjang!`);
       } catch (err) {
         toast.error(
-          `Failed to add to cart: ${
-            err instanceof Error ? err.message : "Unknown error"
+          `Gagal menambahkan ke keranjang: ${
+            err instanceof Error ? err.message : "Kesalahan tidak diketahui"
           }`
         );
       }

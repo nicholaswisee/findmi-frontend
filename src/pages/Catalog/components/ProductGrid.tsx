@@ -27,10 +27,10 @@ export default function ProductGrid({
     productName: string
   ) => {
     try {
+      const normalizedProductId =
+        typeof productId === "string" ? parseInt(productId, 10) : productId;
       const requestBody = {
-        productId:
-          typeof productId === "string" ? parseInt(productId, 10) : productId,
-        bundleId: null,
+        productId: normalizedProductId,
         quantity: 1,
       };
 
@@ -57,12 +57,12 @@ export default function ProductGrid({
       const result = await response.json();
       console.log("Add to cart success:", result);
 
-      toast.success(`Added 1x ${productName} to cart!`);
+      toast.success(`Berhasil menambahkan 1x ${productName} ke keranjang!`);
     } catch (error) {
       console.error("Error adding to cart:", error);
       toast.error(
-        `Failed to add to cart: ${
-          error instanceof Error ? error.message : "Unknown error"
+        `Gagal menambahkan ke keranjang: ${
+          error instanceof Error ? error.message : "Kesalahan tidak diketahui"
         }`
       );
     }

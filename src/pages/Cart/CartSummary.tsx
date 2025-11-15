@@ -1,5 +1,5 @@
 import { CheckoutButton } from "./CheckoutButton";
-import { useCartStore } from "@/pages/Cart/API/Cart";
+import { useCartStore } from "@/store/cartStore";
 
 export function CartSummary() {
   const { cart, isLoading, error } = useCartStore();

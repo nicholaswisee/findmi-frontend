@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface CartProduct{
+interface CartProduct {
   id: number;
   name: string;
   price: number;
@@ -8,7 +8,7 @@ interface CartProduct{
   description: string;
   image_url: string;
   remaining_stock: number;
-};
+}
 
 interface CartBundle {
   id: number;
@@ -19,7 +19,7 @@ interface CartBundle {
   image_url: string;
   bundle_items: { product_id: number; amount: number }[];
   is_hidden: boolean;
-};
+}
 
 interface CartItemInterface {
   id: number;
@@ -31,12 +31,12 @@ interface CartItemInterface {
   line_total: number;
   product?: CartProduct;
   bundle?: CartBundle;
-};
+}
 
 interface CartSummaryInterface {
   total_quantity: number;
   total_amount: number;
-};
+}
 
 interface CartData {
   id: number;
@@ -46,18 +46,18 @@ interface CartData {
   deleted_at: string | null;
   items: CartItemInterface[];
   summary: CartSummaryInterface;
-};
+}
 
 interface OrderItemRequest {
   productId: number;
   bundleId: number;
   quantity: number;
-};
+}
 
 interface OrderResponse {
-  order: any;
-  payment: any;
-};
+  order: unknown;
+  payment: unknown;
+}
 
 interface CartState {
   cart: CartData | null;
@@ -69,6 +69,8 @@ interface CartState {
   createOrder: (items: OrderItemRequest[]) => Promise<OrderResponse | null>;
 }
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export const useCartStore = create<CartState>((set) => ({
   cart: null,
   isLoading: false,
@@ -77,16 +79,17 @@ export const useCartStore = create<CartState>((set) => ({
   fetchCart: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/cart`); 
-      console.log(res.status);
+      const res = await fetch(`${API_URL}/cart`, {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error("Failed to fetch cart");
 
-      const data = await res.json(); 
+      const data = await res.json();
       set({ cart: data.data, isLoading: false });
     } catch (err: any) {
       set({
         isLoading: false,
-        error: err.message || "Gagal mengambil data keranjang.",
+        error: err?.message || "Gagal mengambil data keranjang.",
       });
     }
   },
@@ -94,8 +97,9 @@ export const useCartStore = create<CartState>((set) => ({
   updateCartItem: async (itemId, quantity) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/cart/items/${itemId}`, {
+      const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
         method: "PATCH",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ quantity }),
       });
@@ -107,7 +111,7 @@ export const useCartStore = create<CartState>((set) => ({
     } catch (err: any) {
       set({
         isLoading: false,
-        error: err.message || "Gagal mengupdate item keranjang.",
+        error: err?.message || "Gagal mengupdate item keranjang.",
       });
     }
   },
@@ -115,8 +119,9 @@ export const useCartStore = create<CartState>((set) => ({
   deleteCartItem: async (itemId) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/cart/items/${itemId}`, {
+      const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
         method: "DELETE",
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error("Failed to delete cart item");
@@ -126,16 +131,17 @@ export const useCartStore = create<CartState>((set) => ({
     } catch (err: any) {
       set({
         isLoading: false,
-        error: err.message || "Gagal menghapus item keranjang.",
+        error: err?.message || "Gagal menghapus item keranjang.",
       });
     }
   },
-  
+
   createOrder: async (items) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/order`, {
+      const res = await fetch(`${API_URL}/order`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ items }),
       });
@@ -144,11 +150,11 @@ export const useCartStore = create<CartState>((set) => ({
 
       const data = await res.json();
       set({ isLoading: false });
-      return data.data; 
+      return data.data;
     } catch (err: any) {
       set({
         isLoading: false,
-        error: err.message || "Gagal membuat order.",
+        error: err?.message || "Gagal membuat order.",
       });
       return null;
     }
