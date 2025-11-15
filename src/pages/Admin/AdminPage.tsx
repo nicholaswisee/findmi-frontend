@@ -38,21 +38,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { DEPARTMENTS } from "@/constants/departments";
-import type {
-  RevenueAnalyticsResponse,
-  UserDepartmentEnum,
-} from "@/types/types";
+import type { UserDepartmentEnum } from "@/types/types";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-
-const API_URL = import.meta.env.VITE_API_URL;
-
-if (!API_URL) {
-  throw new Error("VITE_API_URL is not defined");
-}
+import { useAnalyticsStore } from "@/store/analyticsStore";
 
 type DepartmentFilterValue = UserDepartmentEnum | "all";
 
@@ -96,52 +88,26 @@ const formatPercentChange = (value: number) =>
 export default function AdminPage() {
   const [departmentFilter, setDepartmentFilter] =
     useState<DepartmentFilterValue>("all");
-  const [data, setData] = useState<RevenueAnalyticsResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [ordersPage, setOrdersPage] = useState(0);
   const ORDERS_PER_PAGE = 30;
-
-  const fetchAnalytics = useCallback(async (dept: DepartmentFilterValue) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const params = new URLSearchParams();
-      if (dept !== "all") {
-        params.set("department", dept);
-      }
-      const queryString = params.toString();
-      const res = await fetch(
-        `${API_URL}/analytics/dashboard${queryString ? `?${queryString}` : ""}`,
-        {
-          credentials: "include",
-        }
-      );
-      if (!res.ok) {
-        throw new Error("Failed to fetch analytics");
-      }
-      const payload = (await res.json()) as {
-        success: boolean;
-        data: RevenueAnalyticsResponse;
-        message: string;
-      };
-      setData(payload.data);
-      setLastUpdated(new Date());
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to load analytics data"
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const data = useAnalyticsStore((state) => state.analytics);
+  const loading = useAnalyticsStore((state) => state.analyticsLoading);
+  const error = useAnalyticsStore((state) => state.analyticsError);
+  const fetchAnalyticsData = useAnalyticsStore((state) => state.fetchAnalytics);
+  const lastFetchedAt = useAnalyticsStore((state) => state.lastFetchedAt);
+  const lastUpdated = lastFetchedAt ? new Date(lastFetchedAt) : null;
 
   useEffect(() => {
-    fetchAnalytics(departmentFilter).catch(() => {
-      // Errors handled inside fetchAnalytics
+    fetchAnalyticsData({ department: departmentFilter }).catch(() => {
+      // errors handled in store
     });
-  }, [departmentFilter, fetchAnalytics]);
+  }, [departmentFilter, fetchAnalyticsData]);
+
+  const handleRefresh = useCallback(() => {
+    fetchAnalyticsData({ department: departmentFilter }).catch(() => {
+      // errors handled in store
+    });
+  }, [departmentFilter, fetchAnalyticsData]);
 
   useEffect(() => {
     setOrdersPage(0);
@@ -265,7 +231,7 @@ export default function AdminPage() {
               <SelectContent className="max-h-72 w-64">
                 <SelectItem
                   value="all"
-                  className="whitespace-normal break-words text-left"
+                  className="whitespace-normal wrap-break-word text-left"
                 >
                   All Departments
                 </SelectItem>
@@ -273,7 +239,7 @@ export default function AdminPage() {
                   <SelectItem
                     key={dept}
                     value={dept}
-                    className="whitespace-normal break-words text-left"
+                    className="whitespace-normal wrap-break-word text-left"
                   >
                     {dept}
                   </SelectItem>
@@ -284,7 +250,7 @@ export default function AdminPage() {
           <Button
             variant="outline"
             className="w-full sm:w-auto"
-            onClick={() => fetchAnalytics(departmentFilter)}
+            onClick={handleRefresh}
             disabled={loading}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
@@ -372,7 +338,7 @@ export default function AdminPage() {
                   <>
                     <ChartContainer
                       config={chartConfig}
-                      className="aspect-auto h-[240px] w-full lg:h-[300px]"
+                      className="aspect-auto h-60 w-full lg:h-[300px]"
                     >
                       <AreaChart
                         data={chartData}
@@ -453,7 +419,7 @@ export default function AdminPage() {
               <CardHeader>
                 <CardTitle>Department Contribution</CardTitle>
               </CardHeader>
-              <CardContent className="overflow-x-auto lg:max-h-[360px] lg:overflow-y-auto lg:pr-2">
+              <CardContent className="overflow-x-auto lg:max-h-[400px] lg:overflow-y-auto lg:pr-2">
                 {data.departmentBreakdown.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     No department data available for this filter.

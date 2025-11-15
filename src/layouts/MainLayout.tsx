@@ -5,7 +5,7 @@ import { Toaster } from "sonner";
 
 export default function MainLayout() {
   return (
-    <div className="flex flex-col  text-gray-900 font-body">
+    <div className="min-h-screen flex flex-col text-gray-900 font-body">
       <Navbar />
       <Toaster
         toastOptions={{

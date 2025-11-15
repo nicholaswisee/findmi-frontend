@@ -6,11 +6,13 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { TablePagination } from "@/components/shared/TablePagination";
 import type { OrderWithUser } from "@/types/types";
 type OrdersTableProps = {
   data: OrderWithUser[];
   pageIndex?: number;
   pageSize?: number;
+  total?: number;
   hasNextPage?: boolean;
   loading?: boolean;
   onNextPage?: () => void;
@@ -45,6 +47,7 @@ export default function OrdersTable({
   data,
   pageIndex,
   pageSize,
+  total,
   hasNextPage,
   loading,
   onNextPage,
@@ -146,36 +149,26 @@ export default function OrdersTable({
       ? pageIndex! * pageSize! + data.length
       : data.length;
 
+  const resolvedTotal =
+    typeof total === "number"
+      ? total
+      : pageIndex! * pageSize! + data.length;
+
   return (
     <div className="flex h-[88svh] min-w-0 flex-col space-y-4">
       <DataTable columns={columns} data={data} />
       {manualPagination && (
-        <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>
-            {data.length === 0
-              ? "No entries on this page"
-              : `Showing ${start}-${end}`}
-          </p>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onPreviousPage}
-              disabled={!onPreviousPage || loading || pageIndex === 0}
-            >
-              Previous
-            </Button>
-            <span className="text-xs sm:text-sm">Page {pageIndex! + 1}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onNextPage}
-              disabled={!onNextPage || loading || !hasNextPage}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
+        <TablePagination
+          pageIndex={pageIndex!}
+          pageSize={pageSize!}
+          total={resolvedTotal}
+          currentCount={data.length}
+          hasNextPage={hasNextPage}
+          loading={loading}
+          onNext={onNextPage}
+          onPrevious={onPreviousPage}
+          label="orders"
+        />
       )}
     </div>
   );

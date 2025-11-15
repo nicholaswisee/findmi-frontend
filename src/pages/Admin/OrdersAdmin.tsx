@@ -29,13 +29,12 @@ export default function OrdersAdmin() {
   const pageIndex = useAdminStore((state) => state.orderPageIndex);
   const pageSize = useAdminStore((state) => state.orderPageSize);
   const hasNextPage = useAdminStore((state) => state.orderHasNext);
+  const totalOrders = useAdminStore((state) => state.orderTotal);
   const storedOrderSearch = useAdminStore((state) => state.orderSearchQuery);
   const storedOrderDepartment = useAdminStore(
     (state) => state.orderDepartmentFilter
   );
-  const storedOrderPickup = useAdminStore(
-    (state) => state.orderPickupFilter
-  );
+  const storedOrderPickup = useAdminStore((state) => state.orderPickupFilter);
   const updateOrderAdmin = useAdminStore((state) => state.updateOrderAdmin);
 
   const [departmentFilter, setDepartmentFilter] =
@@ -53,7 +52,7 @@ export default function OrdersAdmin() {
   const [activeOrderId, setActiveOrderId] = useState<number | null>(null);
   const [activeOrder, setActiveOrder] = useState<OrderWithUser | null>(null);
   const locationOrder =
-    ((location.state as { order?: OrderWithUser } | null)?.order) ?? null;
+    (location.state as { order?: OrderWithUser } | null)?.order ?? null;
 
   useEffect(() => {
     setDepartmentFilter(storedOrderDepartment ?? "all");
@@ -124,7 +123,13 @@ export default function OrdersAdmin() {
         { replace: true, state: null }
       );
     }
-  }, [location.pathname, location.state, navigateRouter, searchParams, setSearchParams]);
+  }, [
+    location.pathname,
+    location.state,
+    navigateRouter,
+    searchParams,
+    setSearchParams,
+  ]);
 
   useEffect(() => {
     if (activeOrderId === null) {
@@ -178,7 +183,9 @@ export default function OrdersAdmin() {
       department: departmentFilter,
       pickup: pickupFilter,
     }).catch((err) => {
-      toast.error(err instanceof Error ? err.message : "Gagal memuat ulang data");
+      toast.error(
+        err instanceof Error ? err.message : "Gagal memuat ulang data"
+      );
     });
   };
 
@@ -233,11 +240,11 @@ export default function OrdersAdmin() {
     [activeOrderId, handleUpdateOrder]
   );
 
-    const resetFilters = () => {
-      setDepartmentFilter("all");
-      setPickupFilter("all");
-      setSearchTerm("");
-    };
+  const resetFilters = () => {
+    setDepartmentFilter("all");
+    setPickupFilter("all");
+    setSearchTerm("");
+  };
 
   const openDialogForOrder = useCallback(
     (orderId: number) => {
@@ -273,20 +280,25 @@ export default function OrdersAdmin() {
           <Label>Department</Label>
           <Select
             value={departmentFilter}
-            onValueChange={(value) => setDepartmentFilter(value as DepartmentFilterValue)}
+            onValueChange={(value) =>
+              setDepartmentFilter(value as DepartmentFilterValue)
+            }
           >
             <SelectTrigger className="w-full whitespace-normal text-left">
               <SelectValue placeholder="All Departments" />
             </SelectTrigger>
-            <SelectContent className="max-h-72 w-full min-w-[12rem]">
-              <SelectItem value="all" className="whitespace-normal break-words text-left">
+            <SelectContent className="max-h-72 w-full min-w-48">
+              <SelectItem
+                value="all"
+                className="whitespace-normal wrap-break-word text-left"
+              >
                 All Departments
               </SelectItem>
               {DEPARTMENTS.map((dept) => (
                 <SelectItem
                   key={dept}
                   value={dept}
-                  className="whitespace-normal break-words text-left"
+                  className="whitespace-normal wrap-break-word text-left"
                 >
                   {dept}
                 </SelectItem>
@@ -298,19 +310,30 @@ export default function OrdersAdmin() {
           <Label>Pickup status</Label>
           <Select
             value={pickupFilter}
-            onValueChange={(value) => setPickupFilter(value as PickupFilterValue)}
+            onValueChange={(value) =>
+              setPickupFilter(value as PickupFilterValue)
+            }
           >
             <SelectTrigger className="w-full whitespace-normal text-left">
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
-            <SelectContent className="w-full min-w-[12rem]">
-              <SelectItem value="all" className="whitespace-normal break-words text-left">
+            <SelectContent className="w-full min-w-48">
+              <SelectItem
+                value="all"
+                className="whitespace-normal wrap-break-word text-left"
+              >
                 All
               </SelectItem>
-              <SelectItem value="pending" className="whitespace-normal break-words text-left">
+              <SelectItem
+                value="pending"
+                className="whitespace-normal wrap-break-word text-left"
+              >
                 Pending pickup
               </SelectItem>
-              <SelectItem value="taken" className="whitespace-normal break-words text-left">
+              <SelectItem
+                value="taken"
+                className="whitespace-normal wrap-break-word text-left"
+              >
                 Taken
               </SelectItem>
             </SelectContent>
@@ -319,7 +342,7 @@ export default function OrdersAdmin() {
         <div className="space-y-2 min-w-0 lg:col-span-2">
           <Label htmlFor="order-search">Search by buyer</Label>
           <Input
-            className="w-full break-words"
+            className="w-full wrap-break-word"
             id="order-search"
             placeholder="Search by buyer name..."
             value={searchTerm}
@@ -340,6 +363,7 @@ export default function OrdersAdmin() {
           data={orders}
           pageIndex={pageIndex}
           pageSize={pageSize}
+          total={totalOrders}
           hasNextPage={hasNextPage}
           loading={loading}
           onNextPage={handleNextPage}

@@ -9,6 +9,7 @@ import {
 } from "react-hook-form";
 
 import type { Bundle, Product } from "@/types/types";
+import { useAdminStore } from "@/store/adminStore";
 import {
   Dialog,
   DialogClose,
@@ -32,12 +33,6 @@ import {
 } from "@/components/ui/select";
 import { CircleEllipsisIcon } from "lucide-react";
 import { DEPARTMENTS } from "@/constants/departments";
-
-const API_URL = import.meta.env.VITE_API_URL;
-
-if (!API_URL) {
-  throw new Error("VITE_API_URL is not defined");
-}
 
 export type BundleFormValues = {
   name: string;
@@ -268,6 +263,7 @@ function BundleItemRow({
 }: BundleItemRowProps) {
   const { control, setValue, watch } = form;
   const productId = watch(`bundle_items.${index}.product_id`);
+  const searchProducts = useAdminStore((state) => state.searchProducts);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState<Product[]>([]);
@@ -287,27 +283,17 @@ function BundleItemRow({
     setSearching(true);
     setSearchError(null);
 
-    fetch(
-      `${API_URL}/product/search?keyword=${encodeURIComponent(
-        searchTerm.trim()
-      )}`,
-      {
-        credentials: "include",
-        signal: controller.signal,
-      }
-    )
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to search products");
-        return res.json();
-      })
-      .then((payload) => {
-        if (!cancelled) {
-          setResults((payload?.data as Product[]) ?? []);
-        }
+    searchProducts(searchTerm.trim(), controller.signal)
+      .then((products) => {
+        if (!cancelled) setResults(products ?? []);
       })
       .catch((err) => {
-        if (err.name === "AbortError") return;
-        if (!cancelled) setSearchError((err as Error).message);
+        if ((err as Error).name === "AbortError") return;
+        if (!cancelled) {
+          setSearchError(
+            err instanceof Error ? err.message : "Failed to search products"
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) setSearching(false);
@@ -317,7 +303,7 @@ function BundleItemRow({
       cancelled = true;
       controller.abort();
     };
-  }, [searchTerm]);
+  }, [searchProducts, searchTerm]);
 
   const handleSelectProduct = (product: Product) => {
     setValue(`bundle_items.${index}.product_id`, product.id, {
