@@ -62,15 +62,18 @@ export const useAuthStore = create<AuthState>()(
           lastFetched &&
           now - lastFetched < REVALIDATE_INTERVAL
         ) {
+          console.log("[AuthStore] Skipping refresh (recently fetched)");
           return;
         }
 
+        console.log("[AuthStore] Starting user refresh...");
         set({ loading: true });
         try {
           const res = await fetch(`${API_URL}/auth/me`, {
             credentials: "include",
           });
           if (!res.ok) {
+            console.log("[AuthStore] Not authenticated, resetting state");
             set({
               ...initialState,
               loading: false,
@@ -89,6 +92,7 @@ export const useAuthStore = create<AuthState>()(
             console.warn("Session fingerprint mismatch detected. Resetting.");
           }
 
+          console.log("[AuthStore] User authenticated:", user.name);
           set({
             user: data.data.user,
             session: serverSession,

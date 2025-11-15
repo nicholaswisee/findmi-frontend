@@ -5,7 +5,7 @@ import { ShoppingBasket, CircleUser } from "lucide-react";
 import Button from "./shared/Button";
 
 export default function Navbar() {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, loading } = useAuthStore();
 
   type NavLink = {
     path: string;
@@ -18,6 +18,11 @@ export default function Navbar() {
       { path: "/catalog", label: "Catalog", icon: null },
     ];
 
+    // Don't show auth-dependent links while loading
+    if (loading) {
+      return base;
+    }
+
     if (isAuthenticated) {
       base.push({
         path: "/cart",
@@ -28,10 +33,12 @@ export default function Navbar() {
         path: "/profile",
         label: "Profile",
         icon: (
-          <div className=" border-2 border-[#ffd88c] bg-plain-green text-[#ffd88c] rounded-xl">
+          <div className=" This subscribes to the entire store, which means the Navbar will re-render every time any part of the auth store changes. However, the real issue is that when the store rehydrates (loads from localStorage), it sets isAuthenticated = false and user = null before the refreshUser runs.
+          
+          border-2 border-[#ffd88c] bg-plain-green text-[#ffd88c] rounded-xl">
             <span className="flex items-center gap-2 py-2 px-4 bg-[#463b8b]/50 rounded-xl">
               <CircleUser className="size-5 md:size-6 lg:size-8 mt-1" />
-              <p>Hi, {user?.name.trim().split(" ")[0]}</p>
+              <p>{user?.name.trim().split(" ")[0]}</p>
             </span>
           </div>
         ),
@@ -48,7 +55,7 @@ export default function Navbar() {
       base.unshift({ path: "/dashboard", label: "Admin", icon: null });
     }
     return base;
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, loading]);
 
   return (
     <div className="h-fit sticky top-0 w-full z-50 p-2 drop-shadow-2xl text-[#ffd88c]">

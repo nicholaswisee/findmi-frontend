@@ -20,7 +20,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     refreshUser();
-  }, []);
+  }, [refreshUser]);
 
   return (
     <section className="relative isolate flex min-h-[calc(100svh-5rem)] items-center justify-center px-2 py-10 sm:px-4 md:py-16">

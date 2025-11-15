@@ -1,21 +1,27 @@
-import { useNavigate, useRoutes } from "react-router-dom";
+import { useRoutes } from "react-router-dom";
 import { routes } from "./routes";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "./store/authStore";
+import { areCookiesEnabled } from "./lib/cookies";
+import CookieWarning from "./components/CookieWarning";
 
 const FIVE_MINUTES = 5 * 60 * 1000;
 
 export default function App() {
-  const navigate = useNavigate();
   const refreshUser = useAuthStore((s) => s.refreshUser);
   const [bootstrapped, setBootstrapped] = useState(false);
+  const [cookiesEnabled, setCookiesEnabled] = useState(true);
 
   useEffect(() => {
+    // Check if cookies are enabled
+    const enabled = areCookiesEnabled();
+    setCookiesEnabled(enabled);
+
     const params = new URLSearchParams(window.location.search);
     if (params.get("login") === "success") {
       window.history.replaceState({}, "", "/");
     }
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     if (bootstrapped) return;
@@ -46,5 +52,10 @@ export default function App() {
     return null;
   }
 
-  return element;
+  return (
+    <>
+      {element}
+      {!cookiesEnabled && <CookieWarning />}
+    </>
+  );
 }
