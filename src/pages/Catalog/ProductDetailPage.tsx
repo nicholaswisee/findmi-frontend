@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { ShoppingCart, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import ProductGrid from "@/components/catalog/ProductGrid";
 import { useProductStore } from "@/store/catalogStore";

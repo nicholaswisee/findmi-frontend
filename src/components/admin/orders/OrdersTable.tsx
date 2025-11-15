@@ -138,21 +138,19 @@ export default function OrdersTable({
   const manualPagination =
     pageIndex !== undefined && pageSize !== undefined && pageSize > 0;
 
-  const start =
-    manualPagination && data.length > 0
-      ? pageIndex! * pageSize! + 1
-      : data.length === 0
-      ? 0
-      : 1;
-  const end =
-    manualPagination && data.length > 0
-      ? pageIndex! * pageSize! + data.length
-      : data.length;
+  // const start =
+  //   manualPagination && data.length > 0
+  //     ? pageIndex! * pageSize! + 1
+  //     : data.length === 0
+  //     ? 0
+  //     : 1;
+  // const end =
+  //   manualPagination && data.length > 0
+  //     ? pageIndex! * pageSize! + data.length
+  //     : data.length;
 
   const resolvedTotal =
-    typeof total === "number"
-      ? total
-      : pageIndex! * pageSize! + data.length;
+    typeof total === "number" ? total : pageIndex! * pageSize! + data.length;
 
   return (
     <div className="flex h-[88svh] min-w-0 flex-col space-y-4">

@@ -49,8 +49,8 @@ interface CartData {
 }
 
 interface OrderItemRequest {
-  productId: number;
-  bundleId: number;
+  productId?: number;
+  bundleId?: number;
   quantity: number;
 }
 

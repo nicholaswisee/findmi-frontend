@@ -160,16 +160,16 @@ export default function UserOrdersTable({
   const manualPagination =
     pageIndex !== undefined && pageSize !== undefined && pageSize > 0;
 
-  const start =
-    manualPagination && data.length > 0
-      ? pageIndex! * pageSize! + 1
-      : data.length === 0
-      ? 0
-      : 1;
-  const end =
-    manualPagination && data.length > 0
-      ? pageIndex! * pageSize! + data.length
-      : data.length;
+  // const start =
+  //   manualPagination && data.length > 0
+  //     ? pageIndex! * pageSize! + 1
+  //     : data.length === 0
+  //     ? 0
+  //     : 1;
+  // const end =
+  //   manualPagination && data.length > 0
+  //     ? pageIndex! * pageSize! + data.length
+  //     : data.length;
 
   const resolvedTotal =
     typeof total === "number" ? total : pageIndex! * pageSize! + data.length;

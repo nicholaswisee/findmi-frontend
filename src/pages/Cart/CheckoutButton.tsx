@@ -5,7 +5,7 @@ export function CheckoutButton() {
   const hasItems = (cart?.items?.length ?? 0) > 0;
 
   const handleCheckout = async () => {
-    if (!cart || !hasItems || isLoading) return;
+    if (!cart || !hasItems || isMutating) return;
     const items = cart.items.map((item) => {
       if (item.bundle_id && item.bundle_id > 0) {
         return { bundleId: item.bundle_id, quantity: item.quantity };
@@ -16,7 +16,16 @@ export function CheckoutButton() {
     const result = await createOrder(items);
     if (result) {
       console.log("Order sukses:", result.order);
-      console.log("Redirect URL Midtrans:", result.payment.redirectUrl);
+      const redirectUrl =
+        typeof result === "object" &&
+        result !== null &&
+        "payment" in result &&
+        typeof (result as any).payment === "object"
+          ? (result as any).payment?.redirectUrl
+          : undefined;
+      if (redirectUrl) {
+        console.log("Redirect URL Midtrans:", redirectUrl);
+      }
     }
   };
 
