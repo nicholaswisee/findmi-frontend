@@ -27,13 +27,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEPARTMENTS } from "@/constants/departments";
+import { ImageUploadPool } from "@/components/admin/media/ImageUploadPool";
 
 export type ProductFormValues = {
   name: string;
   price: number;
   category?: string;
   description?: string;
-  image_url?: string;
+  image_urls?: string[];
   remaining_stock: number;
 };
 
@@ -51,7 +52,7 @@ const toFormValues = (product: Product): ProductFormValues => ({
   price: product.price,
   category: product.category ?? "none",
   description: product.description ?? "",
-  image_url: product.image_url ?? "",
+  image_urls: product.image_urls ?? [],
   remaining_stock: product.remaining_stock,
 });
 
@@ -66,15 +67,16 @@ export function ProductFormDialog({
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const { register, handleSubmit, reset, control } = useForm<ProductFormValues>(
-    {
+  const { register, handleSubmit, reset, control, setValue, watch } =
+    useForm<ProductFormValues>({
       defaultValues: toFormValues(product),
-    }
-  );
+    });
 
   useEffect(() => {
     reset(toFormValues(product));
   }, [product, reset, open]);
+
+  const imageValues = watch("image_urls");
 
   const handleFormSubmit = handleSubmit(async (values) => {
     try {
@@ -107,51 +109,58 @@ export function ProductFormDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[88svh] overflow-y-auto">
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle className="font-sans">{dialogTitle}</DialogTitle>
             <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-3">
-            <Label htmlFor="product-name">Name</Label>
-            <Input id="product-name" {...register("name")} />
-          </div>
-
-          <div className="grid gap-3">
-            <Label htmlFor="product-price">Price (IDR)</Label>
-            <Input
-              id="product-price"
-              type="number"
-              min={0}
-              step="1000"
-              {...register("price", { valueAsNumber: true })}
-            />
-          </div>
-
-          <div className="grid gap-3">
-            <Label>Category</Label>
-            <Controller
-              control={control}
-              name="category"
-              render={({ field }) => (
-                <Select
-                  value={field.value ?? "none"}
-                  onValueChange={(value) => field.onChange(value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DEPARTMENTS.map((dept) => (
-                      <SelectItem key={dept} value={dept}>
-                        {dept}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="product-name">Name</Label>
+              <Input id="product-name" {...register("name")} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="product-price">Price (IDR)</Label>
+              <Input
+                id="product-price"
+                type="number"
+                min={0}
+                step="1000"
+                {...register("price", { valueAsNumber: true })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Category</Label>
+              <Controller
+                control={control}
+                name="category"
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? "none"}
+                    onValueChange={(value) => field.onChange(value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DEPARTMENTS.map((dept) => (
+                        <SelectItem key={dept} value={dept}>
+                          {dept}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+            <ImageUploadPool
+              values={imageValues}
+              onChange={(urls) =>
+                setValue("image_urls", urls, { shouldDirty: true })
+              }
+              label="Product images"
             />
           </div>
 
@@ -162,11 +171,6 @@ export function ProductFormDialog({
               rows={3}
               {...register("description")}
             />
-          </div>
-
-          <div className="grid gap-3">
-            <Label htmlFor="product-image">Image URL</Label>
-            <Input id="product-image" {...register("image_url")} />
           </div>
 
           <div className="grid gap-3">

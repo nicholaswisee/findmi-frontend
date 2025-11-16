@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useProductStore, INITIAL_CATEGORY } from "@/store/catalogStore";
 import { toast } from "sonner";
 import { useCartStore } from "@/store/cartStore";
+import { useAuthStore } from "@/store/authStore";
 
 interface ProductGridProps {
   showSearch?: boolean;
@@ -18,17 +19,27 @@ export default function ProductGrid({
   const query = useProductStore((s) => s.query);
   const category = useProductStore((s) => s.category);
   const fetchCart = useCartStore((s) => s.fetchCart);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   const handleNavigateToProduct = (productId: number | string) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
     navigate(`/catalog/${productId}`);
   };
 
+  const [pendingId, setPendingId] = useState<number | string | null>(null);
+  const API_URL = import.meta.env.VITE_API_URL!;
+
   const handleAddToCart = async (
     productId: number | string,
     productName: string
   ) => {
+    if (!isAuthenticated) {
+      toast.error("Silakan login untuk menambahkan ke keranjang.");
+      return;
+    }
+    if (pendingId === productId) return;
     try {
+      setPendingId(productId);
       const normalizedProductId =
         typeof productId === "string" ? parseInt(productId, 10) : productId;
       const requestBody = {
@@ -38,7 +49,7 @@ export default function ProductGrid({
 
       console.log("Adding to cart:", requestBody);
 
-      const response = await fetch("https://api.akumasukitb.com/cart/items", {
+      const response = await fetch(`${API_URL}/cart/items`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -60,7 +71,7 @@ export default function ProductGrid({
       console.log("Add to cart success:", result);
 
       toast.success(`Berhasil menambahkan ${productName} ke keranjang!`);
-      fetchCart();
+      fetchCart({ silent: true });
     } catch (error) {
       console.error("Error adding to cart:", error);
       toast.error(
@@ -68,6 +79,8 @@ export default function ProductGrid({
           error instanceof Error ? error.message : "Kesalahan tidak diketahui"
         }`
       );
+    } finally {
+      setPendingId((current) => (current === productId ? null : current));
     }
   };
 
@@ -109,7 +122,7 @@ export default function ProductGrid({
             onClick={() => handleNavigateToProduct(p.id)}
           >
             <img
-              src={p.image_url || "/placeholder.png"}
+              src={p.image_urls?.[0] || "/global/background-plain-hijau.webp"}
               alt={p.name || "Produk"}
               className="aspect-4/5 w-full object-cover transition-opacity duration-200 hover:opacity-90"
             />
@@ -134,23 +147,26 @@ export default function ProductGrid({
           <button
             onClick={(event) => {
               event.stopPropagation();
-              if (p.remaining_stock === 0) return;
-              const btn = event.currentTarget;
-              btn.classList.add("ring-2", "ring-[#FFE59A]");
-              window.setTimeout(() => {
-                btn.classList.remove("ring-2", "ring-[#FFE59A]");
-              }, 500);
+              if (p.remaining_stock === 0 || pendingId === p.id) return;
               handleAddToCart(p.id, p.name ?? "Product");
             }}
-            disabled={p.remaining_stock === 0}
+            disabled={
+              p.remaining_stock === 0 || pendingId === p.id || !isAuthenticated
+            }
             className={`mx-auto mt-auto block w-[95%] rounded-lg py-1 px-2 cursor-pointer text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all
               ${
-                p.remaining_stock === 0
+                p.remaining_stock === 0 || !isAuthenticated
                   ? "cursor-not-allowed bg-[#7a1644] text-[#ffeabb]/60 opacity-80"
                   : "bg-[#c62d76] text-[#ffeabb] hover:brightness-105 active:brightness-95"
               }`}
           >
-            {p.remaining_stock === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
+            {p.remaining_stock === 0
+              ? "Stok Habis"
+              : !isAuthenticated
+              ? "Login terlebih dahulu"
+              : pendingId === p.id
+              ? "Menambahkan..."
+              : "Tambah ke Keranjang"}
           </button>
         </div>
       ))}

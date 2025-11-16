@@ -2,8 +2,13 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import { toast } from "sonner";
+import minusImg from "@/assets/icon-minus.png";
+import plusImg from "@/assets/icon-plus.png";
 import ProductGrid from "@/components/catalog/ProductGrid";
 import { useProductStore } from "@/store/catalogStore";
+import { useAuthStore } from "@/store/authStore";
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Types based on API response
 type Product = {
@@ -12,7 +17,7 @@ type Product = {
   price: number;
   category: string;
   description: string;
-  image_url: string;
+  image_urls: string[];
   remaining_stock: number;
 };
 
@@ -27,7 +32,7 @@ type Bundle = {
   price: number;
   category: string;
   description: string;
-  image_url: string;
+  image_urls: string[];
   bundle_items: BundleItem[];
   is_hidden: boolean;
 };
@@ -44,6 +49,7 @@ export default function ProductDetailPage() {
     bundle_id?: string;
   }>();
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
   // Check if this is a bundle (URL contains /bundle/)
   const isBundle = window.location.pathname.includes("/bundle/");
@@ -70,9 +76,13 @@ export default function ProductDetailPage() {
   // Dummy sizes - karena API tidak return sizes
   const availableSizes = ["S", "M", "L", "XL", "XXL"];
 
-  // Dummy multiple images - karena API hanya return 1 image_url
-  const getProductImages = (imageUrl: string) => {
-    return [imageUrl, imageUrl, imageUrl, imageUrl]; // Pakai image yang sama untuk semua thumbnail
+  const FALLBACK_PRODUCT_IMAGE = "/global/background-plain-hijau.webp";
+
+  const getProductImages = (imageUrls?: string[]) => {
+    if (!imageUrls || imageUrls.length === 0) {
+      return [FALLBACK_PRODUCT_IMAGE];
+    }
+    return imageUrls;
   };
 
   // Helper: Check if product is a Bundle
@@ -94,7 +104,7 @@ export default function ProductDetailPage() {
 
         // Determine if fetching bundle or product
         const endpoint = isBundle ? "bundle" : "product";
-        const url = `https://api.akumasukitb.com/${endpoint}/${itemId}`;
+        const url = `${API_URL}/${endpoint}/${itemId}`;
 
         console.log(`Fetching ${endpoint} with ID:`, itemId);
         console.log("Fetch URL:", url);
@@ -150,6 +160,10 @@ export default function ProductDetailPage() {
   }, [itemId, navigate, isBundle]);
 
   const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      toast.error("Silakan login untuk menambahkan ke keranjang.");
+      return;
+    }
     if (!selectedSize && !isProductBundle(product)) {
       toast.error("Silakan pilih ukuran terlebih dahulu");
       return;
@@ -168,7 +182,7 @@ export default function ProductDetailPage() {
 
       console.log("Adding to cart:", requestBody);
 
-      const response = await fetch("https://api.akumasukitb.com/cart/items", {
+      const response = await fetch(`${API_URL}/cart/items`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -290,16 +304,17 @@ export default function ProductDetailPage() {
           </ol>
         </nav>
         {/* Product Detail Card */}
-        <div className="backdrop-blur-sm rounded-lg shadow-lg p-6 md:p-10 max-w-4xl mx-auto">
-          <div className="flex flex-col gap-8 lg:grid lg:grid-cols-[1.05fr_1fr] lg:gap-12">
+        <div className="rounded-2xl border border-white/0 bg-[#463B8B]/15 p-6 md:p-10 max-w-4xl mx-auto">
+          <div className="flex flex-col justify-center md:flex-row gap-20">
             {/* Left: Product Images */}
-            <div className="flex flex-col gap-4 lg:sticky lg:top-4 lg:self-start">
+            <div className="md:w-[45%]">
               {/* Main Image */}
-              <div className="bg-white rounded-lg mb-3 aspect-square flex items-center justify-center overflow-hidden border border-gray-200">
+              <div className="bg-plain-green rounded-lg mb-3 aspect-square flex items-center justify-center overflow-hidden border border-gray-200">
                 <img
                   src={
-                    getProductImages(product.image_url)[selectedImage] ||
-                    product.image_url
+                    getProductImages(product.image_urls)[selectedImage] ||
+                    product.image_urls?.[0] ||
+                    FALLBACK_PRODUCT_IMAGE
                   }
                   alt={product.name}
                   className="w-full h-full object-contain p-4"
@@ -308,14 +323,14 @@ export default function ProductDetailPage() {
 
               {/* Thumbnail Images */}
               <div className="flex gap-2">
-                {getProductImages(product.image_url).map(
+                {getProductImages(product.image_urls).map(
                   (image: string, index: number) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`bg-white rounded aspect-square flex items-center justify-center overflow-hidden border-2 transition-all flex-1 ${
+                      className={`bg-plain-green rounded aspect-square flex items-center justify-center overflow-hidden border-2 transition-all w-24 h-24 flex-1 ${
                         selectedImage === index
-                          ? "border-teal-500"
+                          ? "border-[#ffd88c]"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
@@ -331,7 +346,7 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Right: Product Info */}
-            <div className="flex flex-col text-[#FFEABB]">
+            <div className="flex flex-col text-[#FFEABB] md:flex-1">
               {/* Merch Type & Stock */}
               <div className="flex justify-between items-center mb-3">
                 <span className="text-xs font-bold uppercase tracking-wide text-[#FFD88C]">
@@ -354,7 +369,9 @@ export default function ProductDetailPage() {
 
               {/* Size Selection */}
               <div className="mb-5">
-                <h3 className="text-sm font-bold text-[#FFEABB] mb-2">SIZE</h3>
+                <h3 className="text-sm font-body font-bold text-[#FFD88C] mb-2">
+                  Ukuran
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {availableSizes.map((size) => (
                     <button
@@ -362,8 +379,8 @@ export default function ProductDetailPage() {
                       onClick={() => setSelectedSize(size)}
                       className={`px-4 py-1.5 rounded-full border-2 font-semibold text-sm transition-colors ${
                         selectedSize === size
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : "bg-transparent text-gray-700 border-blue-600 hover:bg-blue-50"
+                          ? "bg-[#c62d76] text-[#ffeabb] border-[#c62d76]"
+                          : "bg-transparent text-[#ffeabb] border-[#ffeabb]/60 hover:bg-[#ffeabb]/15"
                       }`}
                     >
                       {size}
@@ -374,10 +391,10 @@ export default function ProductDetailPage() {
 
               {/* Product Description */}
               <div className="mb-6 grow">
-                <h3 className="text-sm font-bold text-[#FFEABB] mb-2">
-                  PRODUCT DESCRIPTION
+                <h3 className="text-sm font-body font-bold text-[#FFD88C] mb-2">
+                  Deskripsi Produk
                 </h3>
-                <p className="text-sm leading-relaxed text-[#FFEABB]">
+                <p className="text-sm leading-relaxed text-[#FFD88C]">
                   {product.description}
                 </p>
               </div>
@@ -388,44 +405,52 @@ export default function ProductDetailPage() {
                   <p className="mb-2 text-sm font-semibold text-[#FFEABB]">
                     Jumlah
                   </p>
-                  <div className="flex items-center overflow-hidden rounded-xl border-2 border-[#FFE59A] bg-[#FFE59A]/10">
-                    <button
-                      type="button"
-                      onClick={decrementQuantity}
-                      className="px-4 py-2 text-xl font-bold text-[#1B165E] transition-colors hover:bg-[#FFE59A]/30 disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={quantity <= 1}
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      value={quantity}
-                      onChange={handleQuantityChange}
-                      min="1"
-                      max={getStock()}
-                      className="w-[70px] border-0 bg-transparent px-4 py-2 text-center text-lg font-bold text-[#1B165E] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={incrementQuantity}
-                      className="px-4 py-2 text-xl font-bold text-[#1B165E] transition-colors hover:bg-[#FFE59A]/30 disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={!product || quantity >= getStock()}
-                    >
-                      +
-                    </button>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center rounded-2xl border-2 border-[#050836] bg-plain-green text-[#050836] shadow">
+                      <button
+                        type="button"
+                        onClick={decrementQuantity}
+                        className="flex h-12 w-12 items-center justify-center border-r-2 border-[#050836] hover:bg-black/10 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={quantity <= 1}
+                        aria-label="Kurangi jumlah"
+                      >
+                        <img src={minusImg} alt="Kurangi" className="h-5 w-5" />
+                      </button>
+                      <input
+                        type="number"
+                        value={quantity}
+                        onChange={handleQuantityChange}
+                        min="1"
+                        max={getStock()}
+                        className="h-12 w-16 bg-transparent text-center text-xl font-bold text-[#050836] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={incrementQuantity}
+                        className="flex h-12 w-12 items-center justify-center border-l-2 border-[#050836] hover:bg-black/10 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={!product || quantity >= getStock()}
+                        aria-label="Tambah jumlah"
+                      >
+                        <img src={plusImg} alt="Tambah" className="h-5 w-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 <button
                   onClick={handleAddToCart}
-                  disabled={getStock() === 0}
+                  disabled={getStock() === 0 || !isAuthenticated}
                   className={`mt-2 block w-full rounded-lg py-2 text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all ${
-                    getStock() === 0
+                    getStock() === 0 || !isAuthenticated
                       ? "cursor-not-allowed bg-[#7a1644] text-[#ffeabb]/60 opacity-80"
                       : "bg-[#c62d76] text-[#ffeabb] hover:brightness-105 active:brightness-95"
                   }`}
                 >
-                  {getStock() === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
+                  {getStock() === 0
+                    ? "Stok Habis"
+                    : !isAuthenticated
+                    ? "Login terlebih dahulu"
+                    : "Tambah ke Keranjang"}
                 </button>
               </div>
             </div>

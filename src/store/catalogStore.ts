@@ -35,7 +35,7 @@ export type Product = {
   description: string;
   price: number | string | null;
   category: string;
-  image_url: string;
+  image_urls: string[];
   remaining_stock: number;
 };
 

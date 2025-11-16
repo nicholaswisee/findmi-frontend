@@ -9,6 +9,7 @@ import {
   useProductStore,
   type Product,
 } from "@/store/catalogStore";
+import { useAuthStore } from "@/store/authStore";
 import { PaginatedList } from "@/components/shared/PaginatedList";
 
 const PAGE_SIZE = 10;
@@ -87,8 +88,14 @@ export default function CatalogPage() {
     [navigate]
   );
 
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
   const handleAddToCart = useCallback(
     async (productId: number | string, productName: string) => {
+      if (!isAuthenticated) {
+        toast.error("Silakan login untuk menambahkan ke keranjang.");
+        return;
+      }
       try {
         const normalizedProductId =
           typeof productId === "string" ? parseInt(productId, 10) : productId;
@@ -113,6 +120,7 @@ export default function CatalogPage() {
         }
 
         toast.success(`Berhasil menambahkan ${productName} ke keranjang!`);
+        fetchCart({ silent: true });
       } catch (err) {
         toast.error(
           `Gagal menambahkan ke keranjang: ${
@@ -121,7 +129,7 @@ export default function CatalogPage() {
         );
       }
     },
-    []
+    [isAuthenticated, fetchCart]
   );
 
   if (loading && products.length === 0) {
@@ -139,7 +147,9 @@ export default function CatalogPage() {
         onClick={() => handleNavigateToProduct(item.id)}
       >
         <img
-          src={item.image_url || "/placeholder.png"}
+          src={
+            item.image_urls?.[0] || "/global/background-plain-hijau.webp"
+          }
           alt={item.name || "Produk"}
           className="aspect-4/5 w-full object-cover transition-opacity duration-200 hover:opacity-90"
         />
@@ -164,7 +174,7 @@ export default function CatalogPage() {
       <button
         onClick={(event) => {
           event.stopPropagation();
-          if (item.remaining_stock === 0) return;
+          if (item.remaining_stock === 0 || !isAuthenticated) return;
           const btn = event.currentTarget;
           btn.classList.add("ring-2", "ring-[#FFE59A]");
           window.setTimeout(() => {
@@ -173,15 +183,19 @@ export default function CatalogPage() {
           handleAddToCart(item.id, item.name ?? "Product");
           fetchCart();
         }}
-        disabled={item.remaining_stock === 0}
+        disabled={item.remaining_stock === 0 || !isAuthenticated}
         className={`mx-auto mt-auto block w-[95%] rounded-lg py-1 px-2 cursor-pointer text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all
           ${
-            item.remaining_stock === 0
+            item.remaining_stock === 0 || !isAuthenticated
               ? "cursor-not-allowed bg-[#7a1644] text-[#ffeabb]/60 opacity-80"
               : "bg-[#c62d76] text-[#ffeabb] hover:brightness-105 active:brightness-95"
           }`}
       >
-        {item.remaining_stock === 0 ? "Stok Habis" : "Tambah ke Keranjang"}
+        {item.remaining_stock === 0
+          ? "Stok Habis"
+          : !isAuthenticated
+          ? "Login terlebih dahulu"
+          : "Tambah ke Keranjang"}
       </button>
     </div>
   );

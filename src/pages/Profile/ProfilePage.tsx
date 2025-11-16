@@ -124,7 +124,7 @@ export default function ProfilePage() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-semibold text-[#ffd88c] transition hover:bg-white/20"
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-[#463B8B]/20 px-4 py-2 font-semibold text-[#ffd88c] transition hover:bg-[#463B8B]/30"
         >
           <ArrowLeft className="size-4" />
           Kembali
@@ -161,10 +161,7 @@ export default function ProfilePage() {
               </div>
             )}
           </header>
-          <div
-            className="flex w-full min-h-36 rounded-3xl border border-white/15 bg-white/10 shadow-lg backdrop-blur
- py-2 px-6"
-          >
+          <div className="flex w-full min-h-36 rounded-3xl border border-white/0 bg-[#463B8B]/15 shadow-lg py-2 px-6">
             <table className="w-full table-fixed text-left">
               <tbody>
                 {profileFields.map(({ label, value, field, editable }) => {

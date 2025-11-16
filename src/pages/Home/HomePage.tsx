@@ -1,8 +1,6 @@
 import CarouselCard from "@/components/ui/carouselCard";
-import { useAuthStore } from "@/store/authStore";
 
 export default function HomePage() {
-  const { isAuthenticated } = useAuthStore();
   return (
     <div className="flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-8 w-full overflow-x-hidden ">
       <div className="w-full max-w-7xl my-6 sm:my-8 lg:my-10">
@@ -28,26 +26,17 @@ export default function HomePage() {
         }}
       >
         FINDMI 2026 merupakan sebuah platform pembelian merchandise dari acara
-        tahunan di Insititut Teknologi Bandung yaitu Aku Masuk ITB (AMI) 2026.
-        Kamu dapat membeli seluruh kebutuhan merchandise serta perlengkapan
-        panitia yang kamu inginkan di FINDMI!
+        tahunan di Insititut Teknologi Bandung yaitu Aku Masuk ITB {`(AMI)`}{" "}
+        2026. Kamu dapat membeli seluruh kebutuhan merchandise serta
+        perlengkapan panitia yang kamu inginkan di FINDMI!
       </p>
 
-      {isAuthenticated ? (
-        <a
-          href="/catalog"
-          className="bg-[#FFC76E] text-[#302a77] font-bold py-2 px-6 rounded-full m-3 drop-shadow-xl hover:bg-[#e6c370] transition duration-300 hover:cursor-pointer text-xl md:text-2xl"
-        >
-          Lihat Katalog!
-        </a>
-      ) : (
-        <a
-          href="/login"
-          className="bg-[#ffd88c] text-[#302a77] font-bold py-2 px-6 rounded-full m-3 drop-shadow-xl hover:bg-[#e6c370] transition duration-300 hover:cursor-pointer text-xl md:text-2xl"
-        >
-          Login sekarang!
-        </a>
-      )}
+      <a
+        href="/catalog"
+        className="bg-[#FFC76E] text-[#302a77] font-bold py-2 px-6 rounded-full m-3 drop-shadow-xl hover:bg-[#e6c370] transition duration-300 hover:cursor-pointer text-xl md:text-2xl"
+      >
+        Lihat Katalog!
+      </a>
     </div>
   );
 }

@@ -46,7 +46,7 @@ export default function ProductsAdmin() {
       price: 0,
       category: "none",
       description: "",
-      image_url: "",
+      image_urls: [],
       remaining_stock: 0,
     }),
     []
@@ -55,9 +55,7 @@ export default function ProductsAdmin() {
   useEffect(() => {
     if (products.length === 0) {
       fetchProducts().catch((err) => {
-        toast.error(
-          err instanceof Error ? err.message : "Gagal memuat produk"
-        );
+        toast.error(err instanceof Error ? err.message : "Gagal memuat produk");
       });
     }
   }, [fetchProducts, products.length]);
@@ -86,6 +84,11 @@ export default function ProductsAdmin() {
     async (productId: number, values: ProductFormValues) => {
       const mapString = (value?: string) =>
         value && value.trim().length > 0 ? value.trim() : undefined;
+      const normalizeUrls = (urls?: string[]) => {
+        if (!urls) return undefined;
+        const trimmed = urls.map((url) => url.trim()).filter(Boolean);
+        return trimmed.length ? trimmed : undefined;
+      };
 
       try {
         await updateProduct(productId, {
@@ -93,7 +96,7 @@ export default function ProductsAdmin() {
           price: values.price,
           category: mapString(values.category),
           description: mapString(values.description),
-          imageUrl: mapString(values.image_url),
+          image_urls: normalizeUrls(values.image_urls),
           stock: values.remaining_stock,
         });
         await fetchProducts({
@@ -121,6 +124,11 @@ export default function ProductsAdmin() {
     async (values: ProductFormValues) => {
       const mapString = (value?: string) =>
         value && value.trim().length > 0 ? value.trim() : undefined;
+      const normalizeUrls = (urls?: string[]) => {
+        if (!urls) return undefined;
+        const trimmed = urls.map((url) => url.trim()).filter(Boolean);
+        return trimmed.length ? trimmed : undefined;
+      };
 
       try {
         await createProduct({
@@ -128,7 +136,7 @@ export default function ProductsAdmin() {
           price: values.price,
           category: mapString(values.category),
           description: mapString(values.description),
-          imageUrl: mapString(values.image_url),
+          image_urls: normalizeUrls(values.image_urls),
           stock: values.remaining_stock,
         });
         toast.success("Produk berhasil dibuat");
@@ -221,11 +229,7 @@ export default function ProductsAdmin() {
           <ProductFormDialog
             product={emptyProduct}
             onSubmit={handleCreateProduct}
-            trigger={
-              <Button type="button">
-                Add Product
-              </Button>
-            }
+            trigger={<Button type="button">Add Product</Button>}
             title="Add new product"
             description="Fill out the details to add a new product."
             submitLabel="Create product"

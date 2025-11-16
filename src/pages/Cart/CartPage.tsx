@@ -24,12 +24,12 @@ export default function CartPage() {
       <div className="mx-auto flex max-w-7xl flex-col px-4 sm:px-6">
         <div className="mb-10 flex justify-center">
           <h1 className="mt-4 text-5xl font-extrabold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
-            KERANJANGMU
+            KERANJANG
           </h1>
         </div>
 
         <div className="mb-16 flex flex-col gap-8 lg:flex-row lg:items-start">
-          <div className="w-full rounded-3xl border border-white/15 bg-white/10 p-4 text-[#1B165E] shadow-lg backdrop-blur sm:p-6 lg:p-10">
+          <div className="w-full rounded-3xl border border-white/0 bg-[#463B8B]/15 p-4 text-[#1B165E] shadow-lg sm:p-6 lg:p-10">
             <p className="text-lg font-extrabold text-[#1B165E] sm:text-2xl lg:text-3xl">
               KERANJANG ({cart?.summary.total_quantity ?? 0})
             </p>
@@ -54,7 +54,12 @@ export default function CartPage() {
                       category={item.product.category}
                       price={item.product.price}
                       quantity={item.quantity}
-                      image={item.product.image_url}
+                      image={item.product.image_urls?.[0] ?? ""}
+                      maxQuantity={
+                        typeof item.product.remaining_stock === "number"
+                          ? item.product.remaining_stock
+                          : undefined
+                      }
                     />
                   );
                 }
@@ -69,7 +74,7 @@ export default function CartPage() {
                       category={item.bundle.category}
                       price={item.bundle.price}
                       quantity={item.quantity}
-                      image={item.bundle.image_url}
+                      image={item.bundle.image_urls?.[0] ?? ""}
                     />
                   );
                 }

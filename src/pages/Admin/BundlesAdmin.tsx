@@ -44,7 +44,7 @@ export default function BundlesAdmin() {
       id: 0,
       name: "",
       description: "",
-      image_url: "",
+      image_urls: [],
       price: 0,
       category: "none",
       is_hidden: false,
@@ -87,6 +87,11 @@ export default function BundlesAdmin() {
     async (bundleId: number, values: BundleFormValues) => {
       const mapString = (value?: string) =>
         value && value.trim().length > 0 ? value.trim() : undefined;
+      const normalizeUrls = (urls?: string[]) => {
+        if (!urls) return undefined;
+        const trimmed = urls.map((url) => url.trim()).filter(Boolean);
+        return trimmed.length ? trimmed : undefined;
+      };
 
       try {
         await updateBundle(bundleId, {
@@ -94,7 +99,7 @@ export default function BundlesAdmin() {
           price: values.price,
           category: mapString(values.category),
           description: mapString(values.description),
-          image_url: mapString(values.image_url),
+          image_urls: normalizeUrls(values.image_urls),
           is_hidden: values.is_hidden,
           bundle_items: values.bundle_items,
         });
@@ -111,13 +116,18 @@ export default function BundlesAdmin() {
     async (values: BundleFormValues) => {
       const mapString = (value?: string) =>
         value && value.trim().length > 0 ? value.trim() : undefined;
+      const normalizeUrls = (urls?: string[]) => {
+        if (!urls) return undefined;
+        const trimmed = urls.map((url) => url.trim()).filter(Boolean);
+        return trimmed.length ? trimmed : undefined;
+      };
       try {
         await createBundle({
           name: values.name,
           price: values.price,
           category: mapString(values.category),
           description: mapString(values.description),
-          image_url: mapString(values.image_url),
+          image_urls: normalizeUrls(values.image_urls),
           is_hidden: values.is_hidden,
           bundle_items: values.bundle_items.map((item) => ({
             product_id: item.product_id,

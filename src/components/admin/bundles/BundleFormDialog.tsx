@@ -33,13 +33,14 @@ import {
 } from "@/components/ui/select";
 import { CircleEllipsisIcon } from "lucide-react";
 import { DEPARTMENTS } from "@/constants/departments";
+import { ImageUploadPool } from "@/components/admin/media/ImageUploadPool";
 
 export type BundleFormValues = {
   name: string;
   price: number;
   category?: string;
   description?: string;
-  image_url?: string;
+  image_urls?: string[];
   is_hidden: boolean;
   bundle_items: Array<{ product_id: number; amount: number }>;
 };
@@ -58,7 +59,7 @@ const toFormValues = (bundle: Bundle): BundleFormValues => ({
   price: bundle.price,
   category: bundle.category ?? "none",
   description: bundle.description ?? "",
-  image_url: bundle.image_url ?? "",
+  image_urls: bundle.image_urls ?? [],
   is_hidden: bundle.is_hidden,
   bundle_items:
     bundle.bundle_items.length > 0
@@ -84,7 +85,8 @@ export function BundleFormDialog({
     defaultValues: toFormValues(bundle),
   });
 
-  const { register, control, handleSubmit, reset } = form;
+  const { register, control, handleSubmit, reset, setValue, watch } = form;
+  const imageValues = watch("image_urls");
   const { fields, append, remove } = useFieldArray({
     control,
     name: "bundle_items",
@@ -125,7 +127,7 @@ export function BundleFormDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-lg max-h-[88svh] overflow-y-auto">
         <form onSubmit={handleFormSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle className="font-sans">{dialogTitle}</DialogTitle>
@@ -147,7 +149,7 @@ export function BundleFormDialog({
                 {...register("price", { valueAsNumber: true })}
               />
             </div>
-            <div className="grid gap-2">
+            <div className="grid gap-2 md:col-span-2">
               <Label>Category</Label>
               <Controller
                 control={control}
@@ -171,10 +173,13 @@ export function BundleFormDialog({
                 )}
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="bundle-image">Image URL</Label>
-              <Input id="bundle-image" {...register("image_url")} />
-            </div>
+            <ImageUploadPool
+              values={imageValues}
+              onChange={(urls) =>
+                setValue("image_urls", urls, { shouldDirty: true })
+              }
+              label="Bundle images"
+            />
           </div>
 
           <div className="grid gap-2">

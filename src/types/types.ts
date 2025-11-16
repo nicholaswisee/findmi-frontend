@@ -72,7 +72,7 @@ export type Product = {
   price: number;
   category: UserDepartmentEnum;
   description: string;
-  image_url: string;
+  image_urls: string[];
   remaining_stock: number;
 };
 
@@ -88,7 +88,7 @@ export type Bundle = {
   price: number;
   category: UserDepartmentEnum;
   description: string;
-  image_url: string;
+  image_urls: string[];
   bundle_items: BundleItem[];
   is_hidden: boolean;
 };
@@ -167,6 +167,14 @@ export type BundlesResponse = {
   total: number;
   limit: number;
   offset: number;
+};
+
+export type UploadedFile = {
+  filename: string;
+  path: string;
+  url: string;
+  size: number;
+  mimeType: string;
 };
 
 export type RevenueAnalyticsSummary = {

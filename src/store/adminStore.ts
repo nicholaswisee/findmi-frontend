@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { apiRequest } from "@/lib/api";
+import { API_URL, apiRequest, type ApiResponse } from "@/lib/api";
 import type {
   Bundle,
   BundlesResponse,
@@ -11,6 +11,7 @@ import type {
   UserDepartmentEnum,
   UserWithOrders,
   UsersWithOrdersResponse,
+  UploadedFile,
 } from "@/types/types";
 
 export type CreateProductPayload = {
@@ -19,7 +20,7 @@ export type CreateProductPayload = {
   description?: string;
   stock: number;
   category?: string;
-  imageUrl?: string;
+  image_urls?: string[];
 };
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;
@@ -33,7 +34,7 @@ export type CreateBundlePayload = {
   price: number;
   description?: string;
   category?: string;
-  image_url?: string;
+  image_urls?: string[];
   bundle_items: Array<{ product_id: number; amount: number }>;
   is_hidden?: boolean;
 };
@@ -75,6 +76,7 @@ type AdminState = {
   orderPickupFilter: PickupFilterValue;
   products: Product[];
   bundles: Bundle[];
+  recentUploads: UploadedFile[];
   loadingProducts: boolean;
   loadingBundles: boolean;
   searchProducts: (keyword: string, signal?: AbortSignal) => Promise<Product[]>;
@@ -112,6 +114,7 @@ type AdminState = {
     id: number,
     data: { admin_note?: string | null; is_taken?: boolean },
   ) => Promise<Order>;
+  uploadMedia: (file: File) => Promise<UploadedFile>;
 };
 
 export const useAdminStore = create<AdminState>((set, get) => ({
@@ -126,6 +129,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   orderPickupFilter: "all",
   products: [],
   bundles: [],
+  recentUploads: [],
   loadingProducts: false,
   loadingBundles: false,
   userPageIndex: 0,
@@ -351,28 +355,18 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   },
 
   createProduct: async (payload) => {
-    const { imageUrl, ...rest } = payload;
-    const apiPayload = {
-      ...rest,
-      image_url: imageUrl,
-    };
     const product = await apiRequest<Product>("/product", {
       method: "POST",
-      body: JSON.stringify(apiPayload),
+      body: JSON.stringify(payload),
     });
     set((state) => ({ products: [...state.products, product] }));
     return product;
   },
 
   updateProduct: async (id, payload) => {
-    const { imageUrl, ...rest } = payload;
-    const apiPayload = {
-      ...rest,
-      image_url: imageUrl,
-    };
     const product = await apiRequest<Product>(`/product/${id}`, {
       method: "PUT",
-      body: JSON.stringify(apiPayload),
+      body: JSON.stringify(payload),
     });
     set((state) => ({
       products: state.products.map((p) => (p.id === id ? product : p)),
@@ -460,5 +454,39 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     }));
 
     return result;
+  },
+
+  uploadMedia: async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch(`${API_URL}/media/upload`, {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      let msg = "Gagal mengunggah berkas";
+      try {
+        const err = await res.json();
+        if (err?.message) msg = err.message;
+      } catch {
+        // ignore parse errors
+      }
+      throw new Error(msg);
+    }
+
+    const payload = (await res.json()) as ApiResponse<UploadedFile>;
+    const uploaded = payload.data;
+
+    set((state) => ({
+      recentUploads: [
+        uploaded,
+        ...state.recentUploads.filter((item) => item.url !== uploaded.url),
+      ].slice(0, 10),
+    }));
+
+    return uploaded;
   },
 }));

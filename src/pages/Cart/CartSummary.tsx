@@ -10,7 +10,7 @@ export function CartSummary() {
   const grandTotal = subtotal + tax;
 
   return (
-    <div className="w-full rounded-3xl border border-white/15 bg-white/10 p-4 text-[#1B165E] shadow-lg backdrop-blur sm:p-6 lg:p-10">
+    <div className="w-full rounded-3xl border border-white/0 bg-[#463B8B]/15 p-4 text-[#1B165E] shadow-lg sm:p-6 lg:p-10">
       <p className="text-lg font-extrabold text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)] sm:text-2xl lg:text-3xl">
         RINGKASAN BELANJA
       </p>

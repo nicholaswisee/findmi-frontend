@@ -6,7 +6,7 @@ interface CartProduct {
   price: number;
   category: string;
   description: string;
-  image_url: string;
+  image_urls: string[];
   remaining_stock: number;
 }
 
@@ -16,7 +16,7 @@ interface CartBundle {
   price: number;
   category: string;
   description: string;
-  image_url: string;
+  image_urls: string[];
   bundle_items: { product_id: number; amount: number }[];
   is_hidden: boolean;
 }
@@ -64,7 +64,8 @@ interface CartState {
   isLoading: boolean;
   isMutating: boolean;
   error: string | null;
-  fetchCart: () => Promise<void>;
+  orderMap: Record<number, number>;
+  fetchCart: (options?: { silent?: boolean }) => Promise<void>;
   updateCartItem: (itemId: number, quantity: number) => Promise<void>;
   deleteCartItem: (itemId: number) => Promise<void>;
   createOrder: (items: OrderItemRequest[]) => Promise<OrderResponse | null>;
@@ -72,17 +73,30 @@ interface CartState {
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-const reorderItems = (
+const buildOrderMap = (
   items: CartItemInterface[],
-  previous?: CartItemInterface[]
+  prevMap: Record<number, number>,
 ) => {
-  if (!previous?.length) return items;
-  const order = new Map(previous.map((item, idx) => [item.id, idx]));
-  return [...items].sort(
-    (a, b) =>
-      (order.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
-      (order.get(b.id) ?? Number.MAX_SAFE_INTEGER)
-  );
+  const nextMap: Record<number, number> = { ...prevMap };
+  let maxOrder =
+    Object.values(nextMap).reduce((max, val) => Math.max(max, val), -1) ?? -1;
+  for (const item of items) {
+    if (nextMap[item.id] === undefined) {
+      nextMap[item.id] = ++maxOrder;
+    }
+  }
+  return nextMap;
+};
+
+const sortItemsByMap = (
+  items: CartItemInterface[],
+  map: Record<number, number>,
+) => {
+  return [...items].sort((a, b) => {
+    const aOrder = map[a.id] ?? Number.MAX_SAFE_INTEGER;
+    const bOrder = map[b.id] ?? Number.MAX_SAFE_INTEGER;
+    return aOrder - bOrder;
+  });
 };
 
 export const useCartStore = create<CartState>((set) => ({
@@ -90,9 +104,14 @@ export const useCartStore = create<CartState>((set) => ({
   isLoading: false,
   isMutating: false,
   error: null,
+  orderMap: {},
 
-  fetchCart: async () => {
-    set({ isLoading: true, error: null });
+  fetchCart: async (options) => {
+    const silent = options?.silent;
+    set((state) => ({
+      error: null,
+      isLoading: silent ? state.isLoading : true,
+    }));
     try {
       const res = await fetch(`${API_URL}/cart`, {
         credentials: "include",
@@ -100,12 +119,33 @@ export const useCartStore = create<CartState>((set) => ({
       if (!res.ok) throw new Error("Failed to fetch cart");
 
       const data = await res.json();
-      set({ cart: data.data, isLoading: false });
-    } catch (err: any) {
-      set({
-        isLoading: false,
-        error: err?.message || "Gagal mengambil data keranjang.",
+      set((state) => {
+        const incoming = data.data;
+        if (!incoming) {
+          return {
+            cart: null,
+            orderMap: {},
+            isLoading: silent ? state.isLoading : false,
+          };
+        }
+        const nextMap = buildOrderMap(
+          incoming.items ?? [],
+          silent ? state.orderMap : {},
+        );
+        return {
+          cart: {
+            ...incoming,
+            items: sortItemsByMap(incoming.items ?? [], nextMap),
+          },
+          orderMap: nextMap,
+          isLoading: silent ? state.isLoading : false,
+        };
       });
+    } catch (err: any) {
+      set((state) => ({
+        isLoading: silent ? state.isLoading : false,
+        error: err?.message || "Gagal mengambil data keranjang.",
+      }));
     }
   },
 
@@ -124,14 +164,22 @@ export const useCartStore = create<CartState>((set) => ({
       set((state) => {
         const incoming = data.data;
         if (!incoming) {
-          return { cart: null, isMutating: false };
+          return {
+            cart: null,
+            orderMap: {},
+            isMutating: false,
+          };
         }
-        const prevItems = state.cart?.items;
+        const nextMap = buildOrderMap(
+          incoming.items ?? [],
+          state.orderMap,
+        );
         return {
           cart: {
             ...incoming,
-            items: reorderItems(incoming.items ?? [], prevItems),
+            items: sortItemsByMap(incoming.items ?? [], nextMap),
           },
+          orderMap: nextMap,
           isMutating: false,
         };
       });
@@ -157,14 +205,22 @@ export const useCartStore = create<CartState>((set) => ({
       set((state) => {
         const incoming = data.data;
         if (!incoming) {
-          return { cart: null, isMutating: false };
+          return {
+            cart: null,
+            orderMap: {},
+            isMutating: false,
+          };
         }
-        const prevItems = state.cart?.items;
+        const nextMap = buildOrderMap(
+          incoming.items ?? [],
+          state.orderMap,
+        );
         return {
           cart: {
             ...incoming,
-            items: reorderItems(incoming.items ?? [], prevItems),
+            items: sortItemsByMap(incoming.items ?? [], nextMap),
           },
+          orderMap: nextMap,
           isMutating: false,
         };
       });

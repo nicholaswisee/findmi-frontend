@@ -103,7 +103,7 @@ export default function OrderHistoryPage() {
     return {
       name: source?.name ?? "Item tanpa nama",
       description: truncateDescription(rawDescription),
-      image: source?.image_url || "",
+      image: source?.image_urls?.[0] || "",
     };
   };
 
@@ -113,7 +113,7 @@ export default function OrderHistoryPage() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 font-semibold text-[#ffd88c] transition hover:bg-white/20"
+          className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-[#463B8B]/20 px-4 py-2 font-semibold text-[#ffd88c] transition hover:bg-[#463B8B]/30"
         >
           <ArrowLeft className="size-4" />
           Kembali
@@ -128,7 +128,7 @@ export default function OrderHistoryPage() {
             {[...Array(2)].map((_, idx) => (
               <div
                 key={idx}
-                className="h-48 animate-pulse rounded-3xl bg-white/10"
+                className="h-48 animate-pulse rounded-3xl bg-[#463B8B]/15"
               />
             ))}
           </div>
@@ -137,7 +137,7 @@ export default function OrderHistoryPage() {
             {error}
           </div>
         ) : sortedOrders.length === 0 ? (
-          <div className="rounded-3xl border border-white/20 bg-white/5 p-6 text-center text-[#ffeabb]">
+          <div className="rounded-3xl border border-white/0 bg-[#463B8B]/10 p-6 text-center text-[#ffeabb]">
             Belum ada transaksi. Mulai belanja dan pesananmu akan tampil di
             sini.
           </div>
@@ -148,7 +148,7 @@ export default function OrderHistoryPage() {
               return (
                 <article
                   key={order.id}
-                  className="space-y-4 text-[#1b165e] rounded-3xl border border-white/15 bg-white/10 p-5  backdrop-blur"
+                  className="space-y-4 text-[#1b165e] rounded-3xl border border-white/0 bg-[#463B8B]/15 p-5"
                 >
                   <header className="flex flex-col gap-3 text-[#102044] sm:flex-row sm:items-start sm:justify-between">
                     <div>
@@ -173,7 +173,7 @@ export default function OrderHistoryPage() {
                       return (
                         <div
                           key={item.id}
-                          className="flex flex-col gap-3 rounded-2xl bg-white/10 p-3 text-[#1b165e] sm:flex-row sm:items-center"
+                          className="flex flex-col gap-3 rounded-2xl bg-[#463B8B]/10 p-3 text-[#1b165e] sm:flex-row sm:items-center"
                         >
                           <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/70">
                             <img

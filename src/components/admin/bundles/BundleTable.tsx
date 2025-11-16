@@ -44,10 +44,11 @@ export default function BundleTable({
         ),
       },
       {
-        accessorKey: "image_url",
+        accessorKey: "image_urls",
         header: "Image",
         cell: ({ row }) => {
-          const imgUrl = row.getValue("image_url");
+          const images = row.getValue<string[]>("image_urls") ?? [];
+          const imgUrl = images[0];
 
           return (
             <div className="aspect-square relative w-8 h-8 overflow-hidden flex items-center justify-center">
