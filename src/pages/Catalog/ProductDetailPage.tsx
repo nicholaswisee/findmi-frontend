@@ -19,6 +19,7 @@ type Product = {
   description: string;
   image_urls: string[];
   remaining_stock: number;
+  available_sizes: string[];
 };
 
 type BundleItem = {
@@ -159,6 +160,7 @@ export default function ProductDetailPage() {
       return nextSelections;
     });
   }, [product, bundleItems]);
+
 
   useEffect(() => {
     const fetchProduct = async () => {

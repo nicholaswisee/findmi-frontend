@@ -151,6 +151,7 @@ export default function CatalogPage() {
   const filteredBundles = useMemo(() => {
     const q = (query ?? "").trim().toLowerCase();
     return bundles.filter((bundle) => {
+      if (bundle.is_hidden) return false;
       const matchCategory =
         !category ||
         category === INITIAL_CATEGORY ||
