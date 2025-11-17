@@ -11,19 +11,25 @@ import {
 } from "@/store/catalogStore";
 import { useAuthStore } from "@/store/authStore";
 import { PaginatedList } from "@/components/shared/PaginatedList";
+import type { Bundle } from "@/types/types";
 
 const PAGE_SIZE = 10;
+const BUNDLE_PAGE_SIZE = 10;
 const API_URL = import.meta.env.VITE_API_URL ?? "https://api.akumasukitb.com";
 
 export default function CatalogPage() {
   const navigate = useNavigate();
-  const { status, error, products, query, category, fetchProducts } =
+  const { status, products, query, category, fetchProducts } =
     useProductStore();
 
   const [pageIndex, setPageIndex] = useState(0);
   const loading = status === "loading";
   const fmt = useMemo(() => new Intl.NumberFormat("id-ID"), []);
   const fetchCart = useCartStore((s) => s.fetchCart);
+  const [bundleLoading, setBundleLoading] = useState(false);
+  const [bundleError, setBundleError] = useState<string | null>(null);
+  const [bundles, setBundles] = useState<Bundle[]>([]);
+  const [bundlePageIndex, setBundlePageIndex] = useState(0);
 
   useEffect(() => {
     if (status === "idle") {
@@ -61,6 +67,16 @@ export default function CatalogPage() {
 
   const hasNextPage = (pageIndex + 1) * PAGE_SIZE < items.length;
 
+  const productMap = useMemo(() => {
+    const map = new Map<number, Product>();
+    products.forEach((product) => {
+      if (typeof product.id === "number") {
+        map.set(product.id, product);
+      }
+    });
+    return map;
+  }, [products]);
+
   const handleNext = useCallback(() => {
     if (!hasNextPage || loading) return;
     setPageIndex((prev) => prev + 1);
@@ -88,7 +104,76 @@ export default function CatalogPage() {
     [navigate]
   );
 
+  const handleNavigateToBundle = useCallback(
+    (bundleId: number | string) => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      navigate(`/catalog/bundle/${bundleId}`);
+    },
+    [navigate]
+  );
+
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  useEffect(() => {
+    let cancel = false;
+    const fetchBundles = async () => {
+      setBundleLoading(true);
+      setBundleError(null);
+      try {
+        const res = await fetch(`${API_URL}/bundle?limit=100`, {
+          credentials: "include",
+        });
+        if (!res.ok) {
+          throw new Error("Gagal memuat bundle.");
+        }
+        const data = await res.json();
+        const payload = data?.data ?? data ?? {};
+        if (!cancel) {
+          setBundles(Array.isArray(payload.bundles) ? payload.bundles : []);
+        }
+      } catch (err) {
+        if (!cancel) {
+          setBundleError(
+            err instanceof Error ? err.message : "Gagal memuat bundle."
+          );
+        }
+      } finally {
+        if (!cancel) {
+          setBundleLoading(false);
+        }
+      }
+    };
+    fetchBundles().catch(() => {});
+    return () => {
+      cancel = true;
+    };
+  }, []);
+
+  const filteredBundles = useMemo(() => {
+    const q = (query ?? "").trim().toLowerCase();
+    return bundles.filter((bundle) => {
+      const matchCategory =
+        !category ||
+        category === INITIAL_CATEGORY ||
+        bundle.category === category;
+      const matchQuery =
+        !q ||
+        (bundle.name ?? "").toLowerCase().includes(q) ||
+        (bundle.description ?? "").toLowerCase().includes(q);
+      return matchCategory && matchQuery;
+    });
+  }, [bundles, query, category]);
+
+  useEffect(() => {
+    setBundlePageIndex(0);
+  }, [filteredBundles.length]);
+
+  const bundlePaginatedItems = useMemo(() => {
+    const start = bundlePageIndex * BUNDLE_PAGE_SIZE;
+    return filteredBundles.slice(start, start + BUNDLE_PAGE_SIZE);
+  }, [filteredBundles, bundlePageIndex]);
+
+  const bundleHasNext =
+    (bundlePageIndex + 1) * BUNDLE_PAGE_SIZE < filteredBundles.length;
 
   const handleAddToCart = useCallback(
     async (productId: number | string, productName: string) => {
@@ -132,14 +217,6 @@ export default function CatalogPage() {
     [isAuthenticated, fetchCart]
   );
 
-  if (loading && products.length === 0) {
-    return <div className="p-8 text-sm text-muted-foreground">Memuat…</div>;
-  }
-
-  if (status === "error") {
-    return <div className="p-8 text-red-600">Error: {error}</div>;
-  }
-
   const ProductCard = ({ item }: { item: Product }) => (
     <div className="flex h-full w-full flex-col rounded-2xl border border-white/0 bg-[#463B8B]/15 p-2.5 pb-4">
       <div
@@ -147,9 +224,7 @@ export default function CatalogPage() {
         onClick={() => handleNavigateToProduct(item.id)}
       >
         <img
-          src={
-            item.image_urls?.[0] || "/global/background-plain-hijau.webp"
-          }
+          src={item.image_urls?.[0] || "/global/background-plain-hijau.webp"}
           alt={item.name || "Produk"}
           className="aspect-4/5 w-full object-cover transition-opacity duration-200 hover:opacity-90"
         />
@@ -181,7 +256,6 @@ export default function CatalogPage() {
             btn.classList.remove("ring-2", "ring-[#FFE59A]");
           }, 500);
           handleAddToCart(item.id, item.name ?? "Product");
-          fetchCart();
         }}
         disabled={item.remaining_stock === 0 || !isAuthenticated}
         className={`mx-auto mt-auto block w-[95%] rounded-lg py-1 px-2 cursor-pointer text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all
@@ -200,12 +274,128 @@ export default function CatalogPage() {
     </div>
   );
 
+  const handleAddBundleToCart = useCallback(
+    async (bundle: Bundle) => {
+      if (!isAuthenticated) {
+        toast.error("Silakan login untuk menambahkan ke keranjang.");
+        return;
+      }
+      const requiresSizeSelection =
+        bundle.bundle_items?.some((item) => {
+          const productInfo = productMap.get(item.product_id);
+          return (
+            productInfo &&
+            Array.isArray(productInfo.available_sizes) &&
+            productInfo.available_sizes.length > 0
+          );
+        }) ?? false;
+
+      if (requiresSizeSelection) {
+        toast.info(
+          "Silakan pilih ukuran untuk item bundle di halaman detail."
+        );
+        handleNavigateToBundle(bundle.id);
+        return;
+      }
+      try {
+        const response = await fetch(`${API_URL}/cart/items`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ bundleId: bundle.id, quantity: 1 }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to add to cart");
+        }
+
+        toast.success(`Berhasil menambahkan ${bundle.name ?? "Bundle"} ke keranjang!`);
+        fetchCart({ silent: true });
+      } catch (err) {
+        toast.error(
+          `Gagal menambahkan ke keranjang: ${
+            err instanceof Error ? err.message : "Kesalahan tidak diketahui"
+          }`
+        );
+      }
+    },
+    [isAuthenticated, fetchCart, handleNavigateToBundle, productMap]
+  );
+
+  const BundleCard = ({ item: bundle }: { item: Bundle }) => (
+    <div className="flex h-full w-full flex-col rounded-2xl border border-white/0 bg-[#463B8B]/15 p-2.5 pb-4">
+      <div
+        className="mb-2 w-full cursor-pointer overflow-hidden rounded-xl bg-[#1d114d]/40"
+        onClick={() => handleNavigateToBundle(bundle.id)}
+      >
+        <img
+          src={bundle.image_urls?.[0] || "/global/background-plain-hijau.webp"}
+          alt={bundle.name || "Bundle"}
+          className="aspect-4/5 w-full object-cover transition-opacity duration-200 hover:opacity-90"
+        />
+      </div>
+      <div className="mx-auto mb-3 flex w-[85%] flex-1 flex-col space-y-1 text-left">
+        <p className="text-sm text-[#FFD88C] leading-none">
+          {bundle.category ?? "-"}
+        </p>
+        <h3
+          className="cursor-pointer text-base font-light text-[#FFC76E] leading-tight hover:underline"
+          onClick={() => handleNavigateToBundle(bundle.id)}
+        >
+          {bundle.name ?? "-"}
+        </h3>
+        <p className="font-bold text-[#FFEABB] leading-none">
+          Rp {fmt.format(Number(bundle.price ?? 0))}
+        </p>
+        <p className="line-clamp-2 text-sm text-[#FFEABB]/80 leading-snug">
+          {bundle.description ?? "-"}
+        </p>
+      </div>
+      <button
+        onClick={() => handleAddBundleToCart(bundle)}
+        disabled={!isAuthenticated || bundle.is_hidden}
+        className={`mx-auto mt-auto block w-[95%] rounded-lg py-1 px-2 text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all ${
+          !isAuthenticated || bundle.is_hidden
+            ? "cursor-not-allowed bg-[#7a1644] text-[#ffeabb]/60 opacity-80"
+            : "bg-[#c62d76] text-[#ffeabb] hover:brightness-105 active:brightness-95"
+        }`}
+      >
+        {!isAuthenticated
+          ? "Login terlebih dahulu"
+          : bundle.is_hidden
+          ? "Tidak tersedia"
+          : "Tambah ke Keranjang"}
+      </button>
+    </div>
+  );
+  const handleBundleNext = useCallback(() => {
+    if (!bundleHasNext || bundleLoading) return;
+    setBundlePageIndex((prev) => prev + 1);
+  }, [bundleHasNext, bundleLoading]);
+
+  const handleBundlePrevious = useCallback(() => {
+    if (bundlePageIndex === 0 || bundleLoading) return;
+    setBundlePageIndex((prev) => Math.max(prev - 1, 0));
+  }, [bundlePageIndex, bundleLoading]);
+
+  const handleBundlePageChange = useCallback(
+    (page: number) => {
+      if (bundleLoading) return;
+      setBundlePageIndex(page);
+    },
+    [bundleLoading]
+  );
+
   return (
-    <div className="min-h-svh pt-8">
+    <div className="min-h-svh py-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 flex justify-center">
           <h1 className="mt-4 text-5xl font-extrabold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
-            CATALOG
+            Catalog
           </h1>
         </div>
 
@@ -214,6 +404,10 @@ export default function CatalogPage() {
         </div>
 
         <div className="mb-6 mx-auto  ">
+          {/* <h2 className="mb-6 text-3xl font-bold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
+            Products
+          </h2> */}
+
           <PaginatedList<Product>
             data={paginatedItems}
             component={ProductCard}
@@ -229,11 +423,39 @@ export default function CatalogPage() {
             layout="grid"
             layoutClassName="grid grid-cols-2 gap-3 sm:gap-6 md:gap-8 lg:gap-12 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 justify-items-center items-start"
             emptyState={
-              <div className="col-span-full text-center font-bold text-[#FFD88C]">
-                Tidak ada produk yang cocok.
+              <div className="col-span-full text-start text-[#FFD88C]">
+                Tidak ada produk yang cocok dengan pencarian.
               </div>
             }
             getItemKey={(item) => item.id}
+          />
+        </div>
+
+        <div className="mt-12">
+          <h2 className="mb-6 text-3xl font-bold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
+            Bundles
+          </h2>
+
+          <PaginatedList<Bundle>
+            data={bundlePaginatedItems}
+            component={BundleCard}
+            pageIndex={bundlePageIndex}
+            pageSize={BUNDLE_PAGE_SIZE}
+            total={filteredBundles.length}
+            hasNextPage={bundleHasNext}
+            loading={bundleLoading}
+            onNext={handleBundleNext}
+            onPrevious={handleBundlePrevious}
+            onPageChange={handleBundlePageChange}
+            label="bundle"
+            layout="grid"
+            layoutClassName="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-6 md:gap-8 lg:gap-12"
+            emptyState={
+              <div className="col-span-full text-start text-[#FFD88C]">
+                Tidak ada bundle yang cocok dengan pencarian.
+              </div>
+            }
+            getItemKey={(bundle) => bundle.id}
           />
         </div>
       </div>

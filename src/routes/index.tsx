@@ -17,6 +17,7 @@ import BundlesAdmin from "@/pages/Admin/BundlesAdmin";
 import ProductsAdmin from "@/pages/Admin/ProductsAdmin";
 import UsersAdmin from "@/pages/Admin/UsersAdmin";
 import AdminLayout from "@/layouts/AdminLayout";
+import DummyPaymentPage from "@/pages/Payment/DummyPaymentPage";
 
 export const routes: RouteObject[] = [
   {
@@ -33,6 +34,10 @@ export const routes: RouteObject[] = [
         element: <ProductDetailPage />,
       },
       {
+        path: "catalog/bundle/:bundle_id",
+        element: <ProductDetailPage />,
+      },
+      {
         path: "cart",
         element: (
           <PrivateRoute>
@@ -45,6 +50,14 @@ export const routes: RouteObject[] = [
         element: (
           <PrivateRoute>
             <CheckoutPage />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "payment/dummy",
+        element: (
+          <PrivateRoute>
+            <DummyPaymentPage />
           </PrivateRoute>
         ),
       },

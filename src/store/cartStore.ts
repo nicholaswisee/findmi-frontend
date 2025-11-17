@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import type { BundleSelection, Order } from "@/types/types";
+import type { BundleSelection } from "@/types/types";
 
 interface CartProduct {
   id: number;
@@ -8,6 +10,7 @@ interface CartProduct {
   description: string;
   image_urls: string[];
   remaining_stock: number;
+  available_sizes: string[];
 }
 
 interface CartBundle {
@@ -24,11 +27,13 @@ interface CartBundle {
 interface CartItemInterface {
   id: number;
   cart_id: number;
-  product_id: number;
+  product_id: number | null;
   bundle_id: number | null;
   quantity: number;
   unit_price: number;
   line_total: number;
+  selected_size: string | null;
+  selected_bundle_items: BundleSelection[];
   product?: CartProduct;
   bundle?: CartBundle;
 }
@@ -52,11 +57,24 @@ interface OrderItemRequest {
   productId?: number;
   bundleId?: number;
   quantity: number;
+  size?: string | null;
+  bundleSelections?: { productId: number; size?: string | null }[];
+}
+
+interface PaymentResponse {
+  provider: string;
+  transactionId?: string;
+  transactionToken?: string;
+  status?: string;
+  checkoutUrl?: string;
+  checkoutPath?: string;
+  expiresAt?: string;
+  instructions?: string;
 }
 
 interface OrderResponse {
-  order: unknown;
-  payment: unknown;
+  order: Order;
+  payment: PaymentResponse | null;
 }
 
 interface CartState {
@@ -99,7 +117,7 @@ const sortItemsByMap = (
   });
 };
 
-export const useCartStore = create<CartState>((set) => ({
+export const useCartStore = create<CartState>((set, get) => ({
   cart: null,
   isLoading: false,
   isMutating: false,
@@ -246,6 +264,10 @@ export const useCartStore = create<CartState>((set) => ({
 
       const data = await res.json();
       set({ isMutating: false });
+      const fetchCart = get().fetchCart;
+      if (fetchCart) {
+        fetchCart({ silent: true }).catch(() => {});
+      }
       return data.data;
     } catch (err: any) {
       set({

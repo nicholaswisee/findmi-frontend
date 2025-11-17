@@ -132,7 +132,9 @@ export default function ProfilePage() {
 
         <div className="rounded-2xl text-white flex flex-col items-center gap-8">
           <header className="text-center flex flex-col items-center gap-4">
-            <h1 className="text-[#ffdb8c]">PROFIL</h1>
+            <h1 className="mt-4 text-5xl font-extrabold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
+              Profil
+            </h1>
             {!isEditing ? (
               <Button
                 variant="blue"

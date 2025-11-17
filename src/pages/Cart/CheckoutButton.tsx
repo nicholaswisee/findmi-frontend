@@ -1,31 +1,57 @@
 import { useCartStore } from "@/store/cartStore";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export function CheckoutButton() {
   const { createOrder, cart, isMutating } = useCartStore();
   const hasItems = (cart?.items?.length ?? 0) > 0;
+  const navigate = useNavigate();
 
   const handleCheckout = async () => {
     if (!cart || !hasItems || isMutating) return;
-    const items = cart.items.map((item) => {
+    const items: Array<{
+      productId?: number;
+      bundleId?: number;
+      quantity: number;
+      size?: string | null;
+      bundleSelections?: { productId: number; size?: string | null }[];
+    }> = [];
+    for (const item of cart.items) {
       if (item.bundle_id && item.bundle_id > 0) {
-        return { bundleId: item.bundle_id, quantity: item.quantity };
+        items.push({
+          bundleId: item.bundle_id,
+          quantity: item.quantity,
+          bundleSelections: (item.selected_bundle_items ?? []).map(
+            (selection) => ({
+              productId: selection.product_id,
+              size: selection.size,
+            })
+          ),
+        });
+        continue;
       }
-      return { productId: item.product_id, quantity: item.quantity };
-    });
+      if (item.product_id && item.product_id > 0) {
+        items.push({
+          productId: item.product_id,
+          quantity: item.quantity,
+          size: item.selected_size ?? undefined,
+        });
+      }
+    }
 
     const result = await createOrder(items);
     if (result) {
-      console.log("Order sukses:", result.order);
-      const redirectUrl =
-        typeof result === "object" &&
-        result !== null &&
-        "payment" in result &&
-        typeof (result as any).payment === "object"
-          ? (result as any).payment?.redirectUrl
-          : undefined;
-      if (redirectUrl) {
-        console.log("Redirect URL Midtrans:", redirectUrl);
+      toast.success("Pesanan berhasil dibuat.");
+      const payment = result.payment ?? null;
+      if (payment?.checkoutPath) {
+        navigate(payment.checkoutPath);
+        return;
       }
+      if (payment?.checkoutUrl) {
+        window.location.href = payment.checkoutUrl;
+        return;
+      }
+      navigate("/profile/history");
     }
   };
 

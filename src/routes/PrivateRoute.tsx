@@ -16,7 +16,8 @@ export default function PrivateRoute({ children }: PrivateRouteProps) {
 
   useEffect(() => {
     const expiring =
-      !session || session.expiresAt * 1000 <= Date.now() + SESSION_REFRESH_BUFFER_MS;
+      !session ||
+      session.expiresAt * 1000 <= Date.now() + SESSION_REFRESH_BUFFER_MS;
     const needRefresh = !isAuthenticated || expiring;
     if (!needRefresh || refreshPendingRef.current) return;
 

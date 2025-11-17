@@ -24,6 +24,30 @@ import type { Product, UserDepartmentEnum } from "@/types/types";
 type DepartmentFilterValue = UserDepartmentEnum | "all";
 const SEARCH_DEBOUNCE_MS = 1000;
 
+const SIZE_PRIORITY = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
+const sizePriorityMap = new Map(
+  SIZE_PRIORITY.map((size, index) => [size, index])
+);
+
+const normalizeAndOrderSizes = (sizes?: string[]) => {
+  if (!sizes) return [];
+  const normalized = sizes
+    .map((size) => size?.trim().toUpperCase())
+    .filter((size): size is string => Boolean(size));
+  const unique = Array.from(new Set(normalized));
+  unique.sort((a, b) => {
+    const priorityA = sizePriorityMap.get(a);
+    const priorityB = sizePriorityMap.get(b);
+    if (priorityA !== undefined && priorityB !== undefined) {
+      return priorityA - priorityB;
+    }
+    if (priorityA !== undefined) return -1;
+    if (priorityB !== undefined) return 1;
+    return a.localeCompare(b);
+  });
+  return unique;
+};
+
 export default function ProductsAdmin() {
   const products = useAdminStore((state) => state.products);
   const loading = useAdminStore((state) => state.loadingProducts);
@@ -48,6 +72,7 @@ export default function ProductsAdmin() {
       description: "",
       image_urls: [],
       remaining_stock: 0,
+      available_sizes: [],
     }),
     []
   );
@@ -89,7 +114,6 @@ export default function ProductsAdmin() {
         const trimmed = urls.map((url) => url.trim()).filter(Boolean);
         return trimmed.length ? trimmed : undefined;
       };
-
       try {
         await updateProduct(productId, {
           name: values.name,
@@ -98,6 +122,7 @@ export default function ProductsAdmin() {
           description: mapString(values.description),
           image_urls: normalizeUrls(values.image_urls),
           stock: values.remaining_stock,
+          available_sizes: normalizeAndOrderSizes(values.available_sizes),
         });
         await fetchProducts({
           limit: pageSize,
@@ -129,7 +154,6 @@ export default function ProductsAdmin() {
         const trimmed = urls.map((url) => url.trim()).filter(Boolean);
         return trimmed.length ? trimmed : undefined;
       };
-
       try {
         await createProduct({
           name: values.name,
@@ -138,6 +162,7 @@ export default function ProductsAdmin() {
           description: mapString(values.description),
           image_urls: normalizeUrls(values.image_urls),
           stock: values.remaining_stock,
+          available_sizes: normalizeAndOrderSizes(values.available_sizes),
         });
         toast.success("Produk berhasil dibuat");
         await fetchProducts({

@@ -78,17 +78,17 @@ export default function SearchBar({
           >
             <SelectTrigger
               id="catalog-category"
-              className="h-11 w-full rounded-lg border-white/30 bg-white/80 text-sm font-semibold text-[#302A77] shadow-sm"
+              className="h-11 w-full rounded-lg border-white/30 bg-plain-green text-sm font-semibold text-[#FFD88C] shadow-sm"
               style={bodyFontStyle}
             >
               <SelectValue placeholder={defaultCategoryLabel} />
             </SelectTrigger>
-            <SelectContent className="max-h-60 rounded-lg bg-white shadow-xl">
+            <SelectContent className="max-h-60 rounded-lg bg-plain-green shadow-xl">
               {categories.map((opt) => (
                 <SelectItem
                   key={opt}
                   value={opt}
-                  className="font-semibold text-[#302A77]"
+                  className="font-semibold text-[#FFD88C]"
                   style={bodyFontStyle}
                 >
                   {opt}
@@ -106,13 +106,13 @@ export default function SearchBar({
               placeholder="Cari nama atau deskripsi produk…"
               value={localQuery}
               onChange={(event) => setLocalQuery(event.target.value)}
-              className="h-11 w-full rounded-lg border-white/30 bg-white/80 text-sm font-semibold text-[#302A77] placeholder:text-[#8B7CBF] shadow-sm"
+              className="h-11 w-full rounded-lg border-white/30 bg-plain-green text-sm font-semibold text-[#FFD88C] placeholder:text-[#FFD88C] shadow-sm"
               style={bodyFontStyle}
             />
             <Button
               type="button"
               variant="outline"
-              className="h-11 w-full rounded-lg border-[#FFD88C]/60 bg-transparent font-bold text-[#FFD88C] backdrop-blur-sm transition hover:bg-[#FFD88C]/5 sm:w-auto sm:px-6 hover:text-[#ffd88c]"
+              className="h-11 w-full rounded-lg border-[#FFD88C]/60 bg-plain-green font-bold text-[#FFD88C] backdrop-blur-sm transition hover:bg-[#FFD88C]/5 sm:w-auto sm:px-6 hover:text-[#ffd88c]"
               onClick={handleReset}
             >
               Reset Filter

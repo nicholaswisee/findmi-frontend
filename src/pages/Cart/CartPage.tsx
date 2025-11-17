@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { CartItem } from "@/pages/Cart/CartItem";
 import { CartSummary } from "@/pages/Cart/CartSummary";
@@ -9,6 +9,17 @@ export default function CartPage() {
   const { cart, fetchCart, isLoading, error } = useCartStore();
   const status = useProductStore((s) => s.status);
   const fetchProducts = useProductStore((s) => s.fetchProducts);
+  const catalogProducts = useProductStore((s) => s.products);
+
+  const productMap = useMemo(() => {
+    const map = new Map<number, (typeof catalogProducts)[number]>();
+    catalogProducts.forEach((product) => {
+      if (typeof product.id === "number") {
+        map.set(product.id, product);
+      }
+    });
+    return map;
+  }, [catalogProducts]);
 
   useEffect(() => {
     fetchCart();
@@ -55,6 +66,7 @@ export default function CartPage() {
                       price={item.product.price}
                       quantity={item.quantity}
                       image={item.product.image_urls?.[0] ?? ""}
+                      size={item.selected_size ?? undefined}
                       maxQuantity={
                         typeof item.product.remaining_stock === "number"
                           ? item.product.remaining_stock
@@ -65,6 +77,23 @@ export default function CartPage() {
                 }
 
                 if (item.bundle) {
+                  const bundleSelections = item.selected_bundle_items ?? [];
+                  const bundleItemsDetails =
+                    item.bundle.bundle_items?.map((bundleItem) => {
+                      const productInfo = productMap.get(bundleItem.product_id);
+                      const selection = bundleSelections.find(
+                        (entry) => entry.product_id === bundleItem.product_id
+                      );
+                      return {
+                        productId: bundleItem.product_id,
+                        name:
+                          productInfo?.name ??
+                          `Produk #${bundleItem.product_id}`,
+                        amount: bundleItem.amount,
+                        size: selection?.size,
+                      };
+                    }) ?? [];
+
                   elements.push(
                     <CartItem
                       key={`bundle-${item.id}`}
@@ -75,6 +104,7 @@ export default function CartPage() {
                       price={item.bundle.price}
                       quantity={item.quantity}
                       image={item.bundle.image_urls?.[0] ?? ""}
+                      bundleItems={bundleItemsDetails}
                     />
                   );
                 }

@@ -74,12 +74,18 @@ export type Product = {
   description: string;
   image_urls: string[];
   remaining_stock: number;
+  available_sizes: string[];
 };
 
 export type BundleItem = {
   product_id: number;
   amount: number;
   product?: Product;
+};
+
+export type BundleSelection = {
+  product_id: number;
+  size: string;
 };
 
 export type Bundle = {
@@ -117,6 +123,8 @@ export type OrderItem = {
   unit_price: number;
   product: Product | null;
   bundle: Bundle | null;
+  selected_size?: string | null;
+  selected_bundle_items?: BundleSelection[];
 };
 
 export type Order = {

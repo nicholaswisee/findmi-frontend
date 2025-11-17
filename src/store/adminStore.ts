@@ -21,6 +21,7 @@ export type CreateProductPayload = {
   stock: number;
   category?: string;
   image_urls?: string[];
+  available_sizes?: string[];
 };
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;

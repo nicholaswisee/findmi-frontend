@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useProductStore, INITIAL_CATEGORY } from "@/store/catalogStore";
+import {
+  useProductStore,
+  INITIAL_CATEGORY,
+  type Product as CatalogProduct,
+} from "@/store/catalogStore";
 import { toast } from "sonner";
 import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
@@ -29,19 +33,28 @@ export default function ProductGrid({
   const [pendingId, setPendingId] = useState<number | string | null>(null);
   const API_URL = import.meta.env.VITE_API_URL!;
 
-  const handleAddToCart = async (
-    productId: number | string,
-    productName: string
-  ) => {
+  const handleAddToCart = async (product: CatalogProduct) => {
     if (!isAuthenticated) {
       toast.error("Silakan login untuk menambahkan ke keranjang.");
       return;
     }
-    if (pendingId === productId) return;
+    if (pendingId === product.id) return;
+    if (
+      Array.isArray(product.available_sizes) &&
+      product.available_sizes.length > 0
+    ) {
+      toast.info("Pilih ukuran produk terlebih dahulu.", {
+        description: "Buka halaman detail untuk memilih ukuran yang tersedia.",
+      });
+      handleNavigateToProduct(product.id);
+      return;
+    }
     try {
-      setPendingId(productId);
+      setPendingId(product.id);
       const normalizedProductId =
-        typeof productId === "string" ? parseInt(productId, 10) : productId;
+        typeof product.id === "string"
+          ? parseInt(product.id as string, 10)
+          : product.id;
       const requestBody = {
         productId: normalizedProductId,
         quantity: 1,
@@ -70,7 +83,7 @@ export default function ProductGrid({
       const result = await response.json();
       console.log("Add to cart success:", result);
 
-      toast.success(`Berhasil menambahkan ${productName} ke keranjang!`);
+      toast.success(`Berhasil menambahkan ${product.name ?? "Produk"} ke keranjang!`);
       fetchCart({ silent: true });
     } catch (error) {
       console.error("Error adding to cart:", error);
@@ -80,7 +93,7 @@ export default function ProductGrid({
         }`
       );
     } finally {
-      setPendingId((current) => (current === productId ? null : current));
+      setPendingId((current) => (current === product.id ? null : current));
     }
   };
 
@@ -148,7 +161,7 @@ export default function ProductGrid({
             onClick={(event) => {
               event.stopPropagation();
               if (p.remaining_stock === 0 || pendingId === p.id) return;
-              handleAddToCart(p.id, p.name ?? "Product");
+              handleAddToCart(p);
             }}
             disabled={
               p.remaining_stock === 0 || pendingId === p.id || !isAuthenticated

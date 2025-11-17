@@ -100,10 +100,22 @@ export default function OrderHistoryPage() {
       ? item.product?.description ?? ""
       : buildBundleDescription(item.bundle);
 
+    const bundleSizes =
+      !isProduct && item.selected_bundle_items?.length
+        ? item.selected_bundle_items
+            .map(
+              (selection) =>
+                `Produk #${selection.product_id} (${selection.size})`
+            )
+            .join(", ")
+        : undefined;
+
     return {
       name: source?.name ?? "Item tanpa nama",
       description: truncateDescription(rawDescription),
       image: source?.image_urls?.[0] || "",
+      size: item.selected_size ?? null,
+      bundleSizes,
     };
   };
 
@@ -120,7 +132,9 @@ export default function OrderHistoryPage() {
         </button>
 
         <header className="text-center">
-          <h1>Riwayat Transaksi</h1>
+          <h1 className="mt-4 text-5xl font-extrabold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
+            Riwayat Transaksi
+          </h1>
         </header>
 
         {loading ? (
@@ -168,7 +182,8 @@ export default function OrderHistoryPage() {
 
                   <div className="space-y-3">
                     {order.items.map((item) => {
-                      const { name, description, image } = describeItem(item);
+                      const { name, description, image, size, bundleSizes } =
+                        describeItem(item);
                       const displayImage = image || FALLBACK_IMAGE;
                       return (
                         <div
@@ -194,6 +209,16 @@ export default function OrderHistoryPage() {
                               <p className="text-sm text-[#3f4971]">
                                 {description}
                               </p>
+                              {size && (
+                                <p className="text-xs font-semibold uppercase text-[#3f4971]">
+                                  Ukuran: {size}
+                                </p>
+                              )}
+                              {bundleSizes && (
+                                <p className="text-xs text-[#3f4971]">
+                                  {bundleSizes}
+                                </p>
+                              )}
                             </div>
                             <p className="text-sm font-semibold text-[#0e1c32]">
                               {item.quantity} x{" "}

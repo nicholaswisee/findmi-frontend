@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { CircleEllipsisIcon } from "lucide-react";
+import { CircleEllipsisIcon, X } from "lucide-react";
 
 import type { Product } from "@/types/types";
 import {
@@ -29,6 +29,31 @@ import {
 import { DEPARTMENTS } from "@/constants/departments";
 import { ImageUploadPool } from "@/components/admin/media/ImageUploadPool";
 
+const SIZE_PRIORITY = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
+const sizePriorityMap = new Map(
+  SIZE_PRIORITY.map((size, index) => [size, index])
+);
+
+const normalizeSizeValue = (value: string) => value.trim().toUpperCase();
+
+const formatSizes = (values: string[] = []) => {
+  const normalized = values
+    .map((value) => normalizeSizeValue(value))
+    .filter((value) => value.length > 0);
+  const unique = Array.from(new Set(normalized));
+  unique.sort((a, b) => {
+    const priorityA = sizePriorityMap.get(a);
+    const priorityB = sizePriorityMap.get(b);
+    if (priorityA !== undefined && priorityB !== undefined) {
+      return priorityA - priorityB;
+    }
+    if (priorityA !== undefined) return -1;
+    if (priorityB !== undefined) return 1;
+    return a.localeCompare(b);
+  });
+  return unique;
+};
+
 export type ProductFormValues = {
   name: string;
   price: number;
@@ -36,6 +61,7 @@ export type ProductFormValues = {
   description?: string;
   image_urls?: string[];
   remaining_stock: number;
+  available_sizes: string[];
 };
 
 type ProductFormDialogProps = {
@@ -54,6 +80,7 @@ const toFormValues = (product: Product): ProductFormValues => ({
   description: product.description ?? "",
   image_urls: product.image_urls ?? [],
   remaining_stock: product.remaining_stock,
+  available_sizes: formatSizes(product.available_sizes ?? []),
 });
 
 export function ProductFormDialog({
@@ -77,11 +104,49 @@ export function ProductFormDialog({
   }, [product, reset, open]);
 
   const imageValues = watch("image_urls");
+  const sizeValues = watch("available_sizes") ?? [];
+  const [sizeInput, setSizeInput] = useState("");
+
+  const updateSizes = (next: string[]) => {
+    setValue("available_sizes", formatSizes(next), { shouldDirty: true });
+  };
+
+  const handleAddSize = (raw: string) => {
+    const normalized = normalizeSizeValue(raw);
+    if (!normalized) return;
+    if (
+      sizeValues.some((size) => size.toUpperCase() === normalized.toUpperCase())
+    ) {
+      setSizeInput("");
+      return;
+    }
+    updateSizes([...sizeValues, normalized]);
+    setSizeInput("");
+  };
+
+  const handleRemoveSize = (target: string) => {
+    updateSizes(sizeValues.filter((size) => size !== target));
+  };
+
+  const togglePresetSize = (preset: string) => {
+    const normalized = normalizeSizeValue(preset);
+    if (sizeValues.includes(normalized)) {
+      updateSizes(sizeValues.filter((size) => size !== normalized));
+    } else {
+      updateSizes([...sizeValues, normalized]);
+    }
+  };
+
+  const presetSizes = SIZE_PRIORITY;
 
   const handleFormSubmit = handleSubmit(async (values) => {
     try {
       setSubmitting(true);
-      await onSubmit?.(values);
+      const normalizedSizes = formatSizes(values.available_sizes ?? []);
+      await onSubmit?.({
+        ...values,
+        available_sizes: normalizedSizes,
+      });
       setOpen(false);
     } finally {
       setSubmitting(false);
@@ -171,6 +236,75 @@ export function ProductFormDialog({
               rows={3}
               {...register("description")}
             />
+          </div>
+
+          <div className="grid gap-3">
+            <div>
+              <Label>Available sizes</Label>
+              <p className="text-xs text-muted-foreground">
+                Kosongkan jika produk tidak memiliki variasi ukuran.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {presetSizes.map((preset) => {
+                const normalized = normalizeSizeValue(preset);
+                const isActive = sizeValues.includes(normalized);
+                return (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => togglePresetSize(preset)}
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      isActive
+                        ? "border-[#c62d76] bg-[#c62d76] text-white"
+                        : "border-white/40 text-[#1b165e]"
+                    }`}
+                  >
+                    {preset}
+                  </button>
+                );
+              })}
+            </div>
+            {sizeValues.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {sizeValues.map((size) => (
+                  <span
+                    key={size}
+                    className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold uppercase text-[#1b165e]"
+                  >
+                    {size}
+                    <button
+                      type="button"
+                      aria-label={`Hapus ukuran ${size}`}
+                      onClick={() => handleRemoveSize(size)}
+                      className="text-[#c62d76] transition hover:text-[#a41d60]"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Input
+                value={sizeInput}
+                onChange={(event) => setSizeInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    handleAddSize(sizeInput);
+                  }
+                }}
+                placeholder="Ukuran custom (misal: FREESIZE)"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => handleAddSize(sizeInput)}
+              >
+                Tambah
+              </Button>
+            </div>
           </div>
 
           <div className="grid gap-3">

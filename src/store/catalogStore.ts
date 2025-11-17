@@ -37,6 +37,7 @@ export type Product = {
   category: string;
   image_urls: string[];
   remaining_stock: number;
+  available_sizes: string[];
 };
 
 export interface ProductStateStore {
@@ -157,6 +158,9 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
 
         const normalizedBatch = batch.map((p) => ({
           ...p,
+          available_sizes: Array.isArray(p.available_sizes)
+            ? p.available_sizes
+            : [],
           price:
             p?.price == null || p?.price === ""
               ? null
