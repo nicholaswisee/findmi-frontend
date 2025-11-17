@@ -25,7 +25,7 @@ type DepartmentFilterValue = UserDepartmentEnum | "all";
 const SEARCH_DEBOUNCE_MS = 1000;
 
 const SIZE_PRIORITY = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
-const sizePriorityMap = new Map(
+const sizePriorityMap = new Map<string, number>(
   SIZE_PRIORITY.map((size, index) => [size, index])
 );
 

@@ -1,45 +1,61 @@
+import { Suspense, lazy, type ReactElement } from "react";
 import { type RouteObject } from "react-router-dom";
-import MainLayout from "../layouts/MainLayout";
-import PrivateRoute from "./PrivateRoute";
-import HomePage from "../pages/Home/HomePage";
-import CatalogPage from "../pages/Catalog/CatalogPage";
-import ProductDetailPage from "../pages/Catalog/ProductDetailPage";
-import CartPage from "../pages/Cart/CartPage";
-import CheckoutPage from "../pages/Checkout/CheckoutPage";
-import AuthPage from "../pages/Auth/AuthPage";
-import ProfilePage from "../pages/Profile/ProfilePage";
-import OrderHistoryPage from "../pages/Profile/OrderHistoryPage";
-import NotFound from "./NotFound";
-import AdminPage from "@/pages/Admin/AdminPage";
 import AdminRoute from "./AdminRoute";
-import OrdersAdmin from "@/pages/Admin/OrdersAdmin";
-import BundlesAdmin from "@/pages/Admin/BundlesAdmin";
-import ProductsAdmin from "@/pages/Admin/ProductsAdmin";
-import UsersAdmin from "@/pages/Admin/UsersAdmin";
-import AdminLayout from "@/layouts/AdminLayout";
-import DummyPaymentPage from "@/pages/Payment/DummyPaymentPage";
+import PrivateRoute from "./PrivateRoute";
+
+const MainLayout = lazy(() => import("../layouts/MainLayout"));
+const HomePage = lazy(() => import("../pages/Home/HomePage"));
+const CatalogPage = lazy(() => import("../pages/Catalog/CatalogPage"));
+const ProductDetailPage = lazy(
+  () => import("../pages/Catalog/ProductDetailPage")
+);
+const CartPage = lazy(() => import("../pages/Cart/CartPage"));
+const CheckoutPage = lazy(() => import("../pages/Checkout/CheckoutPage"));
+const DummyPaymentPage = lazy(() => import("@/pages/Payment/DummyPaymentPage"));
+const AuthPage = lazy(() => import("../pages/Auth/AuthPage"));
+const ProfilePage = lazy(() => import("../pages/Profile/ProfilePage"));
+const OrderHistoryPage = lazy(
+  () => import("../pages/Profile/OrderHistoryPage")
+);
+const NotFound = lazy(() => import("./NotFound"));
+const AdminLayout = lazy(() => import("@/layouts/AdminLayout"));
+const AdminPage = lazy(() => import("@/pages/Admin/AdminPage"));
+const UsersAdmin = lazy(() => import("@/pages/Admin/UsersAdmin"));
+const ProductsAdmin = lazy(() => import("@/pages/Admin/ProductsAdmin"));
+const BundlesAdmin = lazy(() => import("@/pages/Admin/BundlesAdmin"));
+const OrdersAdmin = lazy(() => import("@/pages/Admin/OrdersAdmin"));
+
+const RouteFallback = () => (
+  <div className="flex min-h-[200px] items-center justify-center px-4 py-10 text-sm text-muted-foreground">
+    Loading...
+  </div>
+);
+
+const withSuspense = (element: ReactElement) => (
+  <Suspense fallback={<RouteFallback />}>{element}</Suspense>
+);
 
 export const routes: RouteObject[] = [
   {
     path: "/",
-    element: <MainLayout />,
+    element: withSuspense(<MainLayout />),
     children: [
-      { index: true, element: <HomePage /> },
+      { index: true, element: withSuspense(<HomePage />) },
       {
         path: "catalog",
-        element: <CatalogPage />,
+        element: withSuspense(<CatalogPage />),
       },
       {
         path: "catalog/:product_id",
-        element: <ProductDetailPage />,
+        element: withSuspense(<ProductDetailPage />),
       },
       {
         path: "catalog/bundle/:bundle_id",
-        element: <ProductDetailPage />,
+        element: withSuspense(<ProductDetailPage />),
       },
       {
         path: "cart",
-        element: (
+        element: withSuspense(
           <PrivateRoute>
             <CartPage />
           </PrivateRoute>
@@ -47,7 +63,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "checkout",
-        element: (
+        element: withSuspense(
           <PrivateRoute>
             <CheckoutPage />
           </PrivateRoute>
@@ -55,7 +71,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "payment/dummy",
-        element: (
+        element: withSuspense(
           <PrivateRoute>
             <DummyPaymentPage />
           </PrivateRoute>
@@ -63,11 +79,11 @@ export const routes: RouteObject[] = [
       },
       {
         path: "login",
-        element: <AuthPage />,
+        element: withSuspense(<AuthPage />),
       },
       {
         path: "profile",
-        element: (
+        element: withSuspense(
           <PrivateRoute>
             <ProfilePage />
           </PrivateRoute>
@@ -75,7 +91,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "profile/history",
-        element: (
+        element: withSuspense(
           <PrivateRoute>
             <OrderHistoryPage />
           </PrivateRoute>
@@ -83,17 +99,17 @@ export const routes: RouteObject[] = [
       },
       {
         path: "*",
-        element: <NotFound />,
+        element: withSuspense(<NotFound />),
       },
     ],
   },
   {
     path: "/dashboard",
-    element: <AdminLayout />,
+    element: withSuspense(<AdminLayout />),
     children: [
       {
         index: true,
-        element: (
+        element: withSuspense(
           <AdminRoute>
             <AdminPage />
           </AdminRoute>
@@ -101,7 +117,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "users",
-        element: (
+        element: withSuspense(
           <AdminRoute>
             <UsersAdmin />
           </AdminRoute>
@@ -109,7 +125,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "products",
-        element: (
+        element: withSuspense(
           <AdminRoute>
             <ProductsAdmin />
           </AdminRoute>
@@ -117,7 +133,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "bundles",
-        element: (
+        element: withSuspense(
           <AdminRoute>
             <BundlesAdmin />
           </AdminRoute>
@@ -125,7 +141,7 @@ export const routes: RouteObject[] = [
       },
       {
         path: "orders",
-        element: (
+        element: withSuspense(
           <AdminRoute>
             <OrdersAdmin />
           </AdminRoute>
