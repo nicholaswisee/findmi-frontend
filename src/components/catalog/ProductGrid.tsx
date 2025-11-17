@@ -43,9 +43,7 @@ export default function ProductGrid({
       Array.isArray(product.available_sizes) &&
       product.available_sizes.length > 0
     ) {
-      toast.info("Pilih ukuran produk terlebih dahulu.", {
-        description: "Buka halaman detail untuk memilih ukuran yang tersedia.",
-      });
+      toast.info("Pilih ukuran produk terlebih dahulu.");
       handleNavigateToProduct(product.id);
       return;
     }
@@ -83,7 +81,9 @@ export default function ProductGrid({
       const result = await response.json();
       console.log("Add to cart success:", result);
 
-      toast.success(`Berhasil menambahkan ${product.name ?? "Produk"} ke keranjang!`);
+      toast.success(
+        `Berhasil menambahkan ${product.name ?? "Produk"} ke keranjang!`
+      );
       fetchCart({ silent: true });
     } catch (error) {
       console.error("Error adding to cart:", error);

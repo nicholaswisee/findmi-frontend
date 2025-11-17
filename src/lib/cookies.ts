@@ -10,7 +10,7 @@ export function areCookiesEnabled(): boolean {
     // Delete the test cookie
     document.cookie = "cookietest=1; expires=Thu, 01-Jan-1970 00:00:01 GMT; SameSite=Strict";
     return cookiesEnabled;
-  } catch (e: any) {
+  } catch {
     return false;
   }
 }

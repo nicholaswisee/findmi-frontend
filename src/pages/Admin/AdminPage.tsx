@@ -113,7 +113,11 @@ export default function AdminPage() {
     setOrdersPage(0);
   }, [departmentFilter, data?.recentOrders.length]);
 
-  const weeklyRevenue = data?.weeklyRevenue ?? [];
+  const rawWeeklyRevenue = data?.weeklyRevenue;
+  const weeklyRevenue = useMemo(
+    () => rawWeeklyRevenue ?? [],
+    [rawWeeklyRevenue]
+  );
   const chartData = useMemo(
     () =>
       weeklyRevenue.map((entry) => ({

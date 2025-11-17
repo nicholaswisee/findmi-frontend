@@ -437,6 +437,10 @@ export default function CatalogPage() {
             Bundles
           </h2>
 
+          {bundleError && (
+            <p className="mb-4 text-sm text-red-300">{bundleError}</p>
+          )}
+
           <PaginatedList<Bundle>
             data={bundlePaginatedItems}
             component={BundleCard}

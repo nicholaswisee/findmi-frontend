@@ -174,11 +174,11 @@ export default function ProfilePage() {
                     >
                       <th
                         scope="row"
-                        className="w-1/3 text-[#302a77] py-4 pr-4 font-semibold"
+                        className="w-1/3 text-[#FFD88C] py-4 pr-4 font-semibold"
                       >
                         {label}
                       </th>
-                      <td className="py-4 text-[#302a77] font-semibold">
+                      <td className="py-4 text-[#FFD88C] font-semibold">
                         {isEditing && editable ? (
                           <Input
                             type="text"
@@ -203,11 +203,11 @@ export default function ProfilePage() {
                 <tr className="border-b border-white/10 last:border-b-0">
                   <th
                     scope="row"
-                    className="w-1/3 text-[#302a77] py-4 pr-4 font-semibold"
+                    className="w-1/3 text-[#FFD88C] py-4 pr-4 font-semibold"
                   >
                     Riwayat Transaksi
                   </th>
-                  <td className="py-4 text-[#302a77] font-semibold">
+                  <td className="py-4 text-[#FFD88C] font-semibold">
                     <Button variant="blue" url="/profile/history">
                       Lihat riwayat transaksi
                     </Button>

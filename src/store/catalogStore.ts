@@ -207,8 +207,14 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
         status: "success",
         error: null,
       });
-    } catch (e: any) {
-      set({ status: "error", error: e?.message ?? "Gagal memuat produk" });
+    } catch (error: unknown) {
+      set({
+        status: "error",
+        error:
+          error instanceof Error && error.message
+            ? error.message
+            : "Gagal memuat produk",
+      });
     }
   },
 

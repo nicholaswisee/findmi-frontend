@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import type { BundleSelection, Order } from "@/types/types";
-import type { BundleSelection } from "@/types/types";
 
 interface CartProduct {
   id: number;
@@ -91,6 +90,9 @@ interface CartState {
 
 const API_URL = import.meta.env.VITE_API_URL;
 
+const toErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof Error && error.message ? error.message : fallback;
+
 const buildOrderMap = (
   items: CartItemInterface[],
   prevMap: Record<number, number>,
@@ -159,10 +161,10 @@ export const useCartStore = create<CartState>((set, get) => ({
           isLoading: silent ? state.isLoading : false,
         };
       });
-    } catch (err: any) {
+    } catch (error: unknown) {
       set((state) => ({
         isLoading: silent ? state.isLoading : false,
-        error: err?.message || "Gagal mengambil data keranjang.",
+        error: toErrorMessage(error, "Gagal mengambil data keranjang."),
       }));
     }
   },
@@ -201,10 +203,13 @@ export const useCartStore = create<CartState>((set, get) => ({
           isMutating: false,
         };
       });
-    } catch (err: any) {
+    } catch (error: unknown) {
       set({
         isMutating: false,
-        error: err?.message || "Gagal mengupdate item keranjang.",
+        error: toErrorMessage(
+          error,
+          "Gagal mengupdate item keranjang.",
+        ),
       });
     }
   },
@@ -242,10 +247,13 @@ export const useCartStore = create<CartState>((set, get) => ({
           isMutating: false,
         };
       });
-    } catch (err: any) {
+    } catch (error: unknown) {
       set({
         isMutating: false,
-        error: err?.message || "Gagal menghapus item keranjang.",
+        error: toErrorMessage(
+          error,
+          "Gagal menghapus item keranjang.",
+        ),
       });
     }
   },
@@ -269,10 +277,10 @@ export const useCartStore = create<CartState>((set, get) => ({
         fetchCart({ silent: true }).catch(() => {});
       }
       return data.data;
-    } catch (err: any) {
+    } catch (error: unknown) {
       set({
         isMutating: false,
-        error: err?.message || "Gagal membuat order.",
+        error: toErrorMessage(error, "Gagal membuat order."),
       });
       return null;
     }
