@@ -15,7 +15,7 @@ import type { Bundle } from "@/types/types";
 
 const PAGE_SIZE = 10;
 const BUNDLE_PAGE_SIZE = 10;
-const API_URL = import.meta.env.VITE_API_URL ?? "https://api.akumasukitb.com";
+const API_URL = import.meta.env.VITE_API_URL ?? "/api";
 
 export default function CatalogPage() {
   const navigate = useNavigate();
@@ -292,9 +292,7 @@ export default function CatalogPage() {
         }) ?? false;
 
       if (requiresSizeSelection) {
-        toast.info(
-          "Silakan pilih ukuran untuk item bundle di halaman detail."
-        );
+        toast.info("Silakan pilih ukuran untuk item bundle di halaman detail.");
         handleNavigateToBundle(bundle.id);
         return;
       }
@@ -314,7 +312,9 @@ export default function CatalogPage() {
           throw new Error(errorData.message || "Failed to add to cart");
         }
 
-        toast.success(`Berhasil menambahkan ${bundle.name ?? "Bundle"} ke keranjang!`);
+        toast.success(
+          `Berhasil menambahkan ${bundle.name ?? "Bundle"} ke keranjang!`
+        );
         fetchCart({ silent: true });
       } catch (err) {
         toast.error(
