@@ -43,6 +43,42 @@ const formatDate = (value: string) => {
   });
 };
 
+const buildItemSummary = (order: OrderWithUser) => {
+  if (order.items.length === 0) return ["No items"];
+  const summaryLines: string[] = [];
+
+  order.items.slice(0, 3).forEach((item) => {
+    const name = item.product?.name ?? item.bundle?.name ?? "Item";
+    const details: string[] = [];
+    details.push(`${item.quantity}x`);
+    if (item.selected_size) {
+      details.push(`Size ${item.selected_size}`);
+    }
+    if (item.selected_bundle_items?.length) {
+      const bundleSizes = item.selected_bundle_items
+        .map((selection) => {
+          if (!selection.product_id || !item.bundle?.bundle_items) return null;
+          const productName =
+            item.bundle.bundle_items.find(
+              (bundleItem) => bundleItem.product_id === selection.product_id
+            )?.product?.name ?? "Item";
+          return `${productName} (${selection.size})`;
+        })
+        .filter((value): value is string => Boolean(value));
+      if (bundleSizes.length) {
+        details.push(bundleSizes.join(", "));
+      }
+    }
+    summaryLines.push(`${name} • ${details.join(" · ")}`);
+  });
+
+  if (order.items.length > 3) {
+    summaryLines.push(`+${order.items.length - 3} more item(s)`);
+  }
+
+  return summaryLines;
+};
+
 export default function OrdersTable({
   data,
   pageIndex,
@@ -88,6 +124,25 @@ export default function OrdersTable({
             {formatCurrency(row.original.total_amount)}
           </span>
         ),
+      },
+      {
+        accessorKey: "items",
+        header: "Items & Sizes",
+        cell: ({ row }) => {
+          const summary = buildItemSummary(row.original);
+          return (
+            <div className="space-y-1 text-xs text-muted-foreground">
+              {summary.map((line, index) => (
+                <p
+                  key={`${row.original.id}-item-${index}`}
+                  className={index === 0 ? "text-sm text-foreground" : ""}
+                >
+                  {line}
+                </p>
+              ))}
+            </div>
+          );
+        },
       },
       {
         accessorKey: "payment_status",
