@@ -2,7 +2,8 @@ version: "3.9"
 
 services:
   frontend:
-    build: .
+    image: ghcr.io/ami-2026/findmi-frontend:latest
+    # build: .
     container_name: findmi-frontend
     ports:
       - "127.0.0.1:4242:80"
