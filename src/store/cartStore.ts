@@ -133,7 +133,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       isLoading: silent ? state.isLoading : true,
     }));
     try {
-      const res = await fetch(`/api/cart`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/cart`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch cart");
@@ -172,12 +172,15 @@ export const useCartStore = create<CartState>((set, get) => ({
   updateCartItem: async (itemId, quantity) => {
     set({ isMutating: true, error: null });
     try {
-      const res = await fetch(`/api/cart/items/${itemId}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/cart/items/${itemId}`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quantity }),
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to update cart item");
       const data = await res.json();
@@ -211,10 +214,13 @@ export const useCartStore = create<CartState>((set, get) => ({
   deleteCartItem: async (itemId) => {
     set({ isMutating: true, error: null });
     try {
-      const res = await fetch(`/api/cart/items/${itemId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/cart/items/${itemId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to delete cart item");
 
@@ -249,7 +255,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   createOrder: async (items) => {
     set({ isMutating: true, error: null });
     try {
-      const res = await fetch(`/api/order`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/order`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

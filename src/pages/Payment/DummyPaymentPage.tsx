@@ -30,10 +30,13 @@ export default function DummyPaymentPage() {
     setStatus("processing");
     setError(null);
     try {
-      const response = await fetch(`/api/order/${orderId}/dummy-payment`, {
-        method: "POST",
-        credentials: "include",
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/order/${orderId}/dummy-payment`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
       if (!response.ok) {
         const data = await response.json().catch(() => null);
         throw new Error(data?.error?.message ?? "Gagal memproses pembayaran.");

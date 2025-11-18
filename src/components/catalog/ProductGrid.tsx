@@ -60,15 +60,18 @@ export default function ProductGrid({
 
       console.log("Adding to cart:", requestBody);
 
-      const response = await fetch(`/api/cart/items`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/cart/items`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       console.log("Add to cart response status:", response.status);
 

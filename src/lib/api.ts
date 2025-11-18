@@ -1,4 +1,5 @@
-export const API_URL = import.meta.env.VITE_API_URL;
+const RAW_API_URL = import.meta.env.VITE_API_URL;
+export const API_URL = RAW_API_URL?.replace(/\/$/, "");
 
 if (!API_URL) {
   throw new Error("VITE_API_URL is not defined");
@@ -27,7 +28,8 @@ export async function apiRequest<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  const res = await fetch(`/api${path}`, {
+  const url = `${API_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  const res = await fetch(url, {
     credentials: rest.credentials ?? "include",
     ...rest,
     body,

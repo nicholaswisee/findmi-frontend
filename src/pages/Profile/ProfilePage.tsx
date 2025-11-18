@@ -49,15 +49,18 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/user/${user?.id}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(editedData),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/user/${user?.id}`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(editedData),
+        }
+      );
 
       if (!response.ok) {
         const contentType = response.headers.get("content-type");

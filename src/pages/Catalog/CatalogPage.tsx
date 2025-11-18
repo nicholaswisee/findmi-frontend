@@ -119,9 +119,12 @@ export default function CatalogPage() {
       setBundleLoading(true);
       setBundleError(null);
       try {
-        const res = await fetch(`/api/bundle?limit=100`, {
-          credentials: "include",
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_API_URL}/bundle?limit=100`,
+          {
+            credentials: "include",
+          }
+        );
         if (!res.ok) {
           throw new Error("Gagal memuat bundle.");
         }
@@ -190,15 +193,18 @@ export default function CatalogPage() {
           quantity: 1,
         };
 
-        const response = await fetch(`/api/cart/items`, {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/cart/items`,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(requestBody),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -297,15 +303,18 @@ export default function CatalogPage() {
         return;
       }
       try {
-        const response = await fetch(`/api/cart/items`, {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({ bundleId: bundle.id, quantity: 1 }),
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/cart/items`,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ bundleId: bundle.id, quantity: 1 }),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();

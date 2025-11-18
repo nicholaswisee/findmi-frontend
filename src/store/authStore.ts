@@ -69,7 +69,7 @@ export const useAuthStore = create<AuthState>()(
         console.log("[AuthStore] Starting user refresh...");
         set({ loading: true });
         try {
-          const res = await fetch(`/api/auth/me`, {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
             credentials: "include",
           });
           if (!res.ok) {
@@ -111,12 +111,15 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (nim: string, password: string) => {
         try {
-          const res = await fetch(`/api/auth/login`, {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nim, password }),
-          });
+          const res = await fetch(
+            `${import.meta.env.VITE_API_URL}/auth/login`,
+            {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ nim, password }),
+            }
+          );
           if (!res.ok) {
             // const err = await res.json();
             throw new Error("Autentikasi gagal.");
@@ -131,7 +134,7 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          await fetch(`/api/auth/logout`, {
+          await fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
             method: "POST",
             credentials: "include",
           });

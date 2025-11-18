@@ -141,7 +141,7 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
       const aggregated: Product[] = [];
 
       while (offset < total) {
-        const url = new URL(`/api/product`);
+        const url = new URL(`${import.meta.env.VITE_API_URL}/product`);
         url.searchParams.set("limit", String(LIMIT));
         url.searchParams.set("offset", String(offset));
 
@@ -219,9 +219,12 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
   },
 
   async fetchProductByName(name) {
-    const res = await fetch(`/api/product/${encodeURIComponent(name)}`, {
-      cache: "no-store",
-    });
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/product/${encodeURIComponent(name)}`,
+      {
+        cache: "no-store",
+      }
+    );
     if (!res.ok) throw new Error("Failed to fetch product details");
     const data = await res.json();
     return data.data;
@@ -229,7 +232,9 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
 
   async fetchProductsByCategory(category) {
     const res = await fetch(
-      `/api/product/category/${encodeURIComponent(category)}`,
+      `${import.meta.env.VITE_API_URL}/product/category/${encodeURIComponent(
+        category
+      )}`,
       { cache: "no-store" }
     );
     if (!res.ok) throw new Error("Failed to fetch products by category");
