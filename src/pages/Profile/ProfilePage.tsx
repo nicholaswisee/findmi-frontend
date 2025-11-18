@@ -6,7 +6,7 @@ import Button from "@/components/shared/Button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-const API_URL = import.meta.env.VITE_API_URL!;
+// const API_URL = import.meta.env.VITE_API_URL!;
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch(`${API_URL}/user/${user?.id}`, {
+      const response = await fetch(`/api/user/${user?.id}`, {
         method: "PATCH",
         credentials: "include",
         headers: {

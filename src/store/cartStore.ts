@@ -88,14 +88,14 @@ interface CartState {
   createOrder: (items: OrderItemRequest[]) => Promise<OrderResponse | null>;
 }
 
-const API_URL = import.meta.env.VITE_API_URL;
+// const API_URL = import.meta.env.VITE_API_URL;
 
 const toErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error && error.message ? error.message : fallback;
 
 const buildOrderMap = (
   items: CartItemInterface[],
-  prevMap: Record<number, number>,
+  prevMap: Record<number, number>
 ) => {
   const nextMap: Record<number, number> = { ...prevMap };
   let maxOrder =
@@ -110,7 +110,7 @@ const buildOrderMap = (
 
 const sortItemsByMap = (
   items: CartItemInterface[],
-  map: Record<number, number>,
+  map: Record<number, number>
 ) => {
   return [...items].sort((a, b) => {
     const aOrder = map[a.id] ?? Number.MAX_SAFE_INTEGER;
@@ -133,7 +133,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       isLoading: silent ? state.isLoading : true,
     }));
     try {
-      const res = await fetch(`${API_URL}/cart`, {
+      const res = await fetch(`/api/cart`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch cart");
@@ -150,7 +150,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         }
         const nextMap = buildOrderMap(
           incoming.items ?? [],
-          silent ? state.orderMap : {},
+          silent ? state.orderMap : {}
         );
         return {
           cart: {
@@ -172,7 +172,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   updateCartItem: async (itemId, quantity) => {
     set({ isMutating: true, error: null });
     try {
-      const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
+      const res = await fetch(`/api/cart/items/${itemId}`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -190,10 +190,7 @@ export const useCartStore = create<CartState>((set, get) => ({
             isMutating: false,
           };
         }
-        const nextMap = buildOrderMap(
-          incoming.items ?? [],
-          state.orderMap,
-        );
+        const nextMap = buildOrderMap(incoming.items ?? [], state.orderMap);
         return {
           cart: {
             ...incoming,
@@ -206,10 +203,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     } catch (error: unknown) {
       set({
         isMutating: false,
-        error: toErrorMessage(
-          error,
-          "Gagal mengupdate item keranjang.",
-        ),
+        error: toErrorMessage(error, "Gagal mengupdate item keranjang."),
       });
     }
   },
@@ -217,7 +211,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   deleteCartItem: async (itemId) => {
     set({ isMutating: true, error: null });
     try {
-      const res = await fetch(`${API_URL}/cart/items/${itemId}`, {
+      const res = await fetch(`/api/cart/items/${itemId}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -234,10 +228,7 @@ export const useCartStore = create<CartState>((set, get) => ({
             isMutating: false,
           };
         }
-        const nextMap = buildOrderMap(
-          incoming.items ?? [],
-          state.orderMap,
-        );
+        const nextMap = buildOrderMap(incoming.items ?? [], state.orderMap);
         return {
           cart: {
             ...incoming,
@@ -250,10 +241,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     } catch (error: unknown) {
       set({
         isMutating: false,
-        error: toErrorMessage(
-          error,
-          "Gagal menghapus item keranjang.",
-        ),
+        error: toErrorMessage(error, "Gagal menghapus item keranjang."),
       });
     }
   },
@@ -261,7 +249,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   createOrder: async (items) => {
     set({ isMutating: true, error: null });
     try {
-      const res = await fetch(`${API_URL}/order`, {
+      const res = await fetch(`/api/order`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

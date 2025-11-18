@@ -8,7 +8,7 @@ import ProductGrid from "@/components/catalog/ProductGrid";
 import { useProductStore } from "@/store/catalogStore";
 import { useAuthStore } from "@/store/authStore";
 
-const API_URL = import.meta.env.VITE_API_URL;
+// const API_URL = import.meta.env.VITE_API_URL;
 
 // Types based on API response
 type Product = {
@@ -150,17 +150,13 @@ export default function ProductDetailPage() {
       const nextSelections: Record<number, string> = {};
       for (const item of bundleItems) {
         const currentValue = current[item.product_id];
-        if (
-          currentValue &&
-          item.availableSizes.includes(currentValue)
-        ) {
+        if (currentValue && item.availableSizes.includes(currentValue)) {
           nextSelections[item.product_id] = currentValue;
         }
       }
       return nextSelections;
     });
   }, [product, bundleItems]);
-
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -169,7 +165,7 @@ export default function ProductDetailPage() {
 
         // Determine if fetching bundle or product
         const endpoint = isBundle ? "bundle" : "product";
-        const url = `${API_URL}/${endpoint}/${itemId}`;
+        const url = `/api/${endpoint}/${itemId}`;
 
         console.log(`Fetching ${endpoint} with ID:`, itemId);
         console.log("Fetch URL:", url);
@@ -277,7 +273,7 @@ export default function ProductDetailPage() {
 
       console.log("Adding to cart:", requestBody);
 
-      const response = await fetch(`${API_URL}/cart/items`, {
+      const response = await fetch(`/api/cart/items`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -535,8 +531,9 @@ export default function ProductDetailPage() {
                               <div className="mt-1 flex flex-wrap gap-2">
                                 {bundleItem.availableSizes.map((size) => {
                                   const isActive =
-                                    bundleSizeSelections[bundleItem.product_id] ===
-                                    size;
+                                    bundleSizeSelections[
+                                      bundleItem.product_id
+                                    ] === size;
                                   return (
                                     <button
                                       key={`${bundleItem.product_id}-${size}`}

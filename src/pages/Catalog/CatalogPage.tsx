@@ -15,7 +15,7 @@ import type { Bundle } from "@/types/types";
 
 const PAGE_SIZE = 10;
 const BUNDLE_PAGE_SIZE = 10;
-const API_URL = import.meta.env.VITE_API_URL ?? "/api";
+// const API_URL = import.meta.env.VITE_API_URL ?? "/api";
 
 export default function CatalogPage() {
   const navigate = useNavigate();
@@ -119,7 +119,7 @@ export default function CatalogPage() {
       setBundleLoading(true);
       setBundleError(null);
       try {
-        const res = await fetch(`${API_URL}/bundle?limit=100`, {
+        const res = await fetch(`/api/bundle?limit=100`, {
           credentials: "include",
         });
         if (!res.ok) {
@@ -190,7 +190,7 @@ export default function CatalogPage() {
           quantity: 1,
         };
 
-        const response = await fetch(`${API_URL}/cart/items`, {
+        const response = await fetch(`/api/cart/items`, {
           method: "POST",
           credentials: "include",
           headers: {
@@ -297,7 +297,7 @@ export default function CatalogPage() {
         return;
       }
       try {
-        const response = await fetch(`${API_URL}/cart/items`, {
+        const response = await fetch(`/api/cart/items`, {
           method: "POST",
           credentials: "include",
           headers: {

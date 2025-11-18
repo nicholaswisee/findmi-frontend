@@ -27,7 +27,7 @@ export async function apiRequest<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  const res = await fetch(`${API_URL}${path}`, {
+  const res = await fetch(`/api${path}`, {
     credentials: rest.credentials ?? "include",
     ...rest,
     body,
@@ -48,4 +48,3 @@ export async function apiRequest<T>(
   const payload = (await res.json()) as ApiResponse<T>;
   return payload.data;
 }
-

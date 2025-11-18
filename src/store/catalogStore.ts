@@ -6,7 +6,7 @@ import type {
   UserDepartmentEnum,
 } from "@/types/types";
 
-const API_URL = import.meta.env.VITE_API_URL;
+// const API_URL = import.meta.env.VITE_API_URL;
 
 type CatalogOptions = {
   limit?: number;
@@ -141,7 +141,7 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
       const aggregated: Product[] = [];
 
       while (offset < total) {
-        const url = new URL(`${API_URL}/product`);
+        const url = new URL(`/api/product`);
         url.searchParams.set("limit", String(LIMIT));
         url.searchParams.set("offset", String(offset));
 
@@ -219,7 +219,7 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
   },
 
   async fetchProductByName(name) {
-    const res = await fetch(`${API_URL}/product/${encodeURIComponent(name)}`, {
+    const res = await fetch(`/api/product/${encodeURIComponent(name)}`, {
       cache: "no-store",
     });
     if (!res.ok) throw new Error("Failed to fetch product details");
@@ -229,7 +229,7 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
 
   async fetchProductsByCategory(category) {
     const res = await fetch(
-      `${API_URL}/product/category/${encodeURIComponent(category)}`,
+      `/api/product/category/${encodeURIComponent(category)}`,
       { cache: "no-store" }
     );
     if (!res.ok) throw new Error("Failed to fetch products by category");
@@ -262,4 +262,3 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
     return filtered;
   },
 }));
-

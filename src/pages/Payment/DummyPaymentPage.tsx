@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-const API_URL = import.meta.env.VITE_API_URL!;
+// const API_URL = import.meta.env.VITE_API_URL!;
 
 export default function DummyPaymentPage() {
   const [params] = useSearchParams();
@@ -30,13 +30,10 @@ export default function DummyPaymentPage() {
     setStatus("processing");
     setError(null);
     try {
-      const response = await fetch(
-        `${API_URL}/order/${orderId}/dummy-payment`,
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`/api/order/${orderId}/dummy-payment`, {
+        method: "POST",
+        credentials: "include",
+      });
       if (!response.ok) {
         const data = await response.json().catch(() => null);
         throw new Error(data?.error?.message ?? "Gagal memproses pembayaran.");
@@ -87,9 +84,7 @@ export default function DummyPaymentPage() {
             disabled={disabled}
             className="w-full rounded-xl bg-[#c62d76] py-3 text-base font-semibold text-[#ffeabb] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {status === "processing"
-              ? "Memproses..."
-              : "Selesaikan Pembayaran"}
+            {status === "processing" ? "Memproses..." : "Selesaikan Pembayaran"}
           </Button>
           <Button
             type="button"

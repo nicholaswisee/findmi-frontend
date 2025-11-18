@@ -31,7 +31,7 @@ export default function ProductGrid({
   };
 
   const [pendingId, setPendingId] = useState<number | string | null>(null);
-  const API_URL = import.meta.env.VITE_API_URL!;
+  // const API_URL = import.meta.env.VITE_API_URL!;
 
   const handleAddToCart = async (product: CatalogProduct) => {
     if (!isAuthenticated) {
@@ -60,7 +60,7 @@ export default function ProductGrid({
 
       console.log("Adding to cart:", requestBody);
 
-      const response = await fetch(`${API_URL}/cart/items`, {
+      const response = await fetch(`/api/cart/items`, {
         method: "POST",
         credentials: "include",
         headers: {

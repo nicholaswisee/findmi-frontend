@@ -13,6 +13,7 @@ import AuthPage from "../pages/Auth/AuthPage";
 import ProfilePage from "../pages/Profile/ProfilePage";
 import OrderHistoryPage from "../pages/Profile/OrderHistoryPage";
 import NotFound from "./NotFound";
+import RouteFallback from "./RouteFallback";
 
 const AdminLayout = lazy(() => import("@/layouts/AdminLayout"));
 const AdminPage = lazy(() => import("@/pages/Admin/AdminPage"));
@@ -20,12 +21,6 @@ const UsersAdmin = lazy(() => import("@/pages/Admin/UsersAdmin"));
 const ProductsAdmin = lazy(() => import("@/pages/Admin/ProductsAdmin"));
 const BundlesAdmin = lazy(() => import("@/pages/Admin/BundlesAdmin"));
 const OrdersAdmin = lazy(() => import("@/pages/Admin/OrdersAdmin"));
-
-const RouteFallback = () => (
-  <div className="flex min-h-[200px] items-center justify-center px-4 py-10 text-sm text-muted-foreground">
-    Loading...
-  </div>
-);
 
 const withSuspense = (element: ReactElement) => (
   <Suspense fallback={<RouteFallback />}>{element}</Suspense>

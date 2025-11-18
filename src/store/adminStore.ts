@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import { API_URL, apiRequest, type ApiResponse } from "@/lib/api";
+import {
+  // API_URL,
+  apiRequest,
+  type ApiResponse,
+} from "@/lib/api";
 import type {
   Bundle,
   BundlesResponse,
@@ -105,7 +109,7 @@ type AdminState = {
   updateProduct: (id: number, data: UpdateProductPayload) => Promise<Product>;
   updateProductStock: (
     id: number,
-    data: UpdateProductStockPayload,
+    data: UpdateProductStockPayload
   ) => Promise<void>;
   deleteProduct: (id: number) => Promise<void>;
   createBundle: (data: CreateBundlePayload) => Promise<Bundle>;
@@ -113,7 +117,7 @@ type AdminState = {
   deleteBundle: (id: number) => Promise<void>;
   updateOrderAdmin: (
     id: number,
-    data: { admin_note?: string | null; is_taken?: boolean },
+    data: { admin_note?: string | null; is_taken?: boolean }
   ) => Promise<Order>;
   uploadMedia: (file: File) => Promise<UploadedFile>;
 };
@@ -183,7 +187,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
         params.set("department", normalizedDepartment);
       }
       const data = await apiRequest<UsersWithOrdersResponse>(
-        `/user?${params.toString()}`,
+        `/user?${params.toString()}`
       );
       const pageIndex = Math.floor(data.offset / data.limit);
       const hasNext = data.offset + data.users.length < data.total;
@@ -386,7 +390,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     });
     set((state) => ({
       products: state.products.map((p) =>
-        p.id === id ? { ...p, remaining_stock: result.remaining_stock } : p,
+        p.id === id ? { ...p, remaining_stock: result.remaining_stock } : p
       ),
     }));
   },
@@ -438,7 +442,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
               ...order,
               ...result,
             }
-          : order,
+          : order
       ),
       users: state.users.map((user) => ({
         ...user,
@@ -449,7 +453,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
                 admin_note: result.admin_note,
                 is_taken: result.is_taken,
               }
-            : order,
+            : order
         ),
       })),
     }));
@@ -461,7 +465,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch(`${API_URL}/media/upload`, {
+    const res = await fetch(`/api/media/upload`, {
       method: "POST",
       credentials: "include",
       body: formData,

@@ -32,7 +32,7 @@ interface AuthState {
   logout: () => Promise<void>;
 }
 
-const API_URL = import.meta.env.VITE_API_URL!;
+// const API_URL = import.meta.env.VITE_API_URL!;
 const REVALIDATE_INTERVAL = 5 * 60 * 1000;
 
 const initialState = {
@@ -69,7 +69,7 @@ export const useAuthStore = create<AuthState>()(
         console.log("[AuthStore] Starting user refresh...");
         set({ loading: true });
         try {
-          const res = await fetch(`${API_URL}/auth/me`, {
+          const res = await fetch(`/api/auth/me`, {
             credentials: "include",
           });
           if (!res.ok) {
@@ -111,7 +111,7 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (nim: string, password: string) => {
         try {
-          const res = await fetch(`${API_URL}/auth/login`, {
+          const res = await fetch(`/api/auth/login`, {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
@@ -131,7 +131,7 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          await fetch(`${API_URL}/auth/logout`, {
+          await fetch(`/api/auth/logout`, {
             method: "POST",
             credentials: "include",
           });
