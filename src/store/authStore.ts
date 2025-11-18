@@ -1,6 +1,7 @@
 import { toast } from "sonner";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { API_URL } from "@/lib/api";
 
 interface User {
   id: number;
@@ -32,7 +33,6 @@ interface AuthState {
   logout: () => Promise<void>;
 }
 
-// const API_URL = import.meta.env.VITE_API_URL!;
 const REVALIDATE_INTERVAL = 5 * 60 * 1000;
 
 const initialState = {
@@ -69,7 +69,7 @@ export const useAuthStore = create<AuthState>()(
         console.log("[AuthStore] Starting user refresh...");
         set({ loading: true });
         try {
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/me`, {
+          const res = await fetch(`${API_URL}/auth/me`, {
             credentials: "include",
           });
           if (!res.ok) {
@@ -111,15 +111,12 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (nim: string, password: string) => {
         try {
-          const res = await fetch(
-            `${import.meta.env.VITE_API_URL}/auth/login`,
-            {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ nim, password }),
-            }
-          );
+          const res = await fetch(`${API_URL}/auth/login`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nim, password }),
+          });
           if (!res.ok) {
             // const err = await res.json();
             throw new Error("Autentikasi gagal.");
@@ -134,7 +131,7 @@ export const useAuthStore = create<AuthState>()(
 
       logout: async () => {
         try {
-          await fetch(`${import.meta.env.VITE_API_URL}/auth/logout`, {
+          await fetch(`${API_URL}/auth/logout`, {
             method: "POST",
             credentials: "include",
           });

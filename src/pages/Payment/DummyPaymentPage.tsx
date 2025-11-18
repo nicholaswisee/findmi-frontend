@@ -2,8 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-
-// const API_URL = import.meta.env.VITE_API_URL!;
+import { API_URL } from "@/lib/api";
 
 export default function DummyPaymentPage() {
   const [params] = useSearchParams();
@@ -30,13 +29,10 @@ export default function DummyPaymentPage() {
     setStatus("processing");
     setError(null);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/order/${orderId}/dummy-payment`,
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${API_URL}/order/${orderId}/dummy-payment`, {
+        method: "POST",
+        credentials: "include",
+      });
       if (!response.ok) {
         const data = await response.json().catch(() => null);
         throw new Error(data?.error?.message ?? "Gagal memproses pembayaran.");

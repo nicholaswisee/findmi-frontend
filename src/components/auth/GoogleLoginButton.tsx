@@ -1,7 +1,8 @@
 import "../../styles/auth.styles.css";
 import { Button } from "../ui/button";
+import { API_URL } from "@/lib/api";
 
-const BACKEND_URL = import.meta.env.VITE_API_URL!;
+const BACKEND_URL = API_URL;
 
 export default function GoogleLoginButton() {
   const handleLogin = () => {

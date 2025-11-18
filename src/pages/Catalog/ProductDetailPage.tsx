@@ -7,8 +7,7 @@ import plusImg from "@/assets/icon-plus.png";
 import ProductGrid from "@/components/catalog/ProductGrid";
 import { useProductStore } from "@/store/catalogStore";
 import { useAuthStore } from "@/store/authStore";
-
-// const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from "@/lib/api";
 
 // Types based on API response
 type Product = {
@@ -165,7 +164,7 @@ export default function ProductDetailPage() {
 
         // Determine if fetching bundle or product
         const endpoint = isBundle ? "bundle" : "product";
-        const url = `${import.meta.env.VITE_API_URL}/${endpoint}/${itemId}`;
+        const url = `${API_URL}/${endpoint}/${itemId}`;
 
         console.log(`Fetching ${endpoint} with ID:`, itemId);
         console.log("Fetch URL:", url);
@@ -274,7 +273,7 @@ export default function ProductDetailPage() {
       console.log("Adding to cart:", requestBody);
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/cart/items`,
+        `${API_URL}/cart/items`,
         {
           method: "POST",
           credentials: "include",

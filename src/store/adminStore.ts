@@ -1,9 +1,5 @@
 import { create } from "zustand";
-import {
-  // API_URL,
-  apiRequest,
-  type ApiResponse,
-} from "@/lib/api";
+import { API_URL, apiRequest, type ApiResponse } from "@/lib/api";
 import type {
   Bundle,
   BundlesResponse,
@@ -465,7 +461,7 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/media/upload`, {
+    const res = await fetch(`${API_URL}/media/upload`, {
       method: "POST",
       credentials: "include",
       body: formData,

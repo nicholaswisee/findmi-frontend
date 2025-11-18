@@ -1,4 +1,25 @@
-const RAW_API_URL = import.meta.env.VITE_API_URL;
+type EnvRecord = {
+  VITE_API_URL?: string;
+};
+
+const importMetaEnv =
+  (import.meta as ImportMeta & { env?: EnvRecord }).env ?? undefined;
+
+const processEnv =
+  (globalThis as typeof globalThis & {
+    process?: { env?: EnvRecord };
+  }).process?.env;
+
+const browserRuntimeEnv =
+  typeof window !== "undefined"
+    ? (window as typeof window & { __ENV__?: EnvRecord }).__ENV__
+    : undefined;
+
+const RAW_API_URL =
+  importMetaEnv?.VITE_API_URL ??
+  processEnv?.VITE_API_URL ??
+  browserRuntimeEnv?.VITE_API_URL;
+
 export const API_URL = RAW_API_URL?.replace(/\/$/, "");
 
 if (!API_URL) {

@@ -12,7 +12,7 @@ const app = (
   </BrowserRouter>
 );
 
-if (import.meta.env.ENV_NODE === "DEVELOPMENT") {
+if (import.meta.env.DEV) {
   root.render(<React.StrictMode>{app}</React.StrictMode>);
 } else {
   root.render(app);

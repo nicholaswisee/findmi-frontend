@@ -12,11 +12,10 @@ import {
 import { useAuthStore } from "@/store/authStore";
 import { PaginatedList } from "@/components/shared/PaginatedList";
 import type { Bundle } from "@/types/types";
+import { API_URL } from "@/lib/api";
 
 const PAGE_SIZE = 10;
 const BUNDLE_PAGE_SIZE = 10;
-// const API_URL = import.meta.env.VITE_API_URL ?? "/api";
-
 export default function CatalogPage() {
   const navigate = useNavigate();
   const { status, products, query, category, fetchProducts } =
@@ -119,12 +118,9 @@ export default function CatalogPage() {
       setBundleLoading(true);
       setBundleError(null);
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_URL}/bundle?limit=100`,
-          {
-            credentials: "include",
-          }
-        );
+        const res = await fetch(`${API_URL}/bundle?limit=100`, {
+          credentials: "include",
+        });
         if (!res.ok) {
           throw new Error("Gagal memuat bundle.");
         }
@@ -194,7 +190,7 @@ export default function CatalogPage() {
         };
 
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/cart/items`,
+          `${API_URL}/cart/items`,
           {
             method: "POST",
             credentials: "include",
@@ -304,7 +300,7 @@ export default function CatalogPage() {
       }
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/cart/items`,
+          `${API_URL}/cart/items`,
           {
             method: "POST",
             credentials: "include",

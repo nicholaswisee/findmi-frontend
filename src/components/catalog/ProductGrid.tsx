@@ -8,6 +8,7 @@ import {
 import { toast } from "sonner";
 import { useCartStore } from "@/store/cartStore";
 import { useAuthStore } from "@/store/authStore";
+import { API_URL } from "@/lib/api";
 
 interface ProductGridProps {
   showSearch?: boolean;
@@ -31,7 +32,6 @@ export default function ProductGrid({
   };
 
   const [pendingId, setPendingId] = useState<number | string | null>(null);
-  // const API_URL = import.meta.env.VITE_API_URL!;
 
   const handleAddToCart = async (product: CatalogProduct) => {
     if (!isAuthenticated) {
@@ -60,18 +60,15 @@ export default function ProductGrid({
 
       console.log("Adding to cart:", requestBody);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/cart/items`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      const response = await fetch(`${API_URL}/cart/items`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
 
       console.log("Add to cart response status:", response.status);
 
