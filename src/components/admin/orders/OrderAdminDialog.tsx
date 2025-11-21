@@ -176,12 +176,66 @@ export function OrderAdminDialog({
                 </p>
               </div>
               <div className="rounded-lg border bg-muted/30 p-3">
+                <p className="text-xs text-muted-foreground">
+                  Fulfillment Method
+                </p>
+                <p className="text-sm font-semibold">
+                  {order.fulfillment_method === "Delivery"
+                    ? "Delivery"
+                    : "Ambil di Tempat"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {Number(order.delivery_fee) > 0
+                    ? `+ ${formatCurrency(order.delivery_fee)}`
+                    : "Gratis"}
+                </p>
+              </div>
+              <div className="rounded-lg border bg-muted/30 p-3">
                 <p className="text-xs text-muted-foreground">Pickup Status</p>
                 <Badge variant={order.is_taken ? "default" : "secondary"}>
                   {order.is_taken ? "Taken" : "Pending pickup"}
                 </Badge>
               </div>
             </section>
+            {order.fulfillment_method === "Delivery" && (
+              <section className="space-y-2 rounded-xl border p-4">
+                <p className="text-sm font-semibold uppercase text-muted-foreground">
+                  Detail Pengiriman
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Nama penerima
+                    </p>
+                    <p className="text-sm font-medium">
+                      {order.delivery_contact_name || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">
+                      Nomor telepon
+                    </p>
+                    <p className="text-sm font-medium">
+                      {order.delivery_phone || "-"}
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Alamat</p>
+                  <p className="text-sm font-medium whitespace-pre-wrap">
+                    {order.delivery_address || "-"}
+                  </p>
+                </div>
+                {order.delivery_notes ? (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Catatan</p>
+                    <p className="text-sm font-medium whitespace-pre-wrap">
+                      {order.delivery_notes}
+                    </p>
+                  </div>
+                ) : null}
+              </section>
+            )}
 
             <section className="space-y-2 rounded-xl border p-4">
               <p className="text-sm font-semibold uppercase text-muted-foreground">

@@ -272,18 +272,15 @@ export default function ProductDetailPage() {
 
       console.log("Adding to cart:", requestBody);
 
-      const response = await fetch(
-        `${API_URL}/cart/items`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      const response = await fetch(`${API_URL}/cart/items`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
 
       console.log("Add to cart response status:", response.status);
 
@@ -302,7 +299,7 @@ export default function ProductDetailPage() {
     } catch (error) {
       console.error("Error adding to cart:", error);
       toast.error(
-        `Gagal menambahkan ke keranjang: ${
+        `${
           error instanceof Error ? error.message : "Kesalahan tidak diketahui"
         }`
       );

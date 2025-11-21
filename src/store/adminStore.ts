@@ -101,6 +101,7 @@ type AdminState = {
   fetchProducts: (opts?: ListingOptions) => Promise<void>;
   fetchBundles: (opts?: ListingOptions) => Promise<void>;
   fetchOrders: (opts?: OrderListingOptions) => Promise<void>;
+  fetchOrderById: (id: number) => Promise<OrderWithUser>;
   createProduct: (data: CreateProductPayload) => Promise<Product>;
   updateProduct: (id: number, data: UpdateProductPayload) => Promise<Product>;
   updateProductStock: (
@@ -260,6 +261,12 @@ export const useAdminStore = create<AdminState>((set, get) => ({
     } finally {
       set({ loadingOrders: false });
     }
+  },
+  fetchOrderById: async (id) => {
+    if (!Number.isFinite(id)) {
+      throw new Error("ID pesanan tidak valid");
+    }
+    return apiRequest<OrderWithUser>(`/order/admin/${id}`);
   },
 
   fetchProducts: async (opts) => {

@@ -189,18 +189,15 @@ export default function CatalogPage() {
           quantity: 1,
         };
 
-        const response = await fetch(
-          `${API_URL}/cart/items`,
-          {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify(requestBody),
-          }
-        );
+        const response = await fetch(`${API_URL}/cart/items`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        });
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -211,9 +208,7 @@ export default function CatalogPage() {
         fetchCart({ silent: true });
       } catch (err) {
         toast.error(
-          `Gagal menambahkan ke keranjang: ${
-            err instanceof Error ? err.message : "Kesalahan tidak diketahui"
-          }`
+          `${err instanceof Error ? err.message : "Kesalahan tidak diketahui"}`
         );
       }
     },
@@ -299,18 +294,15 @@ export default function CatalogPage() {
         return;
       }
       try {
-        const response = await fetch(
-          `${API_URL}/cart/items`,
-          {
-            method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-            body: JSON.stringify({ bundleId: bundle.id, quantity: 1 }),
-          }
-        );
+        const response = await fetch(`${API_URL}/cart/items`, {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({ bundleId: bundle.id, quantity: 1 }),
+        });
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -323,9 +315,7 @@ export default function CatalogPage() {
         fetchCart({ silent: true });
       } catch (err) {
         toast.error(
-          `Gagal menambahkan ke keranjang: ${
-            err instanceof Error ? err.message : "Kesalahan tidak diketahui"
-          }`
+          `${err instanceof Error ? err.message : "Kesalahan tidak diketahui"}`
         );
       }
     },

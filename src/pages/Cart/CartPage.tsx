@@ -39,7 +39,7 @@ export default function CartPage() {
           </h1>
         </div>
 
-        <div className="mb-16 flex flex-col gap-8 lg:flex-row lg:items-start">
+        <div className="mb-16 flex flex-col gap-8 xl:flex-row xl:items-start">
           <div className="w-full rounded-3xl border border-white/0 bg-[#463B8B]/15 p-4 text-[#1B165E] shadow-lg sm:p-6 lg:p-10">
             <p className="text-lg font-extrabold text-[#1B165E] sm:text-2xl lg:text-3xl">
               KERANJANG ({cart?.summary.total_quantity ?? 0})
@@ -113,7 +113,7 @@ export default function CartPage() {
               })}
             </div>
           </div>
-          <div className="w-full lg:max-w-sm">
+          <div className="w-full xl:max-w-lg">
             <CartSummary />
           </div>
         </div>

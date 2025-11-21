@@ -1,8 +1,9 @@
-import { useEffect, useMemo } from "react";
-import { ArrowLeft } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowLeft, QrCode } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { Order, OrderItem } from "@/types/types";
 import { useOrderHistoryStore } from "@/store/orderHistoryStore";
+import { OrderQrDialog } from "@/components/orders/OrderQrDialog";
 
 const currencyFormatter = new Intl.NumberFormat("id-ID", {
   style: "currency",
@@ -17,6 +18,15 @@ const dateFormatter = new Intl.DateTimeFormat("id-ID", {
   hour: "2-digit",
   minute: "2-digit",
 });
+
+const toNumber = (value: number | string | null | undefined) => {
+  if (typeof value === "number") return value;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+};
 
 const STATUS_STYLES: Record<
   Order["payment_status"],
@@ -38,6 +48,8 @@ export default function OrderHistoryPage() {
   const fetchOrderHistory = useOrderHistoryStore(
     (state) => state.fetchOrderHistory
   );
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [qrOrder, setQrOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     fetchOrderHistory().catch(() => {
@@ -54,8 +66,8 @@ export default function OrderHistoryPage() {
     [orders]
   );
 
-  const formatCurrency = (value: number) =>
-    currencyFormatter.format(value).replace("Rp", "Rp");
+  const formatCurrency = (value: number | string) =>
+    currencyFormatter.format(toNumber(value)).replace("Rp", "Rp");
 
   const formatDate = (value: string) => {
     const date = new Date(value);
@@ -119,6 +131,18 @@ export default function OrderHistoryPage() {
     };
   };
 
+  const openQrDialog = (order: Order) => {
+    setQrOrder(order);
+    setQrDialogOpen(true);
+  };
+
+  const handleQrDialogChange = (open: boolean) => {
+    setQrDialogOpen(open);
+    if (!open) {
+      setQrOrder(null);
+    }
+  };
+
   return (
     <section className="relative isolate min-h-[calc(100svh-5rem)] overflow-hidden text-[#ffdb8c]">
       <div className="relative z-10 mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10 sm:px-6 lg:px-8">
@@ -147,11 +171,11 @@ export default function OrderHistoryPage() {
             ))}
           </div>
         ) : error ? (
-          <div className="rounded-3xl border border-[#c62d76]/30 bg-[#c62d76]/15 p-6 text-[#ffd1dc]">
+          <div className="rounded-3xl border border-[#c62d76]/30 bg-[#c62d76]/15 p-6 text-[#FFD88C]">
             {error}
           </div>
         ) : sortedOrders.length === 0 ? (
-          <div className="rounded-3xl border border-white/0 bg-[#463B8B]/10 p-6 text-center text-[#ffeabb]">
+          <div className="rounded-3xl border border-white/0 bg-[#463B8B]/10 p-6 text-center text-[#FFD88C]">
             Belum ada transaksi. Mulai belanja dan pesananmu akan tampil di
             sini.
           </div>
@@ -159,25 +183,40 @@ export default function OrderHistoryPage() {
           <div className="space-y-5">
             {sortedOrders.map((order) => {
               const status = resolveStatus(order);
+              const deliveryFee = toNumber(order.delivery_fee);
+              const fulfillmentLabel =
+                order.fulfillment_method === "Delivery"
+                  ? "Delivery"
+                  : "Ambil di Tempat (OTS)";
               return (
                 <article
                   key={order.id}
-                  className="space-y-4 text-[#1b165e] rounded-3xl border border-white/0 bg-[#463B8B]/15 p-5"
+                  className="space-y-4 text-[#FFD88C] rounded-3xl border border-white/0 bg-[#463B8B]/15 p-5"
                 >
-                  <header className="flex flex-col gap-3 text-[#102044] sm:flex-row sm:items-start sm:justify-between">
+                  <header className="flex flex-col gap-3 text-[#FFD88C] sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <p className="text-2xl font-bold text-[#102044]">
+                      <p className="text-2xl font-bold text-[#FFD88C]">
                         Order #{order.id}
                       </p>
-                      <p className="text-sm font-semibold text-[#264873]">
+                      <p className="text-sm font-semibold text-[#FFD88C]">
                         {formatDate(order.created_at)}
                       </p>
                     </div>
-                    <p
-                      className={`text-base font-semibold ${status.className}`}
-                    >
-                      {status.label}
-                    </p>
+                    <div className="flex flex-col items-start gap-2 sm:items-end">
+                      <p
+                        className={`text-base font-semibold ${status.className}`}
+                      >
+                        {status.label}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => openQrDialog(order)}
+                        className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold text-[#FFD88C] hover:bg-white/20"
+                      >
+                        <QrCode className="h-4 w-4" />
+                        QR Code Order
+                      </button>
+                    </div>
                   </header>
 
                   <div className="space-y-3">
@@ -188,7 +227,7 @@ export default function OrderHistoryPage() {
                       return (
                         <div
                           key={item.id}
-                          className="flex flex-col gap-3 rounded-2xl bg-[#463B8B]/10 p-3 text-[#1b165e] sm:flex-row sm:items-center"
+                          className="flex flex-col gap-3 rounded-2xl bg-[#463B8B]/10 p-3 text-[#FFD88C] sm:flex-row sm:items-center"
                         >
                           <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white/70">
                             <img
@@ -203,24 +242,24 @@ export default function OrderHistoryPage() {
                           </div>
                           <div className="flex flex-1 flex-col gap-1 sm:flex-row sm:items-center">
                             <div className="flex-1">
-                              <p className="font-semibold text-[#0e1c32]">
+                              <p className="font-semibold text-[#FFD88C]">
                                 {name}
                               </p>
-                              <p className="text-sm text-[#3f4971]">
+                              <p className="text-sm text-[#FFD88C]">
                                 {description}
                               </p>
                               {size && (
-                                <p className="text-xs font-semibold uppercase text-[#3f4971]">
+                                <p className="text-xs font-semibold uppercase text-[#FFD88C]">
                                   Ukuran: {size}
                                 </p>
                               )}
                               {bundleSizes && (
-                                <p className="text-xs text-[#3f4971]">
+                                <p className="text-xs text-[#FFD88C]">
                                   {bundleSizes}
                                 </p>
                               )}
                             </div>
-                            <p className="text-sm font-semibold text-[#0e1c32]">
+                            <p className="text-sm font-semibold text-[#FFD88C]">
                               {item.quantity} x{" "}
                               {formatCurrency(item.unit_price ?? 0)}
                             </p>
@@ -229,12 +268,40 @@ export default function OrderHistoryPage() {
                       );
                     })}
                   </div>
+                  <div className="rounded-2xl border border-white/20 bg-[#463B8B]/10 p-4 text-[#FFD88C]">
+                    <p className="text-xs font-semibold uppercase text-[#FFD88C]">
+                      Metode Pengambilan
+                    </p>
+                    <p className="text-lg font-bold">{fulfillmentLabel}</p>
+                    <p className="text-sm text-[#FFD88C]">
+                      {deliveryFee > 0
+                        ? `Biaya delivery ${formatCurrency(deliveryFee)}`
+                        : "Tanpa biaya tambahan"}
+                    </p>
+                    {order.fulfillment_method === "Delivery" ? (
+                      <div className="mt-2 space-y-1 text-sm">
+                        <p>Penerima: {order.delivery_contact_name || "-"}</p>
+                        <p>Telepon: {order.delivery_phone || "-"}</p>
+                        <p>Alamat: {order.delivery_address || "-"}</p>
+                        {order.delivery_notes ? (
+                          <p>Catatan: {order.delivery_notes}</p>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
 
-                  <footer className="flex items-center justify-between border-t border-white/20 pt-3 text-[#102044]">
-                    <span>Total Harga</span>
-                    <span className="text-xl font-bold">
-                      {formatCurrency(order.total_amount)}
-                    </span>
+                  <footer className="space-y-1 border-t border-white/20 pt-3 text-[#FFD88C]">
+                    <div className="flex items-center justify-between">
+                      <span>Total Harga</span>
+                      <span className="text-xl font-bold">
+                        {formatCurrency(order.total_amount)}
+                      </span>
+                    </div>
+                    {deliveryFee > 0 ? (
+                      <p className="text-right text-xs text-[#FFD88C]">
+                        Termasuk biaya delivery {formatCurrency(deliveryFee)}
+                      </p>
+                    ) : null}
                   </footer>
                 </article>
               );
@@ -242,6 +309,11 @@ export default function OrderHistoryPage() {
           </div>
         )}
       </div>
+      <OrderQrDialog
+        order={qrOrder}
+        open={qrDialogOpen}
+        onOpenChange={handleQrDialogChange}
+      />
     </section>
   );
 }

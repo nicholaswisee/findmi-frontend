@@ -88,7 +88,7 @@ export default function ProductGrid({
     } catch (error) {
       console.error("Error adding to cart:", error);
       toast.error(
-        `Gagal menambahkan ke keranjang: ${
+        `${
           error instanceof Error ? error.message : "Kesalahan tidak diketahui"
         }`
       );

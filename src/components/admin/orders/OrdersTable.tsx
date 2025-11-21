@@ -152,6 +152,30 @@ export default function OrdersTable({
         ),
       },
       {
+        accessorKey: "fulfillment_method",
+        header: "Fulfillment",
+        cell: ({ row }) => {
+          const fee = Number(row.original.delivery_fee) || 0;
+          const label =
+            row.original.fulfillment_method === "Delivery"
+              ? "Delivery"
+              : "Ambil di Tempat";
+          return (
+            <div className="space-y-0.5">
+              <p className="font-semibold">{label}</p>
+              <p className="text-xs text-muted-foreground">
+                {fee > 0 ? `+ ${formatCurrency(fee)}` : "Gratis"}
+              </p>
+              {row.original.fulfillment_method === "Delivery" ? (
+                <p className="text-xs text-muted-foreground">
+                  {row.original.delivery_contact_name || "Nama belum diisi"}
+                </p>
+              ) : null}
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "is_taken",
         header: "Pickup",
         cell: ({ row }) =>

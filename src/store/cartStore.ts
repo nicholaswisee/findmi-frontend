@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import type { BundleSelection, Order } from "@/types/types";
+import type {
+  BundleSelection,
+  Order,
+  OrderFulfillmentMethod,
+} from "@/types/types";
 import { API_URL } from "@/lib/api";
 
 interface CartProduct {
@@ -77,6 +81,13 @@ interface OrderResponse {
   payment: PaymentResponse | null;
 }
 
+interface DeliveryDetailsState {
+  contactName: string;
+  phone: string;
+  address: string;
+  notes: string;
+}
+
 interface CartState {
   cart: CartData | null;
   isLoading: boolean;
@@ -87,10 +98,61 @@ interface CartState {
   updateCartItem: (itemId: number, quantity: number) => Promise<void>;
   deleteCartItem: (itemId: number) => Promise<void>;
   createOrder: (items: OrderItemRequest[]) => Promise<OrderResponse | null>;
+  fulfillmentMethod: OrderFulfillmentMethod;
+  setFulfillmentMethod: (method: OrderFulfillmentMethod) => void;
+  deliveryDetails: DeliveryDetailsState;
+  updateDeliveryDetails: (values: Partial<DeliveryDetailsState>) => void;
 }
 
 const toErrorMessage = (error: unknown, fallback: string) =>
   error instanceof Error && error.message ? error.message : fallback;
+
+export const DELIVERY_FEE = 20000;
+const FULFILLMENT_STORAGE_KEY = "findmi-fulfillment-method";
+
+const getInitialFulfillmentMethod = (): OrderFulfillmentMethod => {
+  if (typeof window === "undefined") return "OTS";
+  const stored = window.localStorage?.getItem(FULFILLMENT_STORAGE_KEY);
+  return stored === "Delivery" ? "Delivery" : "OTS";
+};
+
+const DELIVERY_DETAILS_STORAGE_KEY = "findmi-delivery-details";
+
+const getInitialDeliveryDetails = (): DeliveryDetailsState => {
+  if (typeof window === "undefined") {
+    return {
+      contactName: "",
+      phone: "",
+      address: "",
+      notes: "",
+    };
+  }
+  try {
+    const raw = window.localStorage?.getItem(DELIVERY_DETAILS_STORAGE_KEY);
+    if (!raw) {
+      return {
+        contactName: "",
+        phone: "",
+        address: "",
+        notes: "",
+      };
+    }
+    const parsed = JSON.parse(raw) as Partial<DeliveryDetailsState>;
+    return {
+      contactName: parsed.contactName ?? "",
+      phone: parsed.phone ?? "",
+      address: parsed.address ?? "",
+      notes: parsed.notes ?? "",
+    };
+  } catch {
+    return {
+      contactName: "",
+      phone: "",
+      address: "",
+      notes: "",
+    };
+  }
+};
 
 const buildOrderMap = (
   items: CartItemInterface[],
@@ -124,6 +186,34 @@ export const useCartStore = create<CartState>((set, get) => ({
   isMutating: false,
   error: null,
   orderMap: {},
+  fulfillmentMethod: getInitialFulfillmentMethod(),
+  deliveryDetails: getInitialDeliveryDetails(),
+  setFulfillmentMethod: (method) => {
+    set({ fulfillmentMethod: method });
+    try {
+      if (typeof window !== "undefined") {
+        window.localStorage?.setItem(FULFILLMENT_STORAGE_KEY, method);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  },
+  updateDeliveryDetails: (values) => {
+    set((state) => {
+      const nextDetails = { ...state.deliveryDetails, ...values };
+      try {
+        if (typeof window !== "undefined") {
+          window.localStorage?.setItem(
+            DELIVERY_DETAILS_STORAGE_KEY,
+            JSON.stringify(nextDetails)
+          );
+        }
+      } catch {
+        // ignore
+      }
+      return { deliveryDetails: nextDetails };
+    });
+  },
 
   fetchCart: async (options) => {
     const silent = options?.silent;
@@ -248,11 +338,44 @@ export const useCartStore = create<CartState>((set, get) => ({
   createOrder: async (items) => {
     set({ isMutating: true, error: null });
     try {
+      const fulfillmentMethod = get().fulfillmentMethod ?? "OTS";
+      const deliveryDetailsState = get().deliveryDetails;
+      let deliveryDetailsPayload:
+        | {
+            contactName: string;
+            phone: string;
+            address: string;
+            notes?: string;
+          }
+        | undefined;
+      if (fulfillmentMethod === "Delivery") {
+        const trimmed = {
+          contactName: deliveryDetailsState.contactName.trim(),
+          phone: deliveryDetailsState.phone.trim(),
+          address: deliveryDetailsState.address.trim(),
+          notes: deliveryDetailsState.notes.trim(),
+        };
+        const missingFields = [];
+        if (!trimmed.contactName) missingFields.push("Nama penerima");
+        if (!trimmed.phone) missingFields.push("Nomor telepon");
+        if (!trimmed.address) missingFields.push("Alamat");
+        if (missingFields.length > 0) {
+          throw new Error(
+            `Lengkapi data pengiriman: ${missingFields.join(", ")}.`
+          );
+        }
+        deliveryDetailsPayload = trimmed;
+      }
+
       const res = await fetch(`${API_URL}/order`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({
+          items,
+          fulfillmentMethod,
+          deliveryDetails: deliveryDetailsPayload,
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to create order");

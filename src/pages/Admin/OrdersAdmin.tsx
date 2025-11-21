@@ -4,9 +4,11 @@ import { toast } from "sonner";
 
 import OrdersTable from "@/components/admin/orders/OrdersTable";
 import { OrderAdminDialog } from "@/components/admin/orders/OrderAdminDialog";
+import { OrderQrScannerDialog } from "@/components/admin/orders/OrderQrScannerDialog";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminStore } from "@/store/adminStore";
+import { decodeOrderPayload } from "@/utils/qrPayload";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,6 +28,7 @@ export default function OrdersAdmin() {
   const orders = useAdminStore((state) => state.orders);
   const loading = useAdminStore((state) => state.loadingOrders);
   const fetchOrders = useAdminStore((state) => state.fetchOrders);
+  const fetchOrderById = useAdminStore((state) => state.fetchOrderById);
   const pageIndex = useAdminStore((state) => state.orderPageIndex);
   const pageSize = useAdminStore((state) => state.orderPageSize);
   const hasNextPage = useAdminStore((state) => state.orderHasNext);
@@ -51,6 +54,7 @@ export default function OrdersAdmin() {
   const navigateRouter = useNavigate();
   const [activeOrderId, setActiveOrderId] = useState<number | null>(null);
   const [activeOrder, setActiveOrder] = useState<OrderWithUser | null>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const locationOrder =
     (location.state as { order?: OrderWithUser } | null)?.order ?? null;
 
@@ -89,31 +93,52 @@ export default function OrdersAdmin() {
   }, [debouncedSearch, departmentFilter, pickupFilter, fetchOrders, pageSize]);
 
   useEffect(() => {
-    const param = searchParams.get("orderId");
-    if (!param) {
+    const tokenParam = searchParams.get("token");
+    if (tokenParam) {
+      const decoded = decodeOrderPayload(tokenParam);
+      if (typeof decoded === "number" && !Number.isNaN(decoded)) {
+        setActiveOrderId(decoded);
+        const next = new URLSearchParams(searchParams);
+        next.delete("token");
+        next.set("orderId", String(decoded));
+        setSearchParams(next, { replace: true });
+        return;
+      }
+    }
+
+    const orderIdParam = searchParams.get("orderId");
+    if (!orderIdParam) {
       setActiveOrderId(null);
       setActiveOrder(null);
       return;
     }
-    const parsed = Number(param);
+
+    const parsed = Number(orderIdParam);
     if (Number.isNaN(parsed)) {
       setActiveOrderId(null);
       setActiveOrder(null);
       return;
     }
     setActiveOrderId(parsed);
-  }, [searchParams]);
+  }, [searchParams, setSearchParams]);
 
   const closeDialog = useCallback(() => {
     setActiveOrderId(null);
     setActiveOrder(null);
     const next = new URLSearchParams(searchParams);
     const hadOrderId = next.has("orderId");
+    const hadToken = next.has("token");
     if (hadOrderId) {
       next.delete("orderId");
+    }
+    if (hadToken) {
+      next.delete("token");
+    }
+    const hadSearchParamChanged = hadOrderId || hadToken;
+    if (hadSearchParamChanged) {
       setSearchParams(next);
     }
-    if (location.state || hadOrderId) {
+    if (location.state || hadSearchParamChanged) {
       const searchString = next.toString();
       navigateRouter(
         {
@@ -137,6 +162,10 @@ export default function OrdersAdmin() {
       return;
     }
 
+    if (activeOrder && activeOrder.id === activeOrderId) {
+      return;
+    }
+
     const existing = orders.find((order) => order.id === activeOrderId);
     if (existing) {
       setActiveOrder(existing);
@@ -155,22 +184,37 @@ export default function OrdersAdmin() {
       return;
     }
 
-    if (activeOrder) {
-      return;
-    }
+    let isMounted = true;
+    const toastId = toast.loading("Memuat detail pesanan...");
+    fetchOrderById(activeOrderId)
+      .then((order) => {
+        if (isMounted) {
+          setActiveOrder(order);
+        }
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        const message =
+          err instanceof Error ? err.message : "Pesanan tidak ditemukan.";
+        toast.error(message);
+        closeDialog();
+      })
+      .finally(() => {
+        toast.dismiss(toastId);
+      });
 
-    if (!loading) {
-      toast.error("Pesanan tidak ditemukan pada halaman ini.");
-      closeDialog();
-    }
+    return () => {
+      isMounted = false;
+      toast.dismiss(toastId);
+    };
   }, [
     activeOrder,
     activeOrderId,
     closeDialog,
+    fetchOrderById,
     location.pathname,
     location.search,
     locationOrder,
-    loading,
     navigateRouter,
     orders,
   ]);
@@ -256,23 +300,70 @@ export default function OrdersAdmin() {
     [searchParams, setSearchParams]
   );
 
+  const handleScanValue = useCallback(
+    (value: string) => {
+      const decodedId = decodeOrderPayload(value);
+      if (typeof decodedId === "number" && !Number.isNaN(decodedId)) {
+        setScannerOpen(false);
+        openDialogForOrder(decodedId);
+        return;
+      }
+
+      const extractOrderId = (input: string): number | null => {
+        if (!input) return null;
+        const paramMatch = input.match(/[?&]orderId=(\d+)/i);
+        if (paramMatch) {
+          return Number(paramMatch[1]);
+        }
+        const hashMatch = input.match(/order[^\d]*(\d+)/i);
+        if (hashMatch) {
+          return Number(hashMatch[1]);
+        }
+        const numeric = input.trim();
+        if (/^\d+$/.test(numeric)) {
+          return Number(numeric);
+        }
+        return null;
+      };
+
+      const orderId = extractOrderId(value);
+      if (!orderId) {
+        toast.error("QR tidak valid. Pastikan menggunakan QR order dari pelanggan.");
+        return;
+      }
+      setScannerOpen(false);
+      openDialogForOrder(orderId);
+    },
+    [openDialogForOrder]
+  );
+
   return (
     <section className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-2xl font-semibold">Orders Overview</p>
           <p className="text-sm text-muted-foreground">
-            Review customer orders, add notes, and track pickup status.
+            Review customer orders, add notes, track pickup status, atau scan QR
+            dari pembeli.
           </p>
         </div>
-        <Button
-          variant="outline"
-          className="w-full sm:w-auto"
-          onClick={handleRefresh}
-          disabled={loading}
-        >
-          Refresh
-        </Button>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <Button
+            variant="secondary"
+            className="w-full sm:w-auto"
+            onClick={() => setScannerOpen(true)}
+          >
+            Scan QR Order
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={handleRefresh}
+            disabled={loading}
+          >
+            Refresh
+          </Button>
+        </div>
       </header>
 
       <div className="grid min-w-0 gap-4 lg:grid-cols-4">
@@ -384,6 +475,11 @@ export default function OrdersAdmin() {
           onSubmit={handleActiveOrderSubmit}
         />
       )}
+      <OrderQrScannerDialog
+        open={scannerOpen}
+        onOpenChange={setScannerOpen}
+        onDetected={handleScanValue}
+      />
     </section>
   );
 }

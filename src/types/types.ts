@@ -66,6 +66,8 @@ export type OrderPaymentStatusEnum = "Pending" | "Paid" | "Failed" | "Refunded";
 
 export type OrderPaymentMethodEnum = "Manual" | "Midtrans";
 
+export type OrderFulfillmentMethod = "OTS" | "Delivery";
+
 export type Product = {
   id: number;
   name: string;
@@ -139,6 +141,12 @@ export type Order = {
   items: OrderItem[];
   admin_note?: string | null;
   is_taken: boolean;
+  fulfillment_method: OrderFulfillmentMethod;
+  delivery_fee: number;
+  delivery_contact_name: string | null;
+  delivery_phone: string | null;
+  delivery_address: string | null;
+  delivery_notes: string | null;
 };
 
 export type UserWithOrders = User & {

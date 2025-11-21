@@ -1,0 +1,93 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import QRCode from "react-qr-code";
+import { Copy, Check } from "lucide-react";
+
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import type { Order } from "@/types/types";
+import { createOrderQrValue } from "@/utils/qrPayload";
+
+type OrderQrDialogProps = {
+  order: Order | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+export function OrderQrDialog({
+  order,
+  open,
+  onOpenChange,
+}: OrderQrDialogProps) {
+  const [copied, setCopied] = useState(false);
+  const qrValue = useMemo(() => {
+    if (!order) return "";
+    return createOrderQrValue(order.id);
+  }, [order]);
+
+  useEffect(() => {
+    if (!open) {
+      setCopied(false);
+    }
+  }, [open]);
+
+  const handleCopyLink = async () => {
+    if (!qrValue) return;
+    try {
+      await navigator.clipboard.writeText(qrValue);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="w-full max-h-[90vh] space-y-4 overflow-y-auto sm:max-w-md">
+        <div className="space-y-1 text-center">
+          <p className="text-sm font-medium text-muted-foreground">
+            Tunjukkan QR berikut
+          </p>
+          {order ? (
+            <p className="text-xl font-semibold text-foreground">
+              Order #{order.id}
+            </p>
+          ) : null}
+        </div>
+        <div className="flex justify-center rounded-2xl border bg-white p-4">
+          {qrValue ? (
+            <QRCode
+              value={qrValue}
+              size={200}
+              className="h-auto w-full max-w-[min(70vw,240px)]"
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">Tidak ada data QR.</p>
+          )}
+        </div>
+        <div className="space-y-2 text-center text-sm text-muted-foreground">
+          <p>Tunjukkan kode QR berikut untuk melakukan verifikasi pesanan.</p>
+          {/* <Button
+            type="button"
+            variant="secondary"
+            className="w-full gap-2"
+            onClick={handleCopyLink}
+            disabled={!qrValue}
+          >
+            {copied ? (
+              <>
+                <Check className="h-4 w-4" /> Kode tersalin
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4" /> Salin kode terenkripsi
+              </>
+            )}
+          </Button> */}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
