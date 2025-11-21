@@ -195,8 +195,4 @@
     background-image: url("/global/background-plain-hijau.webp");
     @apply text-foreground bg-cover bg-center;
   }
-  .bg-plain-green {
-    background-image: url("/global/background-plain-hijau.png");
-    @apply text-foreground bg-cover bg-center;
-  }
 }

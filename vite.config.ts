@@ -21,4 +21,20 @@ export default defineConfig(({ mode }) => ({
         ? ["console.log", "console.info", "console.debug"]
         : [],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Keep admin-only code in its own chunk so the public bundle stays light
+        manualChunks(id) {
+          if (
+            id.includes(`${path.sep}src${path.sep}pages${path.sep}Admin${path.sep}`) ||
+            id.includes(`${path.sep}src${path.sep}components${path.sep}admin${path.sep}`) ||
+            id.includes(`${path.sep}src${path.sep}layouts${path.sep}AdminLayout`)
+          ) {
+            return "admin";
+          }
+        },
+      },
+    },
+  },
 }));
