@@ -6,14 +6,13 @@ import {
   type IScannerControls,
 } from "@zxing/browser";
 import { NotFoundException } from "@zxing/library";
-import { AlertTriangle, Camera, Loader2, RefreshCw } from "lucide-react";
+import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 

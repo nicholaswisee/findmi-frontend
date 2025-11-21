@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import QRCode from "react-qr-code";
-import { Copy, Check } from "lucide-react";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import type { Order } from "@/types/types";
 import { createOrderQrValue } from "@/utils/qrPayload";
 
@@ -20,28 +18,12 @@ export function OrderQrDialog({
   open,
   onOpenChange,
 }: OrderQrDialogProps) {
-  const [copied, setCopied] = useState(false);
   const qrValue = useMemo(() => {
     if (!order) return "";
     return createOrderQrValue(order.id);
   }, [order]);
 
-  useEffect(() => {
-    if (!open) {
-      setCopied(false);
-    }
-  }, [open]);
-
-  const handleCopyLink = async () => {
-    if (!qrValue) return;
-    try {
-      await navigator.clipboard.writeText(qrValue);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
-    }
-  };
+  useEffect(() => {}, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
