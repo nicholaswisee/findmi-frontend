@@ -1,11 +1,41 @@
 import { useCartStore } from "@/store/cartStore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { loadMidtransSnap } from "@/utils/midtransSnap";
 
 export function CheckoutButton() {
   const { createOrder, cart, isMutating } = useCartStore();
   const hasItems = (cart?.items?.length ?? 0) > 0;
   const navigate = useNavigate();
+
+  const trySnapPayment = async (token?: string) => {
+    if (!token) return false;
+    try {
+      await loadMidtransSnap();
+      if (!window.snap) throw new Error("Midtrans Snap SDK tidak ditemukan.");
+      window.snap.pay(token, {
+        onSuccess: () => {
+          toast.success("Pembayaran berhasil.");
+          navigate("/profile/history");
+        },
+        onPending: () => {
+          toast.message("Pembayaran masih tertunda.");
+          navigate("/profile/history");
+        },
+        onError: () => {
+          toast.error("Pembayaran gagal. Silakan coba lagi.");
+        },
+        onClose: () => {
+          toast.message("Jendela pembayaran ditutup sebelum selesai.");
+        },
+      });
+      return true;
+    } catch (error) {
+      console.error(error);
+      toast.error("Gagal memuat Midtrans Snap.");
+      return false;
+    }
+  };
 
   const handleCheckout = async () => {
     if (!cart || !hasItems || isMutating) return;
@@ -43,6 +73,7 @@ export function CheckoutButton() {
     if (result) {
       toast.success("Pesanan berhasil dibuat.");
       const payment = result.payment ?? null;
+      if (await trySnapPayment(payment?.transactionToken)) return;
       if (payment?.checkoutPath) {
         navigate(payment.checkoutPath);
         return;

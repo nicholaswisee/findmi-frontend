@@ -16,9 +16,8 @@ export function CartSummary() {
 
   const totalQuantity = cart?.summary.total_quantity ?? 0;
   const subtotal = cart?.summary.total_amount ?? 0;
-  const tax = Math.round(subtotal * 0.11);
   const deliveryFee = fulfillmentMethod === "Delivery" ? DELIVERY_FEE : 0;
-  const grandTotal = subtotal + tax + deliveryFee;
+  const grandTotal = subtotal + deliveryFee;
 
   return (
     <div className="w-full rounded-3xl border border-white/0 bg-[#463B8B]/15 p-4 text-[#1B165E] shadow-lg sm:p-6 lg:p-10">
@@ -129,14 +128,6 @@ export function CartSummary() {
               </span>
               <span className="text-sm font-semibold sm:text-base">
                 Rp {subtotal.toLocaleString("id-ID")}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-[#1B165E]">
-              <span className="text-sm font-semibold sm:text-base">
-                PPN (11%)
-              </span>
-              <span className="text-sm font-semibold sm:text-base">
-                Rp {tax.toLocaleString("id-ID")}
               </span>
             </div>
             <div className="flex items-center justify-between text-[#1B165E]">
