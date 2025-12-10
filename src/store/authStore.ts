@@ -2,12 +2,19 @@ import { toast } from "sonner";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { API_URL } from "@/lib/api";
+import type {
+  UserDepartmentEnum,
+  UserDivisionEnum,
+  UserRankEnum,
+} from "@/types/types";
 
 interface User {
   id: number;
   name: string;
   nim: string;
-  department: string;
+  department: UserDepartmentEnum;
+  division: UserDivisionEnum;
+  rank: UserRankEnum;
   line_id: string;
   no_wa: string;
   email?: string;

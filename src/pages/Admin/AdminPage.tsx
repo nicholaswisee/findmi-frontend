@@ -156,7 +156,7 @@ export default function AdminPage() {
     if (!data) return [];
     return [
       {
-        title: "Weekly Profit",
+        title: "Weekly Divisional Contribution",
         value: formatCurrency(latestRevenue),
         helper: "Last completed week",
         description: "vs previous week",
@@ -182,7 +182,7 @@ export default function AdminPage() {
   const chartConfig = useMemo(
     () => ({
       revenue: {
-        label: "Profit",
+        label: "Divisional Contribution",
         color: "hsl(var(--primary))",
       },
     }),
@@ -211,12 +211,19 @@ export default function AdminPage() {
     return data.departmentBreakdown.reduce((acc, row) => acc + row.revenue, 0);
   }, [data]);
 
+  const totalDivisionRevenue = useMemo(() => {
+    if (!data?.divisionBreakdown) return 0;
+    return data.divisionBreakdown.reduce((acc, row) => acc + row.revenue, 0);
+  }, [data]);
+
   return (
     <section className="space-y-6">
       <header className="flex flex-wrap items-start gap-4 lg:items-center lg:justify-between">
         <div className="space-y-1">
           <p className="text-2xl font-semibold">Analytics</p>
-          <p className="text-sm text-muted-foreground">Analyze profit</p>
+          <p className="text-sm text-muted-foreground">
+            Analyze divisional contribution
+          </p>
         </div>
         <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-end sm:justify-end">
           <div className="space-y-1 w-full sm:w-48">
@@ -323,98 +330,62 @@ export default function AdminPage() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <Card className="relative">
-              <CardHeader className="flex flex-col gap-1 space-y-0 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <CardTitle>Profit Curve</CardTitle>
-                  <p className="text-xs text-muted-foreground">
-                    Rolling 12-week revenue trend
-                  </p>
-                </div>
-                <TrendingUp className="h-5 w-5 text-muted-foreground" />
+            <Card>
+              <CardHeader>
+                <CardTitle>Divisional Contribution</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {chartData.length === 0 ? (
+              <CardContent className="overflow-x-auto lg:max-h-[400px] lg:overflow-y-auto lg:pr-2">
+                {!data?.divisionBreakdown?.length ? (
                   <p className="text-sm text-muted-foreground">
-                    No paid orders recorded for this selection.
+                    No division data available for this filter.
                   </p>
                 ) : (
-                  <>
-                    <ChartContainer
-                      config={chartConfig}
-                      className="aspect-auto h-60 w-full lg:h-[300px]"
-                    >
-                      <AreaChart
-                        data={chartData}
-                        margin={{ left: 12, right: 12, top: 8, bottom: 0 }}
-                      >
-                        <defs>
-                          <linearGradient
-                            id={chartGradientId}
-                            x1="0"
-                            y1="0"
-                            x2="0"
-                            y2="1"
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Division</TableHead>
+                        <TableHead className="text-right">Orders</TableHead>
+                        <TableHead className="text-right">Share</TableHead>
+                        <TableHead className="text-right">Revenue</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {data.divisionBreakdown.map((row, index) => {
+                        const share =
+                          totalDivisionRevenue > 0
+                            ? (row.revenue / totalDivisionRevenue) * 100
+                            : 0;
+                        return (
+                          <TableRow
+                            key={row.division}
+                            className={index === 0 ? "bg-muted/40" : undefined}
                           >
-                            <stop
-                              offset="5%"
-                              stopColor="var(--color-revenue, hsl(var(--primary)))"
-                              stopOpacity={0.4}
-                            />
-                            <stop
-                              offset="95%"
-                              stopColor="var(--color-revenue, hsl(var(--primary)))"
-                              stopOpacity={0}
-                            />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid
-                          strokeDasharray="4 4"
-                          vertical={false}
-                          className="stroke-muted"
-                        />
-                        <XAxis
-                          dataKey="label"
-                          tickLine={false}
-                          axisLine={false}
-                          tickMargin={8}
-                          minTickGap={16}
-                        />
-                        <ChartTooltip
-                          cursor={{ strokeDasharray: "3 3" }}
-                          content={
-                            <ChartTooltipContent
-                              hideLabel
-                              formatter={(value) =>
-                                formatCurrency(Number(value ?? 0))
-                              }
-                            />
-                          }
-                        />
-                        <Area
-                          type="monotone"
-                          dataKey="revenue"
-                          stroke="var(--color-revenue, hsl(var(--primary)))"
-                          fill={`url(#${chartGradientId})`}
-                          fillOpacity={1}
-                          strokeWidth={3}
-                        />
-                      </AreaChart>
-                    </ChartContainer>
-                    {chartLegendEntries.length > 0 && (
-                      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                        {chartLegendEntries.map((entry) => (
-                          <Badge
-                            key={entry.weekRaw}
-                            variant="outline"
-                            className="font-mono"
-                          >
-                            {entry.label} · {formatCurrency(entry.revenue)}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </>
+                            <TableCell className="font-semibold">
+                              {row.division}
+                              <div className="mt-1 h-1.5 w-full rounded-full bg-muted">
+                                <span
+                                  className="block h-full rounded-full bg-primary"
+                                  style={{ width: `${share}%` }}
+                                />
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-right text-sm">
+                              {row.orders}{" "}
+                              <span className="text-muted-foreground">
+                                {row.orders === 1 ? "order" : "orders"}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-right text-sm font-medium">
+                              {share.toFixed(1)}%
+                            </TableCell>
+                            <TableCell className="text-right font-semibold">
+                              {formatCurrency(row.revenue)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
                 )}
               </CardContent>
             </Card>

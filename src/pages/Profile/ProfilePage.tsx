@@ -14,17 +14,32 @@ import {
 import { DEPARTMENTS } from "@/constants/departments";
 import { toast } from "sonner";
 import { API_URL } from "@/lib/api";
+import { DIVISIONS } from "@/constants/divisions";
+import type {
+  UserDepartmentEnum,
+  UserDivisionEnum,
+} from "@/types/types";
+
+type EditedProfileData = {
+  name: string;
+  nim: string;
+  line_id: string;
+  no_wa: string;
+  department: UserDepartmentEnum;
+  division: UserDivisionEnum;
+};
 
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { user, logout, refreshUser } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({
+  const [editedData, setEditedData] = useState<EditedProfileData>({
     name: user?.name || "",
     nim: user?.nim || "",
     line_id: user?.line_id || "",
     no_wa: user?.no_wa || "",
-    department: user?.department || "none",
+    department: (user?.department as UserDepartmentEnum) || "none",
+    division: (user?.division as UserDivisionEnum) || "none",
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -39,7 +54,8 @@ export default function ProfilePage() {
         nim: user.nim || "",
         line_id: user.line_id || "",
         no_wa: user.no_wa || "",
-        department: user.department || "none",
+        department: (user.department as UserDepartmentEnum) || "none",
+        division: (user.division as UserDivisionEnum) || "none",
       });
     }
   }, [user]);
@@ -55,7 +71,8 @@ export default function ProfilePage() {
       nim: user?.nim || "",
       line_id: user?.line_id || "",
       no_wa: user?.no_wa || "",
-      department: user?.department || "none",
+      department: (user?.department as UserDepartmentEnum) || "none",
+      division: (user?.division as UserDivisionEnum) || "none",
     });
   };
 
@@ -101,15 +118,8 @@ export default function ProfilePage() {
   };
 
   const profileFields = [
-    { label: "Nama", value: user?.name, field: "name", editable: false },
+    { label: "Nama", value: user?.name, field: "name", editable: true },
     { label: "Email", value: user?.email, field: "email", editable: false },
-    {
-      label: "Bidang",
-      value:
-        user?.department && user.department !== "none" ? user.department : "-",
-      field: "department",
-      editable: true,
-    },
     {
       label: "NIM",
       value: user?.nim || "-",
@@ -196,28 +206,7 @@ export default function ProfilePage() {
                       </th>
                       <td className="py-4 text-[#FFD88C] font-semibold">
                         {isEditing ? (
-                          field === "department" ? (
-                            <Select
-                              value={editedData.department || "none"}
-                              onValueChange={(value) =>
-                                setEditedData((prev) => ({
-                                  ...prev,
-                                  department: value,
-                                }))
-                              }
-                            >
-                              <SelectTrigger className="h-10 w-full rounded-xl border border-white/30 bg-white/80 px-3 text-sm font-semibold text-[#302a77] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5F92E0]">
-                                <SelectValue placeholder="Pilih Bidang" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {DEPARTMENTS.map((dept) => (
-                                  <SelectItem key={dept} value={dept}>
-                                    {dept}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          ) : editable ? (
+                          editable ? (
                             <Input
                               type="text"
                               value={
@@ -242,6 +231,85 @@ export default function ProfilePage() {
                     </tr>
                   );
                 })}
+                <tr className="border-b border-white/10 last:border-b-0">
+                  <th
+                    scope="row"
+                    className="w-1/3 text-[#FFD88C] py-4 pr-4 font-semibold"
+                  >
+                    Bidang / Divisi
+                  </th>
+                  <td className="py-4 text-[#FFD88C] font-semibold">
+                    {isEditing ? (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="flex flex-col gap-1">
+                          <Select
+                            value={editedData.department || "none"}
+                            onValueChange={(value) =>
+                              setEditedData((prev) => ({
+                                ...prev,
+                                department: value as UserDepartmentEnum,
+                              }))
+                            }
+                          >
+                            <SelectTrigger className="h-10 w-full rounded-xl border border-white/30 bg-white/80 px-3 text-sm font-semibold text-[#302a77] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5F92E0]">
+                              <SelectValue placeholder="Pilih Bidang" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Non Bidang</SelectItem>
+                              {DEPARTMENTS.map((dept) => (
+                                <SelectItem key={dept} value={dept}>
+                                  {dept}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-[#FFD88C]/80">Bidang</p>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <Select
+                            value={editedData.division || "none"}
+                            onValueChange={(value) =>
+                              setEditedData((prev) => ({
+                                ...prev,
+                                division: value as UserDivisionEnum,
+                              }))
+                            }
+                          >
+                            <SelectTrigger className="h-10 w-full rounded-xl border border-white/30 bg-white/80 px-3 text-sm font-semibold text-[#302a77] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5F92E0]">
+                              <SelectValue placeholder="Pilih Divisi" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Non Divisional</SelectItem>
+                              {DIVISIONS.map((div) => (
+                                <SelectItem key={div} value={div}>
+                                  {div}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-[#FFD88C]/80">Divisi</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-1">
+                        <span>
+                          {!user
+                            ? "-"
+                            : user.department === "none"
+                            ? "Non Bidang"
+                            : user.department}
+                        </span>
+                        <span className="text-sm text-[#FFD88C]/80">
+                          {!user
+                            ? "-"
+                            : user.division === "none"
+                            ? "Non Divisional"
+                            : user.division}
+                        </span>
+                      </div>
+                    )}
+                  </td>
+                </tr>
                 <tr className="border-b border-white/10 last:border-b-0">
                   <th
                     scope="row"

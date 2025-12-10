@@ -251,6 +251,12 @@ export type DepartmentRevenueBreakdown = {
   orders: number;
 };
 
+export type DivisionRevenueBreakdown = {
+  division: UserDivisionEnum;
+  revenue: number;
+  orders: number;
+};
+
 export type WeeklyRevenuePoint = {
   week: string;
   revenue: number;
@@ -261,12 +267,13 @@ export type RecentRevenueOrder = {
   total_amount: number;
   payment_status: OrderPaymentStatusEnum;
   created_at: string;
-  user: Pick<User, "id" | "name" | "department">;
+  user: Pick<User, "id" | "name" | "department" | "division">;
 };
 
 export type RevenueAnalyticsResponse = {
   summary: RevenueAnalyticsSummary;
   weeklyRevenue: WeeklyRevenuePoint[];
   departmentBreakdown: DepartmentRevenueBreakdown[];
+  divisionBreakdown: DivisionRevenueBreakdown[];
   recentOrders: RecentRevenueOrder[];
 };

@@ -130,7 +130,7 @@ export function OrderAdminDialog({
 
   const contactFields = [
     { label: "Department", value: order.user.department, alwaysShow: true },
-    { label: "Division", value: order.user.division },
+    { label: "Division", value: order.user.division, alwaysShow: true },
     { label: "Rank", value: order.user.rank },
     { label: "NIM", value: order.user.nim, alwaysShow: true },
     { label: "WhatsApp", value: order.user.no_wa },
@@ -199,7 +199,7 @@ export function OrderAdminDialog({
             </section>
             {order.fulfillment_method === "Delivery" && (
               <section className="space-y-2 rounded-xl border p-4">
-                <p className="text-sm font-semibold uppercase text-muted-foreground">
+                <p className="text-sm font-semibold text-muted-foreground">
                   Detail Pengiriman
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -238,7 +238,7 @@ export function OrderAdminDialog({
             )}
 
             <section className="space-y-2 rounded-xl border p-4">
-              <p className="text-sm font-semibold uppercase text-muted-foreground">
+              <p className="text-sm font-semibold text-muted-foreground">
                 Buyer info
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
@@ -248,7 +248,7 @@ export function OrderAdminDialog({
                       {field.label}
                     </p>
                     <p className="text-sm font-medium break-all">
-                      {field.value}
+                      {field.value || "-"}
                     </p>
                   </div>
                 ))}
@@ -257,7 +257,7 @@ export function OrderAdminDialog({
 
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-semibold uppercase text-muted-foreground">
+                <p className="text-sm font-semibold text-muted-foreground">
                   Order items
                 </p>
                 <p className="text-xs text-muted-foreground">
