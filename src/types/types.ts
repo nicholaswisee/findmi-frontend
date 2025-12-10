@@ -68,6 +68,41 @@ export type OrderPaymentMethodEnum = "Manual" | "Midtrans";
 
 export type OrderFulfillmentMethod = "OTS" | "Delivery";
 
+export type ManualPaymentProof = {
+  id: number;
+  order_id: number;
+  user_id: number;
+  image_url: string;
+  storage_provider?: string;
+  storage_key?: string | null;
+  status: "Pending" | "Approved" | "Rejected";
+  reviewer_note?: string | null;
+  reviewer_id?: number | null;
+  reviewed_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ManualPaymentProofWithOrderUser = ManualPaymentProof & {
+  order: Pick<
+    Order,
+    "id" | "total_amount" | "payment_status" | "transaction_id" | "created_at"
+  >;
+  user: Pick<User, "id" | "name" | "nim" | "department">;
+};
+
+export type ManualPaymentSummary = {
+  order_id: number;
+  payment_method: OrderPaymentMethodEnum;
+  payment_status: OrderPaymentStatusEnum;
+  total_amount: string;
+  qris_image_url: string;
+  instructions: string;
+  contact: string;
+  expires_at: string | null;
+  latest_proof: ManualPaymentProof | null;
+};
+
 export type Product = {
   id: number;
   name: string;
@@ -191,6 +226,17 @@ export type UploadedFile = {
   url: string;
   size: number;
   mimeType: string;
+};
+
+export type ManualPaymentUploadResponse = {
+  proof: ManualPaymentProof;
+  order_id: number;
+  payment_status: OrderPaymentStatusEnum;
+};
+
+export type ManualPaymentProofListResponse = {
+  proofs: ManualPaymentProofWithOrderUser[];
+  total: number;
 };
 
 export type RevenueAnalyticsSummary = {

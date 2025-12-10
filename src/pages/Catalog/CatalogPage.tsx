@@ -390,7 +390,7 @@ export default function CatalogPage() {
     <div className="min-h-svh py-8">
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 flex justify-center">
-          <h1 className="mt-4 text-5xl font-extrabold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
+          <h1 className="mt-4 text-5xl font-extrabold  tracking-wide text-[#FFC76E] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
             Catalog
           </h1>
         </div>

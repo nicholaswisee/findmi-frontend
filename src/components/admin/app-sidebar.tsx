@@ -49,6 +49,11 @@ const items = [
     url: "/dashboard/orders",
     icon: BadgeDollarSign,
   },
+  {
+    title: "Manual Payments",
+    url: "/dashboard/manual-payments",
+    icon: BadgeDollarSign,
+  },
 ];
 
 const publicItems = [

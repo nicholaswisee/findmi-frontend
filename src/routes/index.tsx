@@ -8,7 +8,7 @@ import CatalogPage from "../pages/Catalog/CatalogPage";
 import ProductDetailPage from "../pages/Catalog/ProductDetailPage";
 import CartPage from "../pages/Cart/CartPage";
 import CheckoutPage from "../pages/Checkout/CheckoutPage";
-import DummyPaymentPage from "@/pages/Payment/DummyPaymentPage";
+// Legacy payment pages kept for reference (currently not routed)
 import AuthPage from "../pages/Auth/AuthPage";
 import ProfilePage from "../pages/Profile/ProfilePage";
 import OrderHistoryPage from "../pages/Profile/OrderHistoryPage";
@@ -21,6 +21,9 @@ const UsersAdmin = lazy(() => import("@/pages/Admin/UsersAdmin"));
 const ProductsAdmin = lazy(() => import("@/pages/Admin/ProductsAdmin"));
 const BundlesAdmin = lazy(() => import("@/pages/Admin/BundlesAdmin"));
 const OrdersAdmin = lazy(() => import("@/pages/Admin/OrdersAdmin"));
+const ManualPaymentsAdmin = lazy(
+  () => import("@/pages/Admin/ManualPaymentsAdmin")
+);
 
 const withSuspense = (element: ReactElement) => (
   <Suspense fallback={<RouteFallback />}>{element}</Suspense>
@@ -60,14 +63,7 @@ export const routes: RouteObject[] = [
           </PrivateRoute>
         ),
       },
-      {
-        path: "payment/dummy",
-        element: (
-          <PrivateRoute>
-            <DummyPaymentPage />
-          </PrivateRoute>
-        ),
-      },
+      // Manual/dummy payment pages are handled inside the Checkout page now.
       {
         path: "login",
         element: <AuthPage />,
@@ -135,6 +131,14 @@ export const routes: RouteObject[] = [
         element: withSuspense(
           <AdminRoute>
             <OrdersAdmin />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: "manual-payments",
+        element: withSuspense(
+          <AdminRoute>
+            <ManualPaymentsAdmin />
           </AdminRoute>
         ),
       },

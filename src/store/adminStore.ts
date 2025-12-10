@@ -12,6 +12,8 @@ import type {
   UserWithOrders,
   UsersWithOrdersResponse,
   UploadedFile,
+  ManualPaymentProofWithOrderUser,
+  ManualPaymentProofListResponse,
 } from "@/types/types";
 
 export type CreateProductPayload = {
@@ -65,6 +67,8 @@ type OrderListingOptions = PaginationOptions & {
   pickup?: PickupFilterValue;
 };
 
+type ManualPaymentStatusFilter = "Pending" | "Approved" | "Rejected" | "all";
+
 type AdminState = {
   users: UserWithOrders[];
   loadingUsers: boolean;
@@ -89,6 +93,13 @@ type AdminState = {
   orderPageSize: number;
   orderHasNext: boolean;
   orderTotal: number;
+  manualProofs: ManualPaymentProofWithOrderUser[];
+  manualProofTotal: number;
+  manualProofPageIndex: number;
+  manualProofPageSize: number;
+  manualProofHasNext: boolean;
+  manualProofStatus: ManualPaymentStatusFilter;
+  manualProofSearch: string;
   productPageIndex: number;
   productPageSize: number;
   productHasNext: boolean;
@@ -102,6 +113,17 @@ type AdminState = {
   fetchBundles: (opts?: ListingOptions) => Promise<void>;
   fetchOrders: (opts?: OrderListingOptions) => Promise<void>;
   fetchOrderById: (id: number) => Promise<OrderWithUser>;
+  fetchManualProofs: (opts?: {
+    status?: ManualPaymentStatusFilter;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }) => Promise<void>;
+  reviewManualProof: (
+    proofId: number,
+    decision: "approve" | "reject",
+    note?: string
+  ) => Promise<void>;
   createProduct: (data: CreateProductPayload) => Promise<Product>;
   updateProduct: (id: number, data: UpdateProductPayload) => Promise<Product>;
   updateProductStock: (
@@ -142,6 +164,13 @@ export const useAdminStore = create<AdminState>((set, get) => ({
   orderPageSize: 10,
   orderHasNext: false,
   orderTotal: 0,
+  manualProofs: [],
+  manualProofTotal: 0,
+  manualProofPageIndex: 0,
+  manualProofPageSize: 10,
+  manualProofHasNext: false,
+  manualProofStatus: "all",
+  manualProofSearch: "",
   productPageIndex: 0,
   productPageSize: 10,
   productHasNext: false,
@@ -267,6 +296,67 @@ export const useAdminStore = create<AdminState>((set, get) => ({
       throw new Error("ID pesanan tidak valid");
     }
     return apiRequest<OrderWithUser>(`/order/admin/${id}`);
+  },
+
+  fetchManualProofs: async (opts) => {
+    const current = get();
+    const limit = opts?.limit ?? current.manualProofPageSize;
+    const offset = opts?.offset ?? current.manualProofPageIndex * limit;
+    const requestedStatus =
+      typeof opts?.status === "undefined"
+        ? current.manualProofStatus
+        : opts.status;
+    const search =
+      typeof opts?.search === "string"
+        ? opts.search.trim()
+        : current.manualProofSearch;
+
+    const params = new URLSearchParams({
+      limit: String(limit),
+      offset: String(offset),
+    });
+
+    if (requestedStatus && requestedStatus !== "all") {
+      params.set("status", requestedStatus);
+    }
+    if (search) {
+      params.set("search", search);
+    }
+
+    const data = await apiRequest<ManualPaymentProofListResponse>(
+      `/order/admin/manual-payments?${params.toString()}`
+    );
+    const pageIndex = Math.floor(offset / limit);
+    const hasNext = offset + data.proofs.length < data.total;
+
+    set({
+      manualProofs: data.proofs,
+      manualProofTotal: data.total,
+      manualProofPageIndex: pageIndex,
+      manualProofPageSize: limit,
+      manualProofHasNext: hasNext,
+      manualProofStatus: requestedStatus,
+      manualProofSearch: search ?? "",
+    });
+  },
+
+  reviewManualProof: async (proofId, decision, note) => {
+    if (!Number.isFinite(proofId)) {
+      throw new Error("ID bukti pembayaran tidak valid");
+    }
+    await apiRequest(`/order/admin/manual-payments/${proofId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ decision, note }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const current = get();
+    await get().fetchManualProofs({
+      status: current.manualProofStatus,
+      search: current.manualProofSearch,
+      limit: current.manualProofPageSize,
+      offset: current.manualProofPageIndex * current.manualProofPageSize,
+    });
   },
 
   fetchProducts: async (opts) => {

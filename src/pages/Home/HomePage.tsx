@@ -8,17 +8,17 @@ export default function HomePage() {
       </div>
 
       <h1
-        className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl font-bold my-3 sm:my-5 text-center"
+        className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl my-3 sm:my-5 text-center tracking-wide"
         style={{
           color: "#ffd88c",
           textShadow: "0 4px 4px rgba(0,0,0,0.25)",
         }}
       >
-        FINDMI 2026
+        FindMi 2026
       </h1>
 
       <p
-        className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl leading-relaxed text-justify px-4 mb-8 md:mb-10 lg:mb-12 text-lg font-semibold"
+        className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl leading-relaxed px-4 mb-8 md:mb-10 lg:mb-12 text-lg font-semibold text-center"
         style={{
           color: "#ffd88c",
           textShadow: "0 4px 4px rgba(0,0,0,0.25)",

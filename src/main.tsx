@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
@@ -13,7 +13,11 @@ const app = (
 );
 
 if (import.meta.env.DEV) {
-  root.render(<React.StrictMode>{app}</React.StrictMode>);
+  root.render(
+    // <React.StrictMode>
+    app
+    // {/* </React.StrictMode> */}
+  );
 } else {
   root.render(app);
 }

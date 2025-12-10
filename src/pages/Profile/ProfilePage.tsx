@@ -13,6 +13,7 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedData, setEditedData] = useState({
     name: user?.name || "",
+    nim: user?.nim || "",
     line_id: user?.line_id || "",
     no_wa: user?.no_wa || "",
   });
@@ -26,6 +27,7 @@ export default function ProfilePage() {
     if (user) {
       setEditedData({
         name: user.name || "",
+        nim: user.nim || "",
         line_id: user.line_id || "",
         no_wa: user.no_wa || "",
       });
@@ -40,6 +42,7 @@ export default function ProfilePage() {
     setIsEditing(false);
     setEditedData({
       name: user?.name || "",
+      nim: user?.nim || "",
       line_id: user?.line_id || "",
       no_wa: user?.no_wa || "",
     });
@@ -48,7 +51,7 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch(`${API_URL}/user/${user?.id}`, {
+      const response = await fetch(`${API_URL}/user/me`, {
         method: "PATCH",
         credentials: "include",
         headers: {
@@ -100,6 +103,12 @@ export default function ProfilePage() {
         ]
       : []),
     {
+      label: "NIM",
+      value: user?.nim || "-",
+      field: "nim",
+      editable: true,
+    },
+    {
       label: "ID Line",
       value: user?.line_id || "-",
       field: "line_id",
@@ -131,7 +140,7 @@ export default function ProfilePage() {
 
         <div className="rounded-2xl text-white flex flex-col items-center gap-8">
           <header className="text-center flex flex-col items-center gap-4">
-            <h1 className="mt-4 text-5xl font-extrabold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
+            <h1 className="mt-4 text-5xl font-extrabold tracking-wide text-[#FFC76E] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
               Profil
             </h1>
             {!isEditing ? (

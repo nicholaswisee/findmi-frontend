@@ -74,6 +74,7 @@ interface PaymentResponse {
   checkoutPath?: string;
   expiresAt?: string;
   instructions?: string;
+  metadata?: Record<string, unknown>;
 }
 
 interface OrderResponse {
@@ -98,6 +99,13 @@ interface CartState {
   updateCartItem: (itemId: number, quantity: number) => Promise<void>;
   deleteCartItem: (itemId: number) => Promise<void>;
   createOrder: (items: OrderItemRequest[]) => Promise<OrderResponse | null>;
+  createManualOrder: (
+    items: OrderItemRequest[]
+  ) => Promise<OrderResponse | null>;
+  createManualOrderWithProof: (
+    items: OrderItemRequest[],
+    file: File
+  ) => Promise<OrderResponse | null>;
   fulfillmentMethod: OrderFulfillmentMethod;
   setFulfillmentMethod: (method: OrderFulfillmentMethod) => void;
   deliveryDetails: DeliveryDetailsState;
@@ -391,6 +399,140 @@ export const useCartStore = create<CartState>((set, get) => ({
       set({
         isMutating: false,
         error: toErrorMessage(error, "Gagal membuat order."),
+      });
+      return null;
+    }
+  },
+
+  createManualOrder: async (items) => {
+    set({ isMutating: true, error: null });
+    try {
+      const fulfillmentMethod = get().fulfillmentMethod ?? "OTS";
+      const deliveryDetailsState = get().deliveryDetails;
+      let deliveryDetailsPayload:
+        | {
+            contactName: string;
+            phone: string;
+            address: string;
+            notes?: string;
+          }
+        | undefined;
+      if (fulfillmentMethod === "Delivery") {
+        const trimmed = {
+          contactName: deliveryDetailsState.contactName.trim(),
+          phone: deliveryDetailsState.phone.trim(),
+          address: deliveryDetailsState.address.trim(),
+          notes: deliveryDetailsState.notes.trim(),
+        };
+        const missingFields = [];
+        if (!trimmed.contactName) missingFields.push("Nama penerima");
+        if (!trimmed.phone) missingFields.push("Nomor telepon");
+        if (!trimmed.address) missingFields.push("Alamat");
+        if (missingFields.length > 0) {
+          throw new Error(
+            `Lengkapi data pengiriman: ${missingFields.join(", ")}.`
+          );
+        }
+        deliveryDetailsPayload = trimmed;
+      }
+
+      const res = await fetch(`${API_URL}/order/manual`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items,
+          fulfillmentMethod,
+          deliveryDetails: deliveryDetailsPayload,
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Manual order error payload:", text);
+        throw new Error("Failed to create manual order");
+      }
+
+      const data = await res.json();
+      set({ isMutating: false });
+      const fetchCart = get().fetchCart;
+      if (fetchCart) {
+        fetchCart({ silent: true }).catch(() => {});
+      }
+      return data.data;
+    } catch (error: unknown) {
+      set({
+        isMutating: false,
+        error: toErrorMessage(error, "Gagal membuat order manual."),
+      });
+      return null;
+    }
+  },
+
+  createManualOrderWithProof: async (items, file) => {
+    set({ isMutating: true, error: null });
+    try {
+      const fulfillmentMethod = get().fulfillmentMethod ?? "OTS";
+      const deliveryDetailsState = get().deliveryDetails;
+      let deliveryDetailsPayload:
+        | {
+            contactName: string;
+            phone: string;
+            address: string;
+            notes?: string;
+          }
+        | undefined;
+
+      if (fulfillmentMethod === "Delivery") {
+        const trimmed = {
+          contactName: deliveryDetailsState.contactName.trim(),
+          phone: deliveryDetailsState.phone.trim(),
+          address: deliveryDetailsState.address.trim(),
+          notes: deliveryDetailsState.notes.trim(),
+        };
+        const missingFields = [];
+        if (!trimmed.contactName) missingFields.push("Nama penerima");
+        if (!trimmed.phone) missingFields.push("Nomor telepon");
+        if (!trimmed.address) missingFields.push("Alamat");
+        if (missingFields.length > 0) {
+          throw new Error(
+            `Lengkapi data pengiriman: ${missingFields.join(", ")}.`
+          );
+        }
+        deliveryDetailsPayload = trimmed;
+      }
+
+      const formData = new FormData();
+      formData.append("items", JSON.stringify(items));
+      formData.append("fulfillmentMethod", fulfillmentMethod);
+      if (deliveryDetailsPayload) {
+        formData.append("deliveryDetails", JSON.stringify(deliveryDetailsPayload));
+      }
+      formData.append("file", file);
+
+      const res = await fetch(`${API_URL}/order/manual-with-proof`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Manual order with proof error payload:", text);
+        throw new Error("Failed to create manual order");
+      }
+
+      const data = await res.json();
+      set({ isMutating: false });
+      const fetchCart = get().fetchCart;
+      if (fetchCart) {
+        fetchCart({ silent: true }).catch(() => {});
+      }
+      return data.data;
+    } catch (error: unknown) {
+      set({
+        isMutating: false,
+        error: toErrorMessage(error, "Gagal membuat order manual."),
       });
       return null;
     }

@@ -25,7 +25,7 @@ export default function Navbar() {
 
     if (isAuthenticated) {
       base.push({
-        path: "/cart",
+        path: "/checkout",
         label: "Cart",
         icon: <ShoppingBasket className="size-5 md:size-6 lg:size-8 mt-1" />,
       });
@@ -33,9 +33,11 @@ export default function Navbar() {
         path: "/profile",
         label: "Profile",
         icon: (
-          <div className=" This subscribes to the entire store, which means the Navbar will re-render every time any part of the auth store changes. However, the real issue is that when the store rehydrates (loads from localStorage), it sets isAuthenticated = false and user = null before the refreshUser runs.
+          <div
+            className=" This subscribes to the entire store, which means the Navbar will re-render every time any part of the auth store changes. However, the real issue is that when the store rehydrates (loads from localStorage), it sets isAuthenticated = false and user = null before the refreshUser runs.
           
-          border-2 border-[#ffd88c] bg-plain-green text-[#ffd88c] rounded-xl">
+          border-2 border-[#ffd88c] bg-plain-green text-[#ffd88c] rounded-xl"
+          >
             <span className="flex items-center gap-2 py-2 px-4 bg-[#463b8b]/50 rounded-xl">
               <CircleUser className="size-5 md:size-6 lg:size-8 mt-1" />
               <p>{user?.name.trim().split(" ")[0]}</p>
@@ -64,13 +66,15 @@ export default function Navbar() {
         className="absolute inset-0 w-full h-full object-cover -z-10 pointer-events-none"
         alt="Background Image"
       />
-        <Link to={"/"}>
-          <header className="z-50 flex gap-3 justify-center items-center">
-            <img className="h-12" src="/global/Logo.png" alt="AMI 2026" />
-            <h4 className="text-center mt-2 text-4xl">FINDMI 2026</h4>
-          </header>
-        </Link>
-      <nav className="place-self-end">
+      <Link to={"/"}>
+        <header className="z-50 flex gap-3 justify-center items-center">
+          <h4 className="text-center mt-2 text-4xl tracking-wide">
+            FindMi 2026
+          </h4>
+        </header>
+      </Link>
+      <nav className="flex justify-end">
+        {/* <img className="h-12" src="/global/Logo.png" alt="AMI 2026" /> */}
         <ul className="flex gap-4 items-center pb-1">
           {links.map((link) => (
             <li key={link.path}>

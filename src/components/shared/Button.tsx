@@ -7,12 +7,14 @@ export default function Button({
   variant,
   className,
   children,
+  disabled,
 }: {
   url?: string;
-  onClick?: () => Promise<void>;
+  onClick?: () => void | Promise<void>;
   variant: "blue" | "red";
   className?: string;
   children: React.ReactNode;
+  disabled?: boolean;
 }) {
   if (url) {
     return (
@@ -33,6 +35,7 @@ export default function Button({
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={
         (variant === "blue"
           ? "pt-1 pb-2 px-4 rounded-full text-[#ffeabb] bg-[#5f92e0] drop-shadow-lg transition hover:drop-shadow-[#1b165e]/30 drop-shadow-[#1b165e]/20 mb-2 font-semibold cursor-pointer"

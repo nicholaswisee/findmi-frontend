@@ -32,10 +32,10 @@ const STATUS_STYLES: Record<
   Order["payment_status"],
   { label: string; className: string }
 > = {
-  Pending: { label: "Menunggu Pembayaran", className: "text-[#c62d76]" },
-  Paid: { label: "Pembayaran Diterima", className: "text-[#44f5c0]" },
-  Failed: { label: "Pembayaran Gagal", className: "text-[#ff8b8b]" },
-  Refunded: { label: "Dana Dikembalikan", className: "text-[#ffdb8c]" },
+  Pending: { label: "Pending", className: "text-yellow-400" },
+  Paid: { label: "Paid", className: "text-[#44f5c0]" },
+  Failed: { label: "Failed", className: "text-[#ff8b8b]" },
+  Refunded: { label: "Refunded", className: "text-[#ffdb8c]" },
 };
 
 const FALLBACK_IMAGE = "/global/background-plain-ungu.webp";
