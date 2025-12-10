@@ -14,6 +14,6 @@ export const DEPARTMENTS: UserDepartmentEnum[] = [
   "Operasional",
   "Perangkat Lapangan Utama",
   "IT",
-  "Panitia",
-  "none",
+  // "Panitia",
+  // "none",
 ];

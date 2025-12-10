@@ -4,6 +4,14 @@ import { ArrowLeft, SquarePen, X, Check } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import Button from "@/components/shared/Button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DEPARTMENTS } from "@/constants/departments";
 import { toast } from "sonner";
 import { API_URL } from "@/lib/api";
 
@@ -16,6 +24,7 @@ export default function ProfilePage() {
     nim: user?.nim || "",
     line_id: user?.line_id || "",
     no_wa: user?.no_wa || "",
+    department: user?.department || "none",
   });
   const [isSaving, setIsSaving] = useState(false);
 
@@ -30,6 +39,7 @@ export default function ProfilePage() {
         nim: user.nim || "",
         line_id: user.line_id || "",
         no_wa: user.no_wa || "",
+        department: user.department || "none",
       });
     }
   }, [user]);
@@ -45,6 +55,7 @@ export default function ProfilePage() {
       nim: user?.nim || "",
       line_id: user?.line_id || "",
       no_wa: user?.no_wa || "",
+      department: user?.department || "none",
     });
   };
 
@@ -92,16 +103,13 @@ export default function ProfilePage() {
   const profileFields = [
     { label: "Nama", value: user?.name, field: "name", editable: false },
     { label: "Email", value: user?.email, field: "email", editable: false },
-    ...(user?.department !== "none"
-      ? [
-          {
-            label: "Bidang",
-            value: user?.department,
-            field: "department",
-            editable: false,
-          },
-        ]
-      : []),
+    {
+      label: "Bidang",
+      value:
+        user?.department && user.department !== "none" ? user.department : "-",
+      field: "department",
+      editable: true,
+    },
     {
       label: "NIM",
       value: user?.nim || "-",
@@ -187,20 +195,46 @@ export default function ProfilePage() {
                         {label}
                       </th>
                       <td className="py-4 text-[#FFD88C] font-semibold">
-                        {isEditing && editable ? (
-                          <Input
-                            type="text"
-                            value={
-                              editedData[field as keyof typeof editedData] || ""
-                            }
-                            onChange={(e) =>
-                              setEditedData({
-                                ...editedData,
-                                [field]: e.target.value,
-                              })
-                            }
-                            className="h-10 w-full rounded-xl border border-white/30 bg-white/80 px-3 text-sm font-semibold text-[#302a77] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5F92E0]"
-                          />
+                        {isEditing ? (
+                          field === "department" ? (
+                            <Select
+                              value={editedData.department || "none"}
+                              onValueChange={(value) =>
+                                setEditedData((prev) => ({
+                                  ...prev,
+                                  department: value,
+                                }))
+                              }
+                            >
+                              <SelectTrigger className="h-10 w-full rounded-xl border border-white/30 bg-white/80 px-3 text-sm font-semibold text-[#302a77] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5F92E0]">
+                                <SelectValue placeholder="Pilih Bidang" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {DEPARTMENTS.map((dept) => (
+                                  <SelectItem key={dept} value={dept}>
+                                    {dept}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : editable ? (
+                            <Input
+                              type="text"
+                              value={
+                                editedData[field as keyof typeof editedData] ||
+                                ""
+                              }
+                              onChange={(e) =>
+                                setEditedData({
+                                  ...editedData,
+                                  [field]: e.target.value,
+                                })
+                              }
+                              className="h-10 w-full rounded-xl border border-white/30 bg-white/80 px-3 text-sm font-semibold text-[#302a77] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5F92E0]"
+                            />
+                          ) : (
+                            value
+                          )
                         ) : (
                           value
                         )}
