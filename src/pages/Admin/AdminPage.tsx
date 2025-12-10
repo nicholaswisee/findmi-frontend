@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState, useId } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  // useId
+} from "react";
 import {
   Wallet,
   BarChart2,
@@ -7,7 +13,7 @@ import {
   TrendingUp,
   TrendingDown,
 } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+// import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 import {
   Card,
@@ -39,11 +45,11 @@ import {
 } from "@/components/ui/table";
 import { DEPARTMENTS } from "@/constants/departments";
 import type { UserDepartmentEnum } from "@/types/types";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+// import {
+//   ChartContainer,
+//   ChartTooltip,
+//   ChartTooltipContent,
+// } from "@/components/ui/chart";
 import { useAnalyticsStore } from "@/store/analyticsStore";
 
 type DepartmentFilterValue = UserDepartmentEnum | "all";
@@ -67,20 +73,20 @@ const formatDate = (value: string) => {
   });
 };
 
-const formatWeekLabel = (raw: string) => {
-  const match = raw.match(/W(\d{1,2}) (\d{4})/i);
-  if (!match) return raw;
-  const [, weekNumberRaw, year] = match;
-  const weekNumber = Number(weekNumberRaw);
-  const startOfWeek = new Date(Number(year), 0, weekNumber * 7 - 6);
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-  return `${formatter.format(startOfWeek)} - ${formatter.format(endOfWeek)}`;
-};
+// const formatWeekLabel = (raw: string) => {
+//   const match = raw.match(/W(\d{1,2}) (\d{4})/i);
+//   if (!match) return raw;
+//   const [, weekNumberRaw, year] = match;
+//   const weekNumber = Number(weekNumberRaw);
+//   const startOfWeek = new Date(Number(year), 0, weekNumber * 7 - 6);
+//   const endOfWeek = new Date(startOfWeek);
+//   endOfWeek.setDate(startOfWeek.getDate() + 6);
+//   const formatter = new Intl.DateTimeFormat("en-US", {
+//     month: "short",
+//     day: "numeric",
+//   });
+//   return `${formatter.format(startOfWeek)} - ${formatter.format(endOfWeek)}`;
+// };
 
 const formatPercentChange = (value: number) =>
   `${value >= 0 ? "+" : ""}${value.toFixed(1)}%`;
@@ -118,19 +124,19 @@ export default function AdminPage() {
     () => rawWeeklyRevenue ?? [],
     [rawWeeklyRevenue]
   );
-  const chartData = useMemo(
-    () =>
-      weeklyRevenue.map((entry) => ({
-        weekRaw: entry.week,
-        label: formatWeekLabel(entry.week),
-        revenue: entry.revenue,
-      })),
-    [weeklyRevenue]
-  );
-  const chartLegendEntries = useMemo(
-    () => chartData.slice(-6).reverse(),
-    [chartData]
-  );
+  // const chartData = useMemo(
+  //   () =>
+  //     weeklyRevenue.map((entry) => ({
+  //       weekRaw: entry.week,
+  //       label: formatWeekLabel(entry.week),
+  //       revenue: entry.revenue,
+  //     })),
+  //   [weeklyRevenue]
+  // );
+  // const chartLegendEntries = useMemo(
+  //   () => chartData.slice(-6).reverse(),
+  //   [chartData]
+  // );
   const totalOrdersCount = data?.recentOrders.length ?? 0;
   const totalOrderPages = totalOrdersCount
     ? Math.max(Math.ceil(totalOrdersCount / ORDERS_PER_PAGE), 1)
@@ -179,20 +185,20 @@ export default function AdminPage() {
       },
     ];
   }, [data, latestRevenue, weeklyChangePct]);
-  const chartConfig = useMemo(
-    () => ({
-      revenue: {
-        label: "Divisional Contribution",
-        color: "hsl(var(--primary))",
-      },
-    }),
-    []
-  );
-  const gradientUniqueId = useId().replace(/:/g, "");
-  const chartGradientId = useMemo(
-    () => `revenue-gradient-${gradientUniqueId}`,
-    [gradientUniqueId]
-  );
+  // const chartConfig = useMemo(
+  //   () => ({
+  //     revenue: {
+  //       label: "Divisional Contribution",
+  //       color: "hsl(var(--primary))",
+  //     },
+  //   }),
+  //   []
+  // );
+  // const gradientUniqueId = useId().replace(/:/g, "");
+  // const chartGradientId = useMemo(
+  //   () => `revenue-gradient-${gradientUniqueId}`,
+  //   [gradientUniqueId]
+  // );
 
   const handleOrdersNext = () => {
     if (ordersPage < totalOrderPages - 1) {
