@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useProductStore, INITIAL_CATEGORY } from "@/store/catalogStore";
-import { useAuthStore } from "@/store/authStore";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+import { useProductStore } from "@/store/catalogStore";
+// import { useAuthStore } from "@/store/authStore";
 
 export interface SearchBarProps {
   defaultCategoryLabel?: string;
@@ -20,48 +20,48 @@ export interface SearchBarProps {
 const SEARCH_DEBOUNCE_MS = 600;
 
 export default function SearchBar({
-  defaultCategoryLabel = "Pilih kategori",
+  // defaultCategoryLabel = "Pilih kategori",
   className,
 }: SearchBarProps) {
   const bodyFontStyle = {
     fontFamily: "var(--font-subheading, 'Darker Grotesque')",
   };
 
-  const user = useAuthStore((s) => s.user);
-  const isPanitia =
-    !!user &&
-    (user.role === "admin" ||
-      user.role === "subadmin" ||
-      (user.department !== "Umum" && user.department !== "none"));
-  const rawCategories = useProductStore((s) => s.allCategories);
-  const category = useProductStore((s) => s.category);
+  // const user = useAuthStore((s) => s.user);
+  // // const isPanitia =
+  // //   !!user &&
+  // //   (user.role === "admin" ||
+  // //     user.role === "subadmin" ||
+  // //     (user.department !== "Umum" && user.department !== "none"));
+  // const rawCategories = useProductStore((s) => s.allCategories);
+  // // const category = useProductStore((s) => s.category);
   const query = useProductStore((s) => s.query);
   const setQuery = useProductStore((s) => s.setQuery);
-  const setCategory = useProductStore((s) => s.setCategory);
-  const resetFilters = useProductStore((s) => s.resetFilters);
+  // const setCategory = useProductStore((s) => s.setCategory);
+  // const resetFilters = useProductStore((s) => s.resetFilters);
 
   const [localQuery, setLocalQuery] = useState(query);
   useEffect(() => setLocalQuery(query), [query]);
 
-  const categories =
-    rawCategories && rawCategories.length > 0
-      ? rawCategories
-      : [defaultCategoryLabel];
+  // const categories =
+  //   rawCategories && rawCategories.length > 0
+  //     ? rawCategories
+  //     : [defaultCategoryLabel];
 
-  const displayCategories = categories.filter(
-    (c) => c !== INITIAL_CATEGORY && (isPanitia || c !== "Panitia")
-  );
-  const normalizedCategory = displayCategories.includes(category)
-    ? category
-    : defaultCategoryLabel;
-  const selectValue =
-    category === INITIAL_CATEGORY ? undefined : normalizedCategory;
+  // const displayCategories = categories.filter(
+  //   (c) => c !== INITIAL_CATEGORY && (isPanitia || c !== "Panitia")
+  // );
+  // const normalizedCategory = displayCategories.includes(category)
+  //   ? category
+  //   : defaultCategoryLabel;
+  // const selectValue =
+  //   category === INITIAL_CATEGORY ? undefined : normalizedCategory;
 
-  const handleReset = () => {
-    resetFilters();
-    setLocalQuery("");
-    setQuery("");
-  };
+  // const handleReset = () => {
+  //   resetFilters();
+  //   setLocalQuery("");
+  //   setQuery("");
+  // };
 
   useEffect(() => {
     const trimmed = localQuery.trim();

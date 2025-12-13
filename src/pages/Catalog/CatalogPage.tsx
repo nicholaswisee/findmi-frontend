@@ -184,17 +184,21 @@ export default function CatalogPage() {
   const bundleHasNext =
     (bundlePageIndex + 1) * BUNDLE_PAGE_SIZE < filteredBundles.length;
 
-  const categoryTabs = [
-    { label: "Merch Umum", value: "Umum" },
-    { label: "Kit Panitia", value: "Panitia" },
-    { label: "Tutor", value: "Tutor" },
-  ] as const;
+  const categoryTabs = useMemo(
+    () =>
+      [
+        { label: "Merch Umum", value: "Umum" },
+        { label: "Kit Panitia", value: "Panitia" },
+        { label: "Tutor", value: "Tutor" },
+      ] as const,
+    []
+  );
   const visibleTabs = useMemo(
     () =>
       isPanitia
         ? categoryTabs
         : categoryTabs.filter((t) => t.value !== "Panitia"),
-    [isPanitia]
+    [isPanitia, categoryTabs]
   );
 
   const handleTabSelect = useCallback(

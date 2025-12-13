@@ -16,7 +16,11 @@ import { toast } from "sonner";
 import { API_URL } from "@/lib/api";
 import { DIVISIONS } from "@/constants/divisions";
 import type { UserDepartmentEnum, UserDivisionEnum } from "@/types/types";
-import { DIVISION_TOKENS } from "@/constants/division-tokens";
+import {
+  DIVISION_TOKENS,
+  type DivisionTokenKey,
+  type DivisionTokenPayload,
+} from "@/constants/division-tokens";
 
 type EditedProfileData = {
   name: string;
@@ -86,9 +90,11 @@ export default function ProfilePage() {
 
   const handleTokenSubmit = async () => {
     const token = tokenInput.trim().toUpperCase();
-    let match = token ? (DIVISION_TOKENS as Record<string, any>)[token] : null;
-    if (!token) {
-      match = (DIVISION_TOKENS as Record<string, any>)["UMUM-2026"];
+    let match: DivisionTokenPayload | undefined;
+    if (token && (token as DivisionTokenKey) in DIVISION_TOKENS) {
+      match = DIVISION_TOKENS[token as DivisionTokenKey];
+    } else if (!token) {
+      match = DIVISION_TOKENS["UMUM-2026"];
     }
     if (match?.requireNim && !nimInput.trim()) {
       toast.error("NIM wajib diisi untuk panitia.");

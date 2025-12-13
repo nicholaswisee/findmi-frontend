@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type ReactElement } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactElement,
+} from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   CheckCircle,
@@ -138,28 +144,28 @@ export default function ManualPaymentsAdmin() {
     );
   }, [statusFilter, debouncedSearch, fetchManualProofs, pageSize]);
 
-  const handleDecision = async (
-    proofId: number,
-    decision: "approve" | "reject"
-  ) => {
-    setIsSubmitting(proofId);
-    try {
-      await reviewManualProof(proofId, decision);
-      toast.success(
-        decision === "approve"
-          ? "Bukti pembayaran disetujui."
-          : "Bukti pembayaran ditolak."
-      );
-    } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : "Gagal memperbarui status pembayaran."
-      );
-    } finally {
-      setIsSubmitting(null);
-    }
-  };
+  const handleDecision = useCallback(
+    async (proofId: number, decision: "approve" | "reject") => {
+      setIsSubmitting(proofId);
+      try {
+        await reviewManualProof(proofId, decision);
+        toast.success(
+          decision === "approve"
+            ? "Bukti pembayaran disetujui."
+            : "Bukti pembayaran ditolak."
+        );
+      } catch (err) {
+        toast.error(
+          err instanceof Error
+            ? err.message
+            : "Gagal memperbarui status pembayaran."
+        );
+      } finally {
+        setIsSubmitting(null);
+      }
+    },
+    [reviewManualProof]
+  );
 
   const handleNext = () => {
     if (!hasNext) return;
