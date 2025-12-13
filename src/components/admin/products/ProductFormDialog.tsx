@@ -218,7 +218,12 @@ export function ProductFormDialog({
   const primaryActionLabel = submitting
     ? "Saving..."
     : submitLabel ?? "Save changes";
-  const CATEGORY_OPTIONS = ["Umum", "Panitia", "Tutor"] as const;
+  const CATEGORY_OPTIONS = [
+    "Umum",
+    "Panitia",
+    "Tutor",
+    "CASIO x Zebra x FindMi",
+  ] as const;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

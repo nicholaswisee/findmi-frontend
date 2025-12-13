@@ -19,4 +19,5 @@ export const DEPARTMENTS: UserDepartmentEnum[] = [
   "Tutor",
   "Umum",
   "Panitia",
+  "CASIO x Zebra x FindMi",
 ];

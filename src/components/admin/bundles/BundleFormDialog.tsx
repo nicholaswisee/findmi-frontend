@@ -77,7 +77,12 @@ export function BundleFormDialog({
   description,
   submitLabel,
 }: BundleFormDialogProps) {
-  const CATEGORY_OPTIONS = ["Umum", "Panitia", "Tutor"] as const;
+  const CATEGORY_OPTIONS = [
+    "Umum",
+    "Panitia",
+    "Tutor",
+    "CASIO x Zebra x FindMi",
+  ] as const;
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 

@@ -65,6 +65,8 @@ export interface ProductStateStore {
 }
 
 export const INITIAL_CATEGORY = "Umum";
+export const COLLAB_CATEGORY = "CASIO x Zebra x FindMi";
+
 export const categoryMatches = (
   itemCategory: string,
   selectedCategory: string
@@ -72,17 +74,24 @@ export const categoryMatches = (
   const normalize = (val: string) => (val ?? "").trim().toLowerCase();
   const selected = normalize(selectedCategory);
   const item = normalize(itemCategory);
+  const collab = normalize(COLLAB_CATEGORY);
 
   if (!selected) return true;
   if (selected === "panitia") {
-    return item !== "umum" && item !== "tutor";
+    return item !== "umum" && item !== "tutor" && item !== collab;
   }
   if (selected === "umum") {
-    return item !== "panitia" && item !== "tutor";
+    return item !== "panitia" && item !== "tutor" && item !== collab;
   }
   return item === selected;
 };
-const STATIC_CATEGORIES = [INITIAL_CATEGORY, "Umum", "Panitia", "Tutor"];
+const STATIC_CATEGORIES = [
+  INITIAL_CATEGORY,
+  "Umum",
+  "Panitia",
+  "Tutor",
+  COLLAB_CATEGORY,
+];
 
 export const useCatalogStore = create<CatalogState>((set, get) => ({
   products: [],

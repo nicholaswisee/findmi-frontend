@@ -16,6 +16,7 @@ export type UserDepartmentEnum =
   | "Tutor"
   | "Umum"
   | "Panitia"
+  | "CASIO x Zebra x FindMi"
   | "none";
 
 export type UserDivisionEnum =

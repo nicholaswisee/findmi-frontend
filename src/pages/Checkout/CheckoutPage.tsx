@@ -62,7 +62,10 @@ export default function CheckoutPage() {
   const totalQuantity = cart?.summary.total_quantity ?? 0;
   const subtotal = cart?.summary.total_amount ?? 0;
   const deliveryFee = fulfillmentMethod === "Delivery" ? 20000 : 0;
-  const grandTotal = subtotal + deliveryFee;
+  const baseTotal = subtotal + deliveryFee;
+  const serviceFeeRate = 0.02;
+  const serviceFee = Math.ceil(baseTotal * serviceFeeRate);
+  const grandTotal = baseTotal + serviceFee;
   const cartItems = cart?.items ?? [];
   type CartItemType = (typeof cartItems)[number];
   const SIZE_SURCHARGE = 15000;
@@ -88,9 +91,7 @@ export default function CheckoutPage() {
           )?.additional_price ?? 0
         : 0;
     const sizeExtra =
-      item.selected_size && isAboveXL(item.selected_size)
-        ? SIZE_SURCHARGE
-        : 0;
+      item.selected_size && isAboveXL(item.selected_size) ? SIZE_SURCHARGE : 0;
     return base + optionPrice + sizeExtra;
   };
 
@@ -106,13 +107,11 @@ export default function CheckoutPage() {
       const productInfo = productMap.get(sel.product_id);
       if (!productInfo) continue;
       const amount =
-        bundleItems.find((bi) => bi.product_id === sel.product_id)?.amount ??
-        1;
+        bundleItems.find((bi) => bi.product_id === sel.product_id)?.amount ?? 1;
       const optPrice =
         sel.option && Array.isArray(productInfo.options)
           ? productInfo.options.find(
-              (opt) =>
-                opt?.label?.toUpperCase() === sel.option?.toUpperCase()
+              (opt) => opt?.label?.toUpperCase() === sel.option?.toUpperCase()
             )?.additional_price ?? 0
           : 0;
       const sizeExtra = sel.size && isAboveXL(sel.size) ? SIZE_SURCHARGE : 0;
@@ -393,6 +392,10 @@ export default function CheckoutPage() {
                   <span>Biaya Pengiriman</span>
                   <span>Rp {deliveryFee.toLocaleString("id-ID")}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span>Biaya Layanan (2%)</span>
+                  <span>Rp {serviceFee.toLocaleString("id-ID")}</span>
+                </div>
                 <div className="h-px bg-[#1b165e]/20" />
                 <div className="flex justify-between text-base font-bold">
                   <span>Total</span>
@@ -439,6 +442,10 @@ export default function CheckoutPage() {
               <div className="flex justify-between py-1">
                 <span>Biaya Pengiriman</span>
                 <span>Rp {deliveryFee.toLocaleString("id-ID")}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span>Biaya Layanan (2%)</span>
+                <span>Rp {serviceFee.toLocaleString("id-ID")}</span>
               </div>
               <div className="flex justify-between py-1 font-bold text-[#FFD88C]">
                 <span>Total</span>

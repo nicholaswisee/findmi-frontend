@@ -5,6 +5,7 @@ import PrivateRoute from "./PrivateRoute";
 import MainLayout from "../layouts/MainLayout";
 import HomePage from "../pages/Home/HomePage";
 import CatalogPage from "../pages/Catalog/CatalogPage";
+import CollabPage from "../pages/Collab/CollabPage";
 import ProductDetailPage from "../pages/Catalog/ProductDetailPage";
 import CartPage from "../pages/Cart/CartPage";
 import CheckoutPage from "../pages/Checkout/CheckoutPage";
@@ -38,6 +39,10 @@ export const routes: RouteObject[] = [
       {
         path: "catalog",
         element: <CatalogPage />,
+      },
+      {
+        path: "collab",
+        element: <CollabPage />,
       },
       {
         path: "catalog/:product_id",

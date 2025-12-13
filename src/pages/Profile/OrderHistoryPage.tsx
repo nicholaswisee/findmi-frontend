@@ -19,6 +19,9 @@ const dateFormatter = new Intl.DateTimeFormat("id-ID", {
   // minute: "2-digit",
 });
 
+const SIZE_SURCHARGE = 15000;
+const SERVICE_FEE_RATE = 0.02;
+
 const toNumber = (value: number | string | null | undefined) => {
   if (typeof value === "number") return value;
   if (typeof value === "string") {
@@ -60,11 +63,85 @@ export default function OrderHistoryPage() {
   const sortedOrders = useMemo(
     () =>
       [...orders].sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       ),
     [orders]
   );
+
+  const isAboveXL = (size?: string | null) => {
+    const normalized = size?.trim().toUpperCase();
+    if (!normalized || !normalized.endsWith("L")) return false;
+    const numericMatch = normalized.match(/^(\d+)XL$/);
+    if (numericMatch) return Number(numericMatch[1]) >= 2;
+    const xMatch = normalized.match(/^(X+)L$/);
+    return !!(xMatch?.[1] && xMatch[1].length >= 2);
+  };
+
+  const computeProductUnitPrice = (item: OrderItem) => {
+    const base = toNumber(item.product?.price ?? item.unit_price);
+    const optionPrice =
+      item.selected_option && Array.isArray(item.product?.options)
+        ? item.product?.options.find(
+            (opt) =>
+              opt?.label?.toUpperCase() === item.selected_option?.toUpperCase()
+          )?.additional_price ?? 0
+        : 0;
+    const sizeExtra = item.selected_size && isAboveXL(item.selected_size)
+      ? SIZE_SURCHARGE
+      : 0;
+    return base + optionPrice + sizeExtra;
+  };
+
+  const computeBundleUnitPrice = (item: OrderItem) => {
+    const bundle = item.bundle;
+    if (!bundle) return toNumber(item.unit_price);
+    const base = toNumber(bundle.price ?? item.unit_price);
+    const selections = item.selected_bundle_items ?? [];
+    const bundleItems = Array.isArray(bundle.bundle_items)
+      ? bundle.bundle_items
+      : [];
+    let extras = 0;
+    for (const sel of selections) {
+      const productInfo = bundleItems.find(
+        (b) => b.product_id === sel.product_id
+      )?.product;
+      const amount =
+        bundleItems.find((b) => b.product_id === sel.product_id)?.amount ?? 1;
+      const optPrice =
+        sel.option && Array.isArray(productInfo?.options)
+          ? productInfo.options.find(
+              (opt) =>
+                opt?.label?.toUpperCase() === sel.option?.toUpperCase()
+            )?.additional_price ?? 0
+          : 0;
+      const sizeExtra = sel.size && isAboveXL(sel.size) ? SIZE_SURCHARGE : 0;
+      extras += (optPrice + sizeExtra) * amount;
+    }
+    return base + extras;
+  };
+
+  const computeItemUnitPrice = (item: OrderItem) => {
+    if (item.product) return computeProductUnitPrice(item);
+    if (item.bundle) return computeBundleUnitPrice(item);
+    return toNumber(item.unit_price);
+  };
+
+  const computeOrderTotals = (order: Order) => {
+    const itemSubtotal = order.items.reduce((acc, item) => {
+      const unit = computeItemUnitPrice(item);
+      return acc + unit * (item.quantity ?? 0);
+    }, 0);
+    const deliveryFee = toNumber(order.delivery_fee);
+    const baseTotal = itemSubtotal + deliveryFee;
+    const defaultServiceFee = Math.ceil(baseTotal * SERVICE_FEE_RATE);
+    const computedTotal = baseTotal + defaultServiceFee;
+    const backendTotal = toNumber(order.total_amount);
+    const grandTotal =
+      backendTotal > 0 ? Math.max(backendTotal, computedTotal) : computedTotal;
+    const serviceFee = Math.max(0, grandTotal - baseTotal);
+    return { itemSubtotal, deliveryFee, serviceFee, grandTotal };
+  };
 
   const formatCurrency = (value: number | string) =>
     currencyFormatter.format(toNumber(value)).replace("Rp", "Rp");
@@ -183,7 +260,8 @@ export default function OrderHistoryPage() {
           <div className="space-y-5">
             {sortedOrders.map((order) => {
               const status = resolveStatus(order);
-              const deliveryFee = toNumber(order.delivery_fee);
+              const pricing = computeOrderTotals(order);
+              const deliveryFee = pricing.deliveryFee;
               const fulfillmentLabel =
                 order.fulfillment_method === "Delivery"
                   ? "Delivery"
@@ -249,24 +327,24 @@ export default function OrderHistoryPage() {
                                 {description}
                               </p>
                               {size && (
-                                <p className="text-xs font-semibold uppercase text-[#FFD88C]">
-                                  Ukuran: {size}
-                                </p>
-                              )}
-                              {bundleSizes && (
-                                <p className="text-xs text-[#FFD88C]">
-                                  {bundleSizes}
-                                </p>
-                              )}
-                            </div>
-                            <p className="text-sm font-semibold text-[#FFD88C]">
-                              {item.quantity} x{" "}
-                              {formatCurrency(item.unit_price ?? 0)}
+                            <p className="text-xs font-semibold uppercase text-[#FFD88C]">
+                              Ukuran: {size}
                             </p>
-                          </div>
+                          )}
+                          {bundleSizes && (
+                            <p className="text-xs text-[#FFD88C]">
+                              {bundleSizes}
+                            </p>
+                          )}
                         </div>
-                      );
-                    })}
+                        <p className="text-sm font-semibold text-[#FFD88C]">
+                          {item.quantity} x{" "}
+                          {formatCurrency(computeItemUnitPrice(item))}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
                   </div>
                   <div className="rounded-2xl border border-white/20 bg-[#463B8B]/10 p-4 text-[#FFD88C]">
                     <p className="text-xs font-semibold uppercase text-[#FFD88C]">
@@ -291,15 +369,29 @@ export default function OrderHistoryPage() {
                   </div>
 
                   <footer className="space-y-1 border-t border-white/20 pt-3 text-[#FFD88C]">
+                    <div className="flex items-center justify-between text-sm">
+                      <span>Subtotal</span>
+                      <span>{formatCurrency(pricing.itemSubtotal)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span>Biaya Pengiriman</span>
+                      <span>{formatCurrency(pricing.deliveryFee)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span>Biaya Layanan (2%)</span>
+                      <span>{formatCurrency(pricing.serviceFee)}</span>
+                    </div>
+                    <div className="h-px bg-white/10" />
                     <div className="flex items-center justify-between">
                       <span>Total Harga</span>
                       <span className="text-xl font-bold">
-                        {formatCurrency(order.total_amount)}
+                        {formatCurrency(pricing.grandTotal)}
                       </span>
                     </div>
                     {deliveryFee > 0 ? (
                       <p className="text-right text-xs text-[#FFD88C]">
-                        Termasuk biaya delivery {formatCurrency(deliveryFee)}
+                        Termasuk biaya delivery{" "}
+                        {formatCurrency(pricing.deliveryFee)}
                       </p>
                     ) : null}
                   </footer>

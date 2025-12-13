@@ -15,6 +15,95 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { OrderItem, OrderWithUser } from "@/types/types";
 
+const SIZE_SURCHARGE = 15000;
+const SERVICE_FEE_RATE = 0.02;
+
+const toNumber = (value: number | string | null | undefined) =>
+  typeof value === "number" ? value : Number(value) || 0;
+
+const isAboveXL = (size?: string | null) => {
+  const normalized = size?.trim().toUpperCase();
+  if (!normalized || !normalized.endsWith("L")) return false;
+  const numericMatch = normalized.match(/^(\d+)XL$/);
+  if (numericMatch) return Number(numericMatch[1]) >= 2;
+  const xMatch = normalized.match(/^(X+)L$/);
+  return !!(xMatch?.[1] && xMatch[1].length >= 2);
+};
+
+const computeProductUnitPrice = (item: OrderItem) => {
+  const base =
+    typeof item.product?.price === "number"
+      ? item.product.price
+      : typeof item.unit_price === "number"
+      ? item.unit_price
+      : 0;
+  const optionPrice =
+    item.selected_option && Array.isArray(item.product?.options)
+      ? item.product.options.find(
+          (opt) =>
+            opt?.label?.toUpperCase() === item.selected_option?.toUpperCase()
+        )?.additional_price ?? 0
+      : 0;
+  const sizeExtra =
+    item.selected_size && isAboveXL(item.selected_size) ? SIZE_SURCHARGE : 0;
+  return base + optionPrice + sizeExtra;
+};
+
+const computeBundleUnitPrice = (item: OrderItem) => {
+  const bundle = item.bundle;
+  if (!bundle)
+    return typeof item.unit_price === "number" ? item.unit_price : 0;
+  const base =
+    typeof bundle.price === "number"
+      ? bundle.price
+      : typeof item.unit_price === "number"
+      ? item.unit_price
+      : 0;
+  const selections = item.selected_bundle_items ?? [];
+  const bundleItems = Array.isArray(bundle.bundle_items)
+    ? bundle.bundle_items
+    : [];
+  let extras = 0;
+  for (const sel of selections) {
+    const productInfo = bundleItems.find(
+      (b) => b.product_id === sel.product_id
+    )?.product;
+    const amount =
+      bundleItems.find((b) => b.product_id === sel.product_id)?.amount ?? 1;
+    const optPrice =
+      sel.option && Array.isArray(productInfo?.options)
+        ? productInfo.options.find(
+            (opt) => opt?.label?.toUpperCase() === sel.option?.toUpperCase()
+          )?.additional_price ?? 0
+        : 0;
+    const sizeExtra = sel.size && isAboveXL(sel.size) ? SIZE_SURCHARGE : 0;
+    extras += (optPrice + sizeExtra) * amount;
+  }
+  return base + extras;
+};
+
+const computeItemUnitPrice = (item: OrderItem) => {
+  if (item.product) return computeProductUnitPrice(item);
+  if (item.bundle) return computeBundleUnitPrice(item);
+  return typeof item.unit_price === "number" ? item.unit_price : 0;
+};
+
+const computeOrderTotals = (order: OrderWithUser) => {
+  const itemSubtotal = order.items.reduce((acc, item) => {
+    const unit = computeItemUnitPrice(item);
+    return acc + unit * (item.quantity ?? 0);
+  }, 0);
+  const deliveryFee = toNumber(order.delivery_fee);
+  const baseTotal = itemSubtotal + deliveryFee;
+  const defaultServiceFee = Math.ceil(baseTotal * SERVICE_FEE_RATE);
+  const computedTotal = baseTotal + defaultServiceFee;
+  const backendTotal = toNumber(order.total_amount);
+  const grandTotal =
+    backendTotal > 0 ? Math.max(backendTotal, computedTotal) : computedTotal;
+  const serviceFee = Math.max(0, grandTotal - baseTotal);
+  return { itemSubtotal, deliveryFee, serviceFee, grandTotal };
+};
+
 type OrderAdminDialogProps = {
   order: OrderWithUser;
   onSubmit: (values: {
@@ -65,6 +154,8 @@ export function OrderAdminDialog({
   };
 
   const open = isControlled ? (controlledOpen as boolean) : internalOpen;
+
+  const pricing = useMemo(() => computeOrderTotals(order), [order]);
 
   useEffect(() => {
     if (open) {
@@ -129,9 +220,6 @@ export function OrderAdminDialog({
     return "Custom item";
   };
 
-  const calculateSubtotal = (item: OrderItem) =>
-    (item.unit_price ?? 0) * (item.quantity ?? 0);
-
   const contactFields = [
     { label: "Department", value: order.user.department, alwaysShow: true },
     { label: "Division", value: order.user.division, alwaysShow: true },
@@ -176,7 +264,10 @@ export function OrderAdminDialog({
               <div className="rounded-lg border bg-muted/30 p-3">
                 <p className="text-xs text-muted-foreground">Total Amount</p>
                 <p className="text-sm font-semibold">
-                  {formatCurrency(order.total_amount)}
+                  {formatCurrency(pricing.grandTotal)}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Termasuk biaya layanan 2%
                 </p>
               </div>
               <div className="rounded-lg border bg-muted/30 p-3">
@@ -273,6 +364,8 @@ export function OrderAdminDialog({
                   {order.items.map((item) => {
                     const name =
                       item.product?.name ?? item.bundle?.name ?? "Item";
+                    const unitPrice = computeItemUnitPrice(item);
+                    const itemSubtotal = unitPrice * (item.quantity ?? 0);
                     // const bundleLabel = getBundleSelectionLabel(item);
                     return (
                       <div key={item.id} className="space-y-2 p-3">
@@ -284,7 +377,7 @@ export function OrderAdminDialog({
                             </p>
                           </div>
                           <p className="text-sm font-semibold">
-                            {formatCurrency(calculateSubtotal(item))}
+                            {formatCurrency(itemSubtotal)}
                           </p>
                         </div>
                         <div className="space-y-1 text-xs text-muted-foreground">
@@ -299,15 +392,30 @@ export function OrderAdminDialog({
                               Additional: {item.selected_option}
                             </p>
                           ) : null}
+                          <p>Harga satuan: {formatCurrency(unitPrice)}</p>
                         </div>
                       </div>
                     );
                   })}
                 </div>
               </div>
-              <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3 font-semibold">
-                <span>Total</span>
-                <span>{formatCurrency(order.total_amount)}</span>
+              <div className="space-y-1 rounded-lg border bg-muted/30 p-3 font-semibold">
+                <div className="flex items-center justify-between text-sm">
+                  <span>Subtotal</span>
+                  <span>{formatCurrency(pricing.itemSubtotal)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span>Biaya Pengiriman</span>
+                  <span>{formatCurrency(pricing.deliveryFee)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span>Biaya Layanan (2%)</span>
+                  <span>{formatCurrency(pricing.serviceFee)}</span>
+                </div>
+                <div className="flex items-center justify-between pt-2 text-base">
+                  <span>Total</span>
+                  <span>{formatCurrency(pricing.grandTotal)}</span>
+                </div>
               </div>
             </section>
 

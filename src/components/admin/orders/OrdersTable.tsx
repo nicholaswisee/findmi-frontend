@@ -7,7 +7,7 @@ import { DataTable } from "@/components/admin/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TablePagination } from "@/components/shared/TablePagination";
-import type { OrderWithUser } from "@/types/types";
+import type { OrderItem, OrderWithUser } from "@/types/types";
 type OrdersTableProps = {
   data: OrderWithUser[];
   pageIndex?: number;
@@ -26,6 +26,12 @@ const currencyFormatter = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0,
 });
 
+const SIZE_SURCHARGE = 15000;
+const SERVICE_FEE_RATE = 0.02;
+
+const toNumber = (value: number | string | null | undefined) =>
+  typeof value === "number" ? value : Number(value) || 0;
+
 const formatCurrency = (value: number | string | null | undefined) =>
   currencyFormatter.format(
     typeof value === "string" ? Number(value) || 0 : value ?? 0
@@ -41,6 +47,89 @@ const formatDate = (value: string) => {
     hour: "2-digit",
     minute: "2-digit",
   });
+};
+
+const isAboveXL = (size?: string | null) => {
+  const normalized = size?.trim().toUpperCase();
+  if (!normalized || !normalized.endsWith("L")) return false;
+  const numericMatch = normalized.match(/^(\d+)XL$/);
+  if (numericMatch) return Number(numericMatch[1]) >= 2;
+  const xMatch = normalized.match(/^(X+)L$/);
+  return !!(xMatch?.[1] && xMatch[1].length >= 2);
+};
+
+const computeProductUnitPrice = (item: OrderItem) => {
+  const base =
+    typeof item.product?.price === "number"
+      ? item.product.price
+      : typeof item.unit_price === "number"
+      ? item.unit_price
+      : 0;
+  const optionPrice =
+    item.selected_option && Array.isArray(item.product?.options)
+      ? item.product.options.find(
+          (opt) =>
+            opt?.label?.toUpperCase() === item.selected_option?.toUpperCase()
+        )?.additional_price ?? 0
+      : 0;
+  const sizeExtra =
+    item.selected_size && isAboveXL(item.selected_size) ? SIZE_SURCHARGE : 0;
+  return base + optionPrice + sizeExtra;
+};
+
+const computeBundleUnitPrice = (item: OrderItem) => {
+  const bundle = item.bundle;
+  if (!bundle)
+    return typeof item.unit_price === "number" ? item.unit_price : 0;
+  const base =
+    typeof bundle.price === "number"
+      ? bundle.price
+      : typeof item.unit_price === "number"
+      ? item.unit_price
+      : 0;
+  const selections = item.selected_bundle_items ?? [];
+  const bundleItems = Array.isArray(bundle.bundle_items)
+    ? bundle.bundle_items
+    : [];
+  let extras = 0;
+  for (const sel of selections) {
+    const productInfo = bundleItems.find(
+      (b) => b.product_id === sel.product_id
+    )?.product;
+    const amount =
+      bundleItems.find((b) => b.product_id === sel.product_id)?.amount ?? 1;
+    const optPrice =
+      sel.option && Array.isArray(productInfo?.options)
+        ? productInfo.options.find(
+            (opt) => opt?.label?.toUpperCase() === sel.option?.toUpperCase()
+          )?.additional_price ?? 0
+        : 0;
+    const sizeExtra = sel.size && isAboveXL(sel.size) ? SIZE_SURCHARGE : 0;
+    extras += (optPrice + sizeExtra) * amount;
+  }
+  return base + extras;
+};
+
+const computeItemUnitPrice = (item: OrderItem) => {
+  if (item.product) return computeProductUnitPrice(item);
+  if (item.bundle) return computeBundleUnitPrice(item);
+  return typeof item.unit_price === "number" ? item.unit_price : 0;
+};
+
+const computeOrderTotals = (order: OrderWithUser) => {
+  const itemSubtotal = order.items.reduce((acc, item) => {
+    const unit = computeItemUnitPrice(item);
+    return acc + unit * (item.quantity ?? 0);
+  }, 0);
+  const deliveryFee = toNumber(order.delivery_fee);
+  const baseTotal = itemSubtotal + deliveryFee;
+  const defaultServiceFee = Math.ceil(baseTotal * SERVICE_FEE_RATE);
+  const computedTotal = baseTotal + defaultServiceFee;
+  const backendTotal = toNumber(order.total_amount);
+  const grandTotal =
+    backendTotal > 0 ? Math.max(backendTotal, computedTotal) : computedTotal;
+  const serviceFee = Math.max(0, grandTotal - baseTotal);
+  return { itemSubtotal, deliveryFee, serviceFee, grandTotal };
 };
 
 const buildItemSummary = (order: OrderWithUser) => {
@@ -129,11 +218,19 @@ export default function OrdersTable({
       {
         accessorKey: "total_amount",
         header: "Total",
-        cell: ({ row }) => (
-          <span className="font-semibold">
-            {formatCurrency(row.original.total_amount)}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const pricing = computeOrderTotals(row.original);
+          return (
+            <div className="space-y-0.5">
+              <span className="font-semibold">
+                {formatCurrency(pricing.grandTotal)}
+              </span>
+              <p className="text-[11px] text-muted-foreground">
+                Termasuk biaya layanan 2%
+              </p>
+            </div>
+          );
+        },
       },
       {
         accessorKey: "items",

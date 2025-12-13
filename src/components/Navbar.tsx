@@ -15,6 +15,7 @@ export default function Navbar() {
 
   const links = useMemo<NavLink[]>(() => {
     const base: NavLink[] = [
+      { path: "/collab", label: "CASIO x Zebra x FindMi", icon: null },
       { path: "/catalog", label: "Catalog", icon: null },
     ];
 

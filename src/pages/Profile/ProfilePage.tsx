@@ -48,6 +48,7 @@ export default function ProfilePage() {
   const [nimInput, setNimInput] = useState("");
   const [showTokenPrompt, setShowTokenPrompt] = useState(false);
   const [tokenSubmitting, setTokenSubmitting] = useState(false);
+  const [nameInput, setNameInput] = useState(user?.name || "");
   const [lineInput, setLineInput] = useState(user?.line_id || "");
   const [waInput, setWaInput] = useState(user?.no_wa || "");
   const hideNimAndDepartment = user?.department === "Umum";
@@ -100,18 +101,28 @@ export default function ProfilePage() {
       toast.error("NIM wajib diisi untuk panitia.");
       return;
     }
-    if (!lineInput.trim() || !waInput.trim()) {
-      toast.error("ID Line dan No. WhatsApp wajib diisi.");
+    if (!nameInput.trim()) {
+      toast.error("Nama wajib diisi.");
+      return;
+    }
+    const trimmedWa = waInput.trim();
+    if (!trimmedWa) {
+      toast.error("No. WhatsApp wajib diisi.");
+      return;
+    }
+    if (!/^[0-9]+$/.test(trimmedWa)) {
+      toast.error("No. WhatsApp hanya boleh berisi angka.");
       return;
     }
     setTokenSubmitting(true);
     try {
       const payload: Partial<EditedProfileData> = {
+        name: nameInput.trim(),
         department: match ? match.department : "Umum",
         division: match ? match.division : "none",
         nim: match?.requireNim ? nimInput.trim() : "",
         line_id: lineInput.trim(),
-        no_wa: waInput.trim(),
+        no_wa: trimmedWa,
       };
       if (!match) {
         toast.error("Token tidak sesuai.");
@@ -133,6 +144,7 @@ export default function ProfilePage() {
       setShowTokenPrompt(false);
       setTokenInput("");
       setNimInput("");
+      setNameInput("");
       await refreshUser(true);
       toast.success("Data berhasil diperbarui");
     } catch (err) {
@@ -188,6 +200,7 @@ export default function ProfilePage() {
         department: (user.department as UserDepartmentEnum) || "none",
         division: (user.division as UserDivisionEnum) || "none",
       });
+      setNameInput(user.name || "");
       setLineInput(user.line_id || "");
       setWaInput(user.no_wa || "");
       setNimInput(user.nim || "");
@@ -211,6 +224,16 @@ export default function ProfilePage() {
   };
 
   const handleSave = async () => {
+    const trimmedWa = (editedData.no_wa || "").trim();
+    if (!trimmedWa) {
+      toast.error("No. WhatsApp wajib diisi.");
+      return;
+    }
+    if (!/^[0-9]+$/.test(trimmedWa)) {
+      toast.error("No. WhatsApp hanya boleh berisi angka.");
+      return;
+    }
+    const updatedData = { ...editedData, no_wa: trimmedWa };
     setIsSaving(true);
     try {
       const response = await fetch(`${API_URL}/user/me`, {
@@ -220,7 +243,7 @@ export default function ProfilePage() {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(editedData),
+        body: JSON.stringify(updatedData),
       });
 
       if (!response.ok) {
@@ -354,6 +377,16 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
+                    <label className="text-sm font-semibold">Nama*</label>
+                    <Input
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      placeholder="Masukkan nama lengkap"
+                      className={`mt-1 ${inputClass}`}
+                      disabled={tokenSubmitting}
+                    />
+                  </div>
+                  <div>
                     <label className="text-sm font-semibold">NIM</label>
                     <Input
                       value={nimInput}
@@ -364,11 +397,11 @@ export default function ProfilePage() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-semibold">ID Line*</label>
+                    <label className="text-sm font-semibold">ID Line</label>
                     <Input
                       value={lineInput}
                       onChange={(e) => setLineInput(e.target.value)}
-                      placeholder="Masukkan ID Line"
+                      placeholder="Masukkan ID Line (opsional)"
                       className={`mt-1 ${inputClass}`}
                       disabled={tokenSubmitting}
                     />
