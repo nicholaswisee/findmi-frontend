@@ -100,24 +100,28 @@ export function OrderAdminDialog({
     await handleSave();
   };
 
-  const getBundleSelectionLabel = (item: OrderItem) => {
-    if (!item.selected_bundle_items?.length || !item.bundle) return null;
-    const labels = item.selected_bundle_items
-      .map((selection) => {
-        const bundleProduct = item.bundle?.bundle_items?.find(
-          (bundleItem) => bundleItem.product_id === selection.product_id
-        );
-        const productName =
-          bundleProduct?.product?.name ??
-          (selection.product_id ? `Product ${selection.product_id}` : null);
-        if (!productName) return null;
-        return `${productName} (${selection.size})`;
-      })
-      .filter((value): value is string => Boolean(value));
+  // const getBundleSelectionLabel = (item: OrderItem) => {
+  //   if (!item.selected_bundle_items?.length || !item.bundle) return null;
+  //   const labels = item.selected_bundle_items
+  //     .map((selection) => {
+  //       const productName =
+  //         selection.product_id != null
+  //           ? `Produk #${selection.product_id}`
+  //           : "Produk";
+  //       const sizeLabel = selection.size ? `Ukuran: ${selection.size}` : null;
+  //       const optionLabel = selection.option
+  //         ? `Opsi: ${selection.option}`
+  //         : null;
+  //       const detail = [sizeLabel, optionLabel]
+  //         .filter((v): v is string => Boolean(v))
+  //         .join(" | ");
+  //       return detail ? `${productName} (${detail})` : `${productName}`;
+  //     })
+  //     .filter((value): value is string => Boolean(value));
 
-    if (!labels.length) return null;
-    return labels.join(", ");
-  };
+  //   if (!labels.length) return null;
+  //   return labels.join(", ");
+  // };
 
   const getItemTypeLabel = (item: OrderItem) => {
     if (item.product) return "Product";
@@ -269,7 +273,7 @@ export function OrderAdminDialog({
                   {order.items.map((item) => {
                     const name =
                       item.product?.name ?? item.bundle?.name ?? "Item";
-                    const bundleLabel = getBundleSelectionLabel(item);
+                    // const bundleLabel = getBundleSelectionLabel(item);
                     return (
                       <div key={item.id} className="space-y-2 p-3">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -290,8 +294,10 @@ export function OrderAdminDialog({
                               ? ` · Size ${item.selected_size}`
                               : ""}
                           </p>
-                          {bundleLabel ? (
-                            <p>Bundle selections: {bundleLabel}</p>
+                          {item.selected_option ? (
+                            <p className="text-sm text-muted-foreground">
+                              Additional: {item.selected_option}
+                            </p>
                           ) : null}
                         </div>
                       </div>

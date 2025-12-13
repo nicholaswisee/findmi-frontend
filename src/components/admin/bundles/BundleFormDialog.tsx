@@ -191,7 +191,7 @@ export function BundleFormDialog({
             />
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <input
               id="bundle-hidden"
               type="checkbox"
@@ -204,7 +204,7 @@ export function BundleFormDialog({
             <Label htmlFor="bundle-hidden" className="text-sm">
               Hidden from storefront
             </Label>
-          </div>
+          </div> */}
 
           <div className="space-y-3 rounded-lg border p-4">
             <div className="flex items-center justify-between">

@@ -54,19 +54,29 @@ const buildItemSummary = (order: OrderWithUser) => {
     if (item.selected_size) {
       details.push(`Size ${item.selected_size}`);
     }
+    if (item.selected_option) {
+      details.push(`Opsi ${item.selected_option}`);
+    }
     if (item.selected_bundle_items?.length) {
-      const bundleSizes = item.selected_bundle_items
+      const bundleSelections = item.selected_bundle_items
         .map((selection) => {
           if (!selection.product_id || !item.bundle?.bundle_items) return null;
           const productName =
             item.bundle.bundle_items.find(
               (bundleItem) => bundleItem.product_id === selection.product_id
             )?.product?.name ?? "Item";
-          return `${productName} (${selection.size})`;
+          const sizeLabel = selection.size ? `Size ${selection.size}` : null;
+          const optionLabel = selection.option
+            ? `Opsi ${selection.option}`
+            : null;
+          const detail = [sizeLabel, optionLabel]
+            .filter((value): value is string => Boolean(value))
+            .join(" | ");
+          return detail ? `${productName} (${detail})` : productName;
         })
         .filter((value): value is string => Boolean(value));
-      if (bundleSizes.length) {
-        details.push(bundleSizes.join(", "));
+      if (bundleSelections.length) {
+        details.push(bundleSelections.join(", "));
       }
     }
     summaryLines.push(`${name} • ${details.join(" · ")}`);

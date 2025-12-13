@@ -131,7 +131,8 @@ export type BundleItem = {
 
 export type BundleSelection = {
   product_id: number;
-  size: string;
+  size?: string;
+  option?: string;
 };
 
 export type Bundle = {

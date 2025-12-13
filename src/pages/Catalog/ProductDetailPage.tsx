@@ -89,6 +89,9 @@ export default function ProductDetailPage() {
   const [bundleSizeSelections, setBundleSizeSelections] = useState<
     Record<number, string>
   >({});
+  const [bundleOptionSelections, setBundleOptionSelections] = useState<
+    Record<number, string>
+  >({});
 
   const status = useProductStore((s) => s.status);
   const fetchProducts = useProductStore((s) => s.fetchProducts);
@@ -131,11 +134,14 @@ export default function ProductDetailPage() {
         detail && Array.isArray(detail.available_sizes)
           ? detail.available_sizes
           : [];
+      const availableOptions =
+        detail && Array.isArray(detail.options) ? detail.options : [];
       return {
         ...item,
         name: detail?.name ?? `Produk #${item.product_id}`,
         category: detail?.category ?? undefined,
         availableSizes,
+        availableOptions,
       };
     });
   }, [product, catalogProducts]);
@@ -194,13 +200,38 @@ export default function ProductDetailPage() {
     return match ? match.additional_price : 0;
   }, [optionChoices, selectedOption]);
 
+  const bundleExtras = useMemo(() => {
+    if (!product || !isProductBundle(product)) return 0;
+    let extra = 0;
+    for (const item of bundleItems) {
+      const amount = item.amount ?? 1;
+      const chosenSize = bundleSizeSelections[item.product_id];
+      const chosenOption = bundleOptionSelections[item.product_id];
+      if (chosenSize && isAboveXL(chosenSize)) {
+        extra += SIZE_SURCHARGE * amount;
+      }
+      if (
+        chosenOption &&
+        Array.isArray(item.availableOptions) &&
+        item.availableOptions.length > 0
+      ) {
+        const optPrice =
+          item.availableOptions.find((opt) => opt.label === chosenOption)
+            ?.additional_price ?? 0;
+        extra += optPrice * amount;
+      }
+    }
+    return extra;
+  }, [product, bundleItems, bundleSizeSelections, bundleOptionSelections]);
+
   const computedUnitPrice = useMemo(() => {
     if (!product || isProductBundle(product)) {
-      return Number(product?.price ?? 0);
+      const base = Number(product?.price ?? 0);
+      return base + bundleExtras;
     }
     const base = Number(product.price ?? 0);
     return base + optionPrice + sizeSurcharge;
-  }, [product, optionPrice, sizeSurcharge]);
+  }, [product, optionPrice, sizeSurcharge, bundleExtras]);
 
   useEffect(() => {
     if (!product || !isProductBundle(product)) {
@@ -216,6 +247,22 @@ export default function ProductDetailPage() {
         }
       }
       return nextSelections;
+    });
+    setBundleOptionSelections((current) => {
+      const next: Record<number, string> = {};
+      for (const item of bundleItems) {
+        const options = item.availableOptions ?? [];
+        const currentValue = current[item.product_id];
+        if (
+          currentValue &&
+          options.some((opt) => opt.label === currentValue)
+        ) {
+          next[item.product_id] = currentValue;
+        } else if (options.length > 0) {
+          next[item.product_id] = options[0]?.label ?? "";
+        }
+      }
+      return next;
     });
   }, [product, bundleItems]);
 
@@ -292,22 +339,41 @@ export default function ProductDetailPage() {
     }
 
     let bundleSelectionsPayload:
-      | { productId: number; size: string }[]
+      | { productId: number; size?: string; option?: string }[]
       | undefined;
     if (product && isProductBundle(product)) {
       bundleSelectionsPayload = [];
       for (const bundleItem of bundleItems) {
-        if (bundleItem.availableSizes.length === 0) continue;
+        const needsSize = bundleItem.availableSizes.length > 0;
+        const needsOption =
+          Array.isArray(bundleItem.availableOptions) &&
+          bundleItem.availableOptions.length > 0;
+
         const chosenSize = bundleSizeSelections[bundleItem.product_id];
-        if (!chosenSize) {
+        const chosenOption = bundleOptionSelections[bundleItem.product_id];
+
+        if (needsSize && !chosenSize) {
           toast.error(
             `Pilih ukuran untuk ${bundleItem.name ?? "produk di bundle"}`
           );
           return;
         }
+        if (
+          needsOption &&
+          !bundleItem.availableOptions.some(
+            (opt) => opt.label === chosenOption
+          )
+        ) {
+          toast.error(
+            `Pilih opsi untuk ${bundleItem.name ?? "produk di bundle"}`
+          );
+          return;
+        }
+
         bundleSelectionsPayload.push({
           productId: bundleItem.product_id,
-          size: chosenSize,
+          size: needsSize ? chosenSize : undefined,
+          option: needsOption ? chosenOption : undefined,
         });
       }
     }
@@ -553,18 +619,23 @@ export default function ProductDetailPage() {
                           key={opt.label}
                           type="button"
                           onClick={() => setSelectedOption(opt.label)}
-                          className={`px-4 py-1.5 rounded-full border-2 font-semibold text-sm transition-colors ${
+                          className={`group relative overflow-hidden rounded-xl border px-4 py-2 text-sm font-semibold transition-all ${
                             isActive
-                              ? "bg-[#c62d76] text-[#ffeabb] border-[#c62d76]"
-                              : "bg-transparent text-[#ffeabb] border-[#ffeabb]/60 hover:bg-[#ffeabb]/15"
+                              ? "border-[#c62d76] bg-[#c62d76] text-[#ffeabb] shadow-lg shadow-[#c62d76]/30"
+                              : "border-white/20 bg-white/5 text-[#ffeabb] hover:border-[#c62d76] hover:bg-[#c62d76]/10 hover:text-[#ffeabb]"
                           }`}
                         >
-                          {opt.label}{" "}
-                          {opt.additional_price > 0 && (
-                            <span className="text-[#FFD88C]/80 font-normal">
-                              (+Rp {priceFormatter.format(opt.additional_price)}
-                              )
-                            </span>
+                          <span className="flex items-center gap-2">
+                            <span>{opt.label}</span>
+                            {opt.additional_price > 0 && (
+                              <span className="rounded-full bg-[#ffeabb]/10 px-0.5 py-0.5 text-[12px] font-semibold text-[#FFD88C]">
+                                +Rp{" "}
+                                {priceFormatter.format(opt.additional_price)}
+                              </span>
+                            )}
+                          </span>
+                          {isActive && (
+                            <span className="absolute inset-0 -z-10 bg-linear-to-r from-[#c62d76]/60 via-[#c62d76]/40 to-transparent blur-xl opacity-60" />
                           )}
                         </button>
                       );
@@ -673,6 +744,49 @@ export default function ProductDetailPage() {
                               Ukuran bebas / satu ukuran
                             </p>
                           )}
+                          {Array.isArray(bundleItem.availableOptions) &&
+                            bundleItem.availableOptions.length > 0 && (
+                              <div className="mt-3">
+                                <p className="text-xs font-semibold text-[#FFEABB]/80">
+                                  Pilih opsi
+                                </p>
+                                <div className="mt-1 flex flex-wrap gap-2">
+                                  {bundleItem.availableOptions.map((opt) => {
+                                    const isActive =
+                                      bundleOptionSelections[
+                                        bundleItem.product_id
+                                      ] === opt.label;
+                                    return (
+                                      <button
+                                        key={`${bundleItem.product_id}-${opt.label}`}
+                                        type="button"
+                                        onClick={() =>
+                                          setBundleOptionSelections((prev) => ({
+                                            ...prev,
+                                            [bundleItem.product_id]: opt.label,
+                                          }))
+                                        }
+                                        className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                                          isActive
+                                            ? "border-[#c62d76] bg-[#c62d76] text-white"
+                                            : "border-white/40 text-[#FFEABB] hover:bg-white/10"
+                                        }`}
+                                      >
+                                        {opt.label}
+                                        {opt.additional_price > 0 && (
+                                          <span className="ml-1 text-[11px] font-normal text-[#FFD88C]">
+                                            +Rp{" "}
+                                            {priceFormatter.format(
+                                              opt.additional_price
+                                            )}
+                                          </span>
+                                        )}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
                         </div>
                       ))}
                     </div>

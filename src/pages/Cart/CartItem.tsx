@@ -19,6 +19,7 @@ interface CartItemProps {
     name: string;
     amount: number;
     size?: string;
+    option?: string;
   }>;
 }
 
@@ -193,11 +194,18 @@ export function CartItem({
               <span className="font-semibold text-[#1B165E]">
                 {bundleItem.name} (x{bundleItem.amount})
               </span>
-              {bundleItem.size && (
-                <span className="text-xs font-bold uppercase text-[#1B165E]/80">
-                  Ukuran: {bundleItem.size}
-                </span>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                {bundleItem.size && (
+                  <span className="text-xs font-bold uppercase text-[#1B165E]/80">
+                    Ukuran: {bundleItem.size}
+                  </span>
+                )}
+                {bundleItem.option && (
+                  <span className="text-xs font-semibold text-[#1B165E]/80">
+                    Opsi: {bundleItem.option}
+                  </span>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -241,6 +249,7 @@ export function CartItem({
                   <span className="text-right">
                     x{bundleItem.amount}
                     {bundleItem.size ? ` • ${bundleItem.size}` : ""}
+                    {bundleItem.option ? ` • ${bundleItem.option}` : ""}
                   </span>
                 </li>
               ))}

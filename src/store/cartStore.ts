@@ -15,6 +15,7 @@ interface CartProduct {
   image_urls: string[];
   remaining_stock: number;
   available_sizes: string[];
+  options?: { label: string; additional_price: number }[];
 }
 
 interface CartBundle {

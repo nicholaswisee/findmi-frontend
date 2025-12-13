@@ -69,11 +69,18 @@ export const categoryMatches = (
   itemCategory: string,
   selectedCategory: string
 ) => {
-  if (!selectedCategory || selectedCategory === INITIAL_CATEGORY) return true;
-  if (selectedCategory === "Panitia") {
-    return itemCategory !== "Umum" && itemCategory !== "Tutor";
+  const normalize = (val: string) => (val ?? "").trim().toLowerCase();
+  const selected = normalize(selectedCategory);
+  const item = normalize(itemCategory);
+
+  if (!selected) return true;
+  if (selected === "panitia") {
+    return item !== "umum" && item !== "tutor";
   }
-  return itemCategory === selectedCategory;
+  if (selected === "umum") {
+    return item !== "panitia" && item !== "tutor";
+  }
+  return item === selected;
 };
 const STATIC_CATEGORIES = [INITIAL_CATEGORY, "Umum", "Panitia", "Tutor"];
 

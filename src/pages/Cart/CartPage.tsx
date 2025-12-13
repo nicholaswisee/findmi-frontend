@@ -104,6 +104,7 @@ export default function CartPage() {
                             `Produk #${bundleItem.product_id}`,
                           amount: bundleItem.amount,
                           size: selection?.size,
+                          option: selection?.option,
                         };
                       }) ?? [];
 

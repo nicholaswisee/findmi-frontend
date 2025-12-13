@@ -63,6 +63,63 @@ export default function CheckoutPage() {
   const subtotal = cart?.summary.total_amount ?? 0;
   const deliveryFee = fulfillmentMethod === "Delivery" ? 20000 : 0;
   const grandTotal = subtotal + deliveryFee;
+  const cartItems = cart?.items ?? [];
+  type CartItemType = (typeof cartItems)[number];
+  const SIZE_SURCHARGE = 15000;
+  const isAboveXL = (size?: string | null) => {
+    const normalized = size?.trim().toUpperCase();
+    if (!normalized || !normalized.endsWith("L")) return false;
+    const numericMatch = normalized.match(/^(\d+)XL$/);
+    if (numericMatch) return Number(numericMatch[1]) >= 2;
+    const xMatch = normalized.match(/^(X+)L$/);
+    return !!(xMatch?.[1] && xMatch[1].length >= 2);
+  };
+
+  const computeProductUnitPrice = (item: CartItemType) => {
+    const product =
+      (item.product_id && productMap.get(item.product_id)) || item.product;
+    if (!product) return item.unit_price;
+    const base = Number(product.price ?? 0);
+    const optionPrice =
+      item.selected_option && Array.isArray(product.options)
+        ? product.options.find(
+            (opt) =>
+              opt?.label?.toUpperCase() === item.selected_option?.toUpperCase()
+          )?.additional_price ?? 0
+        : 0;
+    const sizeExtra =
+      item.selected_size && isAboveXL(item.selected_size)
+        ? SIZE_SURCHARGE
+        : 0;
+    return base + optionPrice + sizeExtra;
+  };
+
+  const computeBundleUnitPrice = (item: CartItemType) => {
+    const bundle = item.bundle;
+    if (!bundle) return item.unit_price;
+    const base = Number(bundle.price ?? 0);
+    const selections = item.selected_bundle_items ?? [];
+    const bundleItems: Array<{ product_id: number; amount: number }> =
+      Array.isArray(bundle.bundle_items) ? bundle.bundle_items : [];
+    let extras = 0;
+    for (const sel of selections) {
+      const productInfo = productMap.get(sel.product_id);
+      if (!productInfo) continue;
+      const amount =
+        bundleItems.find((bi) => bi.product_id === sel.product_id)?.amount ??
+        1;
+      const optPrice =
+        sel.option && Array.isArray(productInfo.options)
+          ? productInfo.options.find(
+              (opt) =>
+                opt?.label?.toUpperCase() === sel.option?.toUpperCase()
+            )?.additional_price ?? 0
+          : 0;
+      const sizeExtra = sel.size && isAboveXL(sel.size) ? SIZE_SURCHARGE : 0;
+      extras += (optPrice + sizeExtra) * amount;
+    }
+    return base + extras;
+  };
 
   const buildItemsPayload = () => {
     const items: Array<{
@@ -71,9 +128,13 @@ export default function CheckoutPage() {
       quantity: number;
       size?: string | null;
       option?: string | null;
-      bundleSelections?: { productId: number; size?: string | null }[];
+      bundleSelections?: {
+        productId: number;
+        size?: string | null;
+        option?: string | null;
+      }[];
     }> = [];
-    for (const item of cart?.items ?? []) {
+    for (const item of cartItems) {
       if (item.bundle_id && item.bundle_id > 0) {
         items.push({
           bundleId: item.bundle_id,
@@ -82,6 +143,7 @@ export default function CheckoutPage() {
             (selection) => ({
               productId: selection.product_id,
               size: selection.size,
+              option: selection.option,
             })
           ),
         });
@@ -165,10 +227,11 @@ export default function CheckoutPage() {
                 {!isLoading && (cart?.items?.length ?? 0) === 0 && (
                   <p className="text-[#1b165e]">Keranjang kosong</p>
                 )}
-                {cart?.items.flatMap((item) => {
+                {cartItems.flatMap((item) => {
                   const elements = [];
 
                   if (item.product) {
+                    const computedPrice = computeProductUnitPrice(item);
                     elements.push(
                       <CartItem
                         key={`product-${item.id}`}
@@ -176,7 +239,7 @@ export default function CheckoutPage() {
                         itemType="product"
                         name={item.product.name}
                         category={item.product.category}
-                        price={item.unit_price}
+                        price={computedPrice}
                         quantity={item.quantity}
                         image={item.product.image_urls?.[0] ?? ""}
                         size={item.selected_size ?? undefined}
@@ -207,8 +270,10 @@ export default function CheckoutPage() {
                             `Produk #${bundleItem.product_id}`,
                           amount: bundleItem.amount,
                           size: selection?.size,
+                          option: selection?.option,
                         };
                       }) ?? [];
+                    const computedPrice = computeBundleUnitPrice(item);
 
                     elements.push(
                       <CartItem
@@ -217,7 +282,7 @@ export default function CheckoutPage() {
                         itemType="bundle"
                         name={item.bundle.name}
                         category={item.bundle.category}
-                        price={item.unit_price}
+                        price={computedPrice}
                         quantity={item.quantity}
                         image={item.bundle.image_urls?.[0] ?? ""}
                         bundleItems={bundleItemsDetails}
