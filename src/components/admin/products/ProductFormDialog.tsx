@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { CircleEllipsisIcon, X } from "lucide-react";
 
-import type { Product } from "@/types/types";
+import type { Product, ProductOption } from "@/types/types";
 import {
   Dialog,
   DialogClose,
@@ -26,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DEPARTMENTS } from "@/constants/departments";
 import { ImageUploadPool } from "@/components/admin/media/ImageUploadPool";
 
 const SIZE_PRIORITY = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
@@ -54,6 +53,27 @@ const formatSizes = (values: string[] = []) => {
   return unique;
 };
 
+const normalizeOptionLabel = (value: string) => value.trim();
+
+const formatOptions = (options: ProductOption[] = []) => {
+  const normalized = options
+    .map((opt) => ({
+      label: normalizeOptionLabel(opt.label),
+      additional_price: Number.isFinite(opt.additional_price)
+        ? Math.max(0, Number(opt.additional_price))
+        : 0,
+    }))
+    .filter((opt) => opt.label.length > 0);
+
+  const deduped = new Map<string, ProductOption>();
+  normalized.forEach((opt) => {
+    if (!deduped.has(opt.label)) {
+      deduped.set(opt.label, opt);
+    }
+  });
+  return Array.from(deduped.values());
+};
+
 export type ProductFormValues = {
   name: string;
   price: number;
@@ -62,6 +82,7 @@ export type ProductFormValues = {
   image_urls?: string[];
   remaining_stock: number;
   available_sizes: string[];
+  options?: ProductOption[];
 };
 
 type ProductFormDialogProps = {
@@ -81,6 +102,7 @@ const toFormValues = (product: Product): ProductFormValues => ({
   image_urls: product.image_urls ?? [],
   remaining_stock: product.remaining_stock,
   available_sizes: formatSizes(product.available_sizes ?? []),
+  options: formatOptions(product.options ?? []),
 });
 
 export function ProductFormDialog({
@@ -105,7 +127,10 @@ export function ProductFormDialog({
 
   const imageValues = watch("image_urls");
   const sizeValues = watch("available_sizes") ?? [];
+  const optionValues = watch("options") ?? [];
   const [sizeInput, setSizeInput] = useState("");
+  const [optionLabel, setOptionLabel] = useState("");
+  const [optionPrice, setOptionPrice] = useState<string>("");
 
   const updateSizes = (next: string[]) => {
     setValue("available_sizes", formatSizes(next), { shouldDirty: true });
@@ -139,13 +164,42 @@ export function ProductFormDialog({
 
   const presetSizes = SIZE_PRIORITY;
 
+  const updateOptions = (next: ProductOption[]) => {
+    setValue("options", formatOptions(next), { shouldDirty: true });
+  };
+
+  const handleAddOption = () => {
+    const label = normalizeOptionLabel(optionLabel);
+    if (!label) {
+      setOptionLabel("");
+      setOptionPrice("");
+      return;
+    }
+    const priceValue = Number(optionPrice);
+    const additional_price = Number.isFinite(priceValue)
+      ? Math.max(0, Math.round(priceValue))
+      : 0;
+    updateOptions([
+      ...optionValues.filter((opt) => opt.label !== label),
+      { label, additional_price },
+    ]);
+    setOptionLabel("");
+    setOptionPrice("");
+  };
+
+  const handleRemoveOption = (label: string) => {
+    updateOptions(optionValues.filter((opt) => opt.label !== label));
+  };
+
   const handleFormSubmit = handleSubmit(async (values) => {
     try {
       setSubmitting(true);
       const normalizedSizes = formatSizes(values.available_sizes ?? []);
+      const normalizedOptions = formatOptions(values.options ?? []);
       await onSubmit?.({
         ...values,
         available_sizes: normalizedSizes,
+        options: normalizedOptions,
       });
       setOpen(false);
     } finally {
@@ -164,6 +218,7 @@ export function ProductFormDialog({
   const primaryActionLabel = submitting
     ? "Saving..."
     : submitLabel ?? "Save changes";
+  const CATEGORY_OPTIONS = ["Umum", "Panitia", "Tutor"] as const;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -210,7 +265,7 @@ export function ProductFormDialog({
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {DEPARTMENTS.map((dept) => (
+                      {CATEGORY_OPTIONS.map((dept) => (
                         <SelectItem key={dept} value={dept}>
                           {dept}
                         </SelectItem>
@@ -303,6 +358,64 @@ export function ProductFormDialog({
                 onClick={() => handleAddSize(sizeInput)}
               >
                 Tambah
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-3">
+            <div>
+              <Label>Options (optional)</Label>
+              <p className="text-xs text-muted-foreground">
+                Tambahkan pilihan berbayar, misal packaging khusus. Harga
+                tambahan diterapkan per item.
+              </p>
+            </div>
+            {optionValues.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {optionValues.map((opt) => (
+                  <span
+                    key={opt.label}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-3 py-1 text-xs font-semibold text-[#1b165e]"
+                  >
+                    {opt.label}
+                    <span className="text-[#c62d76] font-bold">
+                      +Rp{" "}
+                      {new Intl.NumberFormat("id-ID").format(
+                        Math.max(0, opt.additional_price ?? 0)
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={`Hapus opsi ${opt.label}`}
+                      onClick={() => handleRemoveOption(opt.label)}
+                      className="text-[#c62d76] transition hover:text-[#a41d60]"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Input
+                value={optionLabel}
+                onChange={(event) => setOptionLabel(event.target.value)}
+                placeholder="Nama opsi (contoh: Packaging premium)"
+              />
+              <Input
+                type="number"
+                min={0}
+                step="500"
+                value={optionPrice}
+                onChange={(event) => setOptionPrice(event.target.value)}
+                placeholder="Biaya tambahan"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleAddOption}
+              >
+                Tambah opsi
               </Button>
             </div>
           </div>

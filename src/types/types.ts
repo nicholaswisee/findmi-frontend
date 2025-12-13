@@ -1,4 +1,5 @@
 export type UserDepartmentEnum =
+  | "All"
   | "Ketua AMI"
   | "Kesekjenan"
   | "Manajemen Personalia"
@@ -12,6 +13,8 @@ export type UserDepartmentEnum =
   | "Operasional"
   | "Perangkat Lapangan Utama"
   | "IT"
+  | "Tutor"
+  | "Umum"
   | "Panitia"
   | "none";
 
@@ -103,6 +106,11 @@ export type ManualPaymentSummary = {
   latest_proof: ManualPaymentProof | null;
 };
 
+export type ProductOption = {
+  label: string;
+  additional_price: number;
+};
+
 export type Product = {
   id: number;
   name: string;
@@ -112,6 +120,7 @@ export type Product = {
   image_urls: string[];
   remaining_stock: number;
   available_sizes: string[];
+  options?: ProductOption[];
 };
 
 export type BundleItem = {
@@ -162,6 +171,7 @@ export type OrderItem = {
   bundle: Bundle | null;
   selected_size?: string | null;
   selected_bundle_items?: BundleSelection[];
+  selected_option?: string | null;
 };
 
 export type Order = {

@@ -7,6 +7,7 @@ import { useCartStore } from "@/store/cartStore";
 import {
   INITIAL_CATEGORY,
   useProductStore,
+  categoryMatches,
   type Product,
 } from "@/store/catalogStore";
 import { useAuthStore } from "@/store/authStore";
@@ -18,7 +19,7 @@ const PAGE_SIZE = 10;
 const BUNDLE_PAGE_SIZE = 10;
 export default function CatalogPage() {
   const navigate = useNavigate();
-  const { status, products, query, category, fetchProducts } =
+  const { status, products, query, category, fetchProducts, setCategory } =
     useProductStore();
 
   const [pageIndex, setPageIndex] = useState(0);
@@ -40,9 +41,9 @@ export default function CatalogPage() {
     const q = (query ?? "").trim().toLowerCase();
     let filtered = products;
 
-    if (category && category !== INITIAL_CATEGORY) {
-      filtered = filtered.filter((p) => p.category === category);
-    }
+    filtered = filtered.filter((p) =>
+      categoryMatches(p.category, category ?? INITIAL_CATEGORY)
+    );
 
     if (q) {
       filtered = filtered.filter((p) => {
@@ -112,6 +113,14 @@ export default function CatalogPage() {
   );
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
+  const isPanitia =
+    !!user &&
+    (user.role === "admin" ||
+      user.role === "subadmin" ||
+      (user.department !== "Umum" &&
+        user.department !== "none" &&
+        user.department !== "Tutor"));
   useEffect(() => {
     let cancel = false;
     const fetchBundles = async () => {
@@ -151,10 +160,10 @@ export default function CatalogPage() {
     const q = (query ?? "").trim().toLowerCase();
     return bundles.filter((bundle) => {
       if (bundle.is_hidden) return false;
-      const matchCategory =
-        !category ||
-        category === INITIAL_CATEGORY ||
-        bundle.category === category;
+      const matchCategory = categoryMatches(
+        bundle.category ?? "",
+        category ?? INITIAL_CATEGORY
+      );
       const matchQuery =
         !q ||
         (bundle.name ?? "").toLowerCase().includes(q) ||
@@ -175,15 +184,63 @@ export default function CatalogPage() {
   const bundleHasNext =
     (bundlePageIndex + 1) * BUNDLE_PAGE_SIZE < filteredBundles.length;
 
+  const categoryTabs = [
+    { label: "Merch Umum", value: "Umum" },
+    { label: "Kit Panitia", value: "Panitia" },
+    { label: "Tutor", value: "Tutor" },
+  ] as const;
+  const visibleTabs = useMemo(
+    () =>
+      isPanitia
+        ? categoryTabs
+        : categoryTabs.filter((t) => t.value !== "Panitia"),
+    [isPanitia]
+  );
+
+  const handleTabSelect = useCallback(
+    (nextCategory: string) => {
+      setCategory(nextCategory);
+      setPageIndex(0);
+      setBundlePageIndex(0);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    [setCategory, setBundlePageIndex, setPageIndex]
+  );
+
+  useEffect(() => {
+    if (!isPanitia && category === "Panitia") {
+      setCategory(INITIAL_CATEGORY);
+    }
+  }, [isPanitia, category, setCategory]);
+
   const handleAddToCart = useCallback(
     async (productId: number | string, productName: string) => {
       if (!isAuthenticated) {
         toast.error("Silakan login untuk menambahkan ke keranjang.");
         return;
       }
+      const normalizedProductId =
+        typeof productId === "string" ? parseInt(productId, 10) : productId;
+      const productInfo = productMap.get(normalizedProductId);
+      if (
+        productInfo &&
+        Array.isArray(productInfo.options) &&
+        productInfo.options.length > 0
+      ) {
+        toast.info("Pilih opsi produk terlebih dahulu.");
+        handleNavigateToProduct(normalizedProductId);
+        return;
+      }
+      if (
+        productInfo &&
+        Array.isArray(productInfo.available_sizes) &&
+        productInfo.available_sizes.length > 0
+      ) {
+        toast.info("Pilih ukuran produk terlebih dahulu.");
+        handleNavigateToProduct(normalizedProductId);
+        return;
+      }
       try {
-        const normalizedProductId =
-          typeof productId === "string" ? parseInt(productId, 10) : productId;
         const requestBody = {
           productId: normalizedProductId,
           quantity: 1,
@@ -212,7 +269,7 @@ export default function CatalogPage() {
         );
       }
     },
-    [isAuthenticated, fetchCart]
+    [isAuthenticated, fetchCart, productMap, handleNavigateToProduct]
   );
 
   const ProductCard = ({ item }: { item: Product }) => (
@@ -393,6 +450,26 @@ export default function CatalogPage() {
           <h1 className="mt-4 text-5xl font-extrabold  tracking-wide text-[#FFC76E] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
             Catalog
           </h1>
+        </div>
+
+        <div className="mb-4 flex flex-wrap items-center gap-2 sm:gap-3 justify-center">
+          {visibleTabs.map((tab) => {
+            const active = tab.value === category;
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => handleTabSelect(tab.value)}
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all shadow-sm border ${
+                  active
+                    ? "border-[#FFD88C]/80 bg-[#463B8B]/60 text-[#FFD88C] shadow-lg"
+                    : "border-white/10 bg-[#1b1540]/50 text-[#FFEABB]/80 hover:border-white/30 hover:text-[#FFD88C]"
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
 
         <div className="mb-8">

@@ -12,6 +12,7 @@ interface CartItemProps {
   quantity: number;
   image?: string;
   size?: string;
+  option?: string;
   maxQuantity?: number;
   bundleItems?: Array<{
     productId: number;
@@ -30,6 +31,7 @@ export function CartItem({
   quantity,
   image,
   size,
+  option,
   maxQuantity,
   bundleItems = [],
 }: CartItemProps) {
@@ -165,6 +167,11 @@ export function CartItem({
                 Ukuran: {size}
               </p>
             )}
+            {option && (
+              <p className="text-xs font-semibold text-[#1B165E]/80">
+                Opsi: {option}
+              </p>
+            )}
           </div>
         </div>
 
@@ -207,6 +214,12 @@ export function CartItem({
             <p className="text-base font-bold text-[#1B165E] uppercase">
               {size}
             </p>
+          </div>
+        )}
+        {option && (
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-sm font-semibold text-[#1B165E]">Opsi</p>
+            <p className="text-base font-bold text-[#1B165E]">{option}</p>
           </div>
         )}
         <div className="flex items-center justify-between gap-4">

@@ -68,11 +68,12 @@ export default function ProductsAdmin() {
       id: 0,
       name: "",
       price: 0,
-      category: "none",
+      category: "All",
       description: "",
       image_urls: [],
       remaining_stock: 0,
       available_sizes: [],
+      options: [],
     }),
     []
   );
@@ -123,6 +124,7 @@ export default function ProductsAdmin() {
           image_urls: normalizeUrls(values.image_urls),
           stock: values.remaining_stock,
           available_sizes: normalizeAndOrderSizes(values.available_sizes),
+          options: values.options,
         });
         await fetchProducts({
           limit: pageSize,
@@ -163,6 +165,7 @@ export default function ProductsAdmin() {
           image_urls: normalizeUrls(values.image_urls),
           stock: values.remaining_stock,
           available_sizes: normalizeAndOrderSizes(values.available_sizes),
+          options: values.options,
         });
         toast.success("Produk berhasil dibuat");
         await fetchProducts({

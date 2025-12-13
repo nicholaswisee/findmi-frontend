@@ -36,6 +36,7 @@ export type Product = {
   image_urls: string[];
   remaining_stock: number;
   available_sizes: string[];
+  options?: { label: string; additional_price: number }[];
 };
 
 export interface ProductStateStore {
@@ -63,7 +64,18 @@ export interface ProductStateStore {
   }) => Product[];
 }
 
-export const INITIAL_CATEGORY = "All Categories";
+export const INITIAL_CATEGORY = "Umum";
+export const categoryMatches = (
+  itemCategory: string,
+  selectedCategory: string
+) => {
+  if (!selectedCategory || selectedCategory === INITIAL_CATEGORY) return true;
+  if (selectedCategory === "Panitia") {
+    return itemCategory !== "Umum" && itemCategory !== "Tutor";
+  }
+  return itemCategory === selectedCategory;
+};
+const STATIC_CATEGORIES = [INITIAL_CATEGORY, "Umum", "Panitia", "Tutor"];
 
 export const useCatalogStore = create<CatalogState>((set, get) => ({
   products: [],
@@ -121,7 +133,7 @@ export const useCatalogStore = create<CatalogState>((set, get) => ({
 
 export const useProductStore = create<ProductStateStore>((set, get) => ({
   products: [],
-  allCategories: [INITIAL_CATEGORY],
+  allCategories: STATIC_CATEGORIES,
 
   status: "idle",
   error: null,
@@ -158,6 +170,16 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
           ...p,
           available_sizes: Array.isArray(p.available_sizes)
             ? p.available_sizes
+            : [],
+          options: Array.isArray(p.options)
+            ? p.options
+                .map((opt) => ({
+                  label: typeof opt?.label === "string" ? opt.label.trim() : "",
+                  additional_price: Number.isFinite(opt?.additional_price)
+                    ? Number(opt.additional_price)
+                    : 0,
+                }))
+                .filter((opt) => opt.label)
             : [],
           price:
             p?.price == null || p?.price === ""
@@ -197,7 +219,9 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
         new Set(aggregated.map((p) => p.category).filter(Boolean))
       ).sort() as string[];
 
-      const allCategories = [INITIAL_CATEGORY, ...computed];
+      const allCategories = Array.from(
+        new Set([...STATIC_CATEGORIES, ...computed])
+      );
 
       set({
         products: aggregated,
@@ -245,9 +269,9 @@ export const useProductStore = create<ProductStateStore>((set, get) => ({
 
     let filtered = products;
 
-    if (category && category !== INITIAL_CATEGORY) {
-      filtered = filtered.filter((p) => p.category === category);
-    }
+    filtered = filtered.filter((p) =>
+      categoryMatches(p.category, category ?? INITIAL_CATEGORY)
+    );
 
     if (q) {
       filtered = filtered.filter((p) => {

@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useProductStore, INITIAL_CATEGORY } from "@/store/catalogStore";
+import { useAuthStore } from "@/store/authStore";
 
 export interface SearchBarProps {
   defaultCategoryLabel?: string;
@@ -19,13 +20,19 @@ export interface SearchBarProps {
 const SEARCH_DEBOUNCE_MS = 600;
 
 export default function SearchBar({
-  defaultCategoryLabel = INITIAL_CATEGORY,
+  defaultCategoryLabel = "Pilih kategori",
   className,
 }: SearchBarProps) {
   const bodyFontStyle = {
     fontFamily: "var(--font-subheading, 'Darker Grotesque')",
   };
 
+  const user = useAuthStore((s) => s.user);
+  const isPanitia =
+    !!user &&
+    (user.role === "admin" ||
+      user.role === "subadmin" ||
+      (user.department !== "Umum" && user.department !== "none"));
   const rawCategories = useProductStore((s) => s.allCategories);
   const category = useProductStore((s) => s.category);
   const query = useProductStore((s) => s.query);
@@ -41,9 +48,14 @@ export default function SearchBar({
       ? rawCategories
       : [defaultCategoryLabel];
 
-  const normalizedCategory = categories.includes(category)
+  const displayCategories = categories.filter(
+    (c) => c !== INITIAL_CATEGORY && (isPanitia || c !== "Panitia")
+  );
+  const normalizedCategory = displayCategories.includes(category)
     ? category
     : defaultCategoryLabel;
+  const selectValue =
+    category === INITIAL_CATEGORY ? undefined : normalizedCategory;
 
   const handleReset = () => {
     resetFilters();
@@ -70,10 +82,10 @@ export default function SearchBar({
         className
       )}
     >
-      <div className="grid gap-4 sm:grid-cols-[220px_1fr] items-center">
-        <div className="space-y-2">
+      <div className="grid gap-4 xxxXsm:grid-cols-[220px_1fr]xxxX grid-cols-1 items-center">
+        {/* <div className="space-y-2">
           <Select
-            value={normalizedCategory}
+            value={selectValue}
             onValueChange={(value) => setCategory(value)}
           >
             <SelectTrigger
@@ -84,7 +96,7 @@ export default function SearchBar({
               <SelectValue placeholder={defaultCategoryLabel} />
             </SelectTrigger>
             <SelectContent className="max-h-60 rounded-lg bg-plain-green shadow-xl">
-              {categories.map((opt) => (
+              {displayCategories.map((opt) => (
                 <SelectItem
                   key={opt}
                   value={opt}
@@ -96,9 +108,9 @@ export default function SearchBar({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </div> */}
 
-        <div className="space-y-2">
+        <div className="space-y-2 w-full">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             <Input
               id="catalog-search"
@@ -109,14 +121,14 @@ export default function SearchBar({
               className="h-11 w-full rounded-lg border-white/30 bg-plain-green text-sm font-semibold text-[#FFD88C] placeholder:text-[#FFD88C] shadow-sm"
               style={bodyFontStyle}
             />
-            <Button
+            {/* <Button
               type="button"
               variant="outline"
               className="h-11 w-full rounded-lg border-[#FFD88C]/60 bg-plain-green font-bold text-[#FFD88C] backdrop-blur-sm transition hover:bg-[#FFD88C]/5 sm:w-auto sm:px-6 hover:text-[#ffd88c]"
               onClick={handleReset}
             >
               Reset Filter
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>

@@ -15,6 +15,7 @@ export function ManualPaymentButton() {
       bundleId?: number;
       quantity: number;
       size?: string | null;
+      option?: string | null;
       bundleSelections?: { productId: number; size?: string | null }[];
     }> = [];
 
@@ -38,6 +39,7 @@ export function ManualPaymentButton() {
           productId: item.product_id,
           quantity: item.quantity,
           size: item.selected_size ?? undefined,
+          option: item.selected_option ?? undefined,
         });
       }
     }

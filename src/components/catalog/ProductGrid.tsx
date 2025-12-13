@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   useProductStore,
   INITIAL_CATEGORY,
+  categoryMatches,
   type Product as CatalogProduct,
 } from "@/store/catalogStore";
 import { toast } from "sonner";
@@ -39,6 +40,11 @@ export default function ProductGrid({
       return;
     }
     if (pendingId === product.id) return;
+    if (Array.isArray(product.options) && product.options.length > 0) {
+      toast.info("Pilih opsi produk terlebih dahulu.");
+      handleNavigateToProduct(product.id);
+      return;
+    }
     if (
       Array.isArray(product.available_sizes) &&
       product.available_sizes.length > 0
@@ -101,8 +107,10 @@ export default function ProductGrid({
     const q = showSearch && query ? query.trim().toLowerCase() : "";
     let filtered = products;
 
-    if (showSearch && category && category !== INITIAL_CATEGORY) {
-      filtered = filtered.filter((p) => p.category === category);
+    if (showSearch) {
+      filtered = filtered.filter((p) =>
+        categoryMatches(p.category, category ?? INITIAL_CATEGORY)
+      );
     }
 
     if (showSearch && q) {

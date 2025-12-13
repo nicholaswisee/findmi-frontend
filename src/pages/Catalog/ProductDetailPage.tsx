@@ -19,6 +19,7 @@ type Product = {
   image_urls: string[];
   remaining_stock: number;
   available_sizes: string[];
+  options?: { label: string; additional_price: number }[];
 };
 
 type BundleItem = {
@@ -43,6 +44,25 @@ type ApiResponse<T> = {
   data: T;
 };
 
+const SIZE_SURCHARGE = 15000;
+
+const isAboveXL = (size: string | null | undefined) => {
+  const normalized = size?.trim().toUpperCase();
+  if (!normalized || !normalized.endsWith("L")) return false;
+
+  const numericMatch = normalized.match(/^(\d+)XL$/);
+  if (numericMatch) {
+    return Number(numericMatch[1]) >= 2;
+  }
+
+  const xMatch = normalized.match(/^(X+)L$/);
+  if (xMatch?.[1]) {
+    return xMatch[1].length >= 2;
+  }
+
+  return false;
+};
+
 export default function ProductDetailPage() {
   const { product_id, bundle_id } = useParams<{
     product_id?: string;
@@ -58,10 +78,13 @@ export default function ProductDetailPage() {
   // Use bundle_id if available, otherwise use product_id
   const itemId = isBundle ? bundle_id : product_id;
 
+  const priceFormatter = useMemo(() => new Intl.NumberFormat("id-ID"), []);
+
   const [product, setProduct] = useState<Product | Bundle | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string>("");
+  const [selectedOption, setSelectedOption] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [bundleSizeSelections, setBundleSizeSelections] = useState<
     Record<number, string>
@@ -117,6 +140,19 @@ export default function ProductDetailPage() {
     });
   }, [product, catalogProducts]);
 
+  const optionChoices = useMemo(() => {
+    if (!product || isProductBundle(product)) return [];
+    if (!Array.isArray(product.options)) return [];
+    return product.options
+      .map((opt) => ({
+        label: typeof opt?.label === "string" ? opt.label.trim() : "",
+        additional_price: Number.isFinite(opt?.additional_price)
+          ? Math.max(0, Number(opt.additional_price))
+          : 0,
+      }))
+      .filter((opt) => opt.label);
+  }, [product]);
+
   const sizeOptions = useMemo(() => {
     if (!product || isProductBundle(product)) return [];
     const sizes = Array.isArray(product.available_sizes)
@@ -139,6 +175,32 @@ export default function ProductDetailPage() {
       current && sizes.includes(current) ? current : sizes[0] ?? ""
     );
   }, [product]);
+
+  useEffect(() => {
+    setSelectedOption((current) =>
+      optionChoices.some((opt) => opt.label === current)
+        ? current
+        : optionChoices[0]?.label ?? ""
+    );
+  }, [optionChoices]);
+
+  const sizeSurcharge = useMemo(
+    () => (selectedSize && isAboveXL(selectedSize) ? SIZE_SURCHARGE : 0),
+    [selectedSize]
+  );
+
+  const optionPrice = useMemo(() => {
+    const match = optionChoices.find((opt) => opt.label === selectedOption);
+    return match ? match.additional_price : 0;
+  }, [optionChoices, selectedOption]);
+
+  const computedUnitPrice = useMemo(() => {
+    if (!product || isProductBundle(product)) {
+      return Number(product?.price ?? 0);
+    }
+    const base = Number(product.price ?? 0);
+    return base + optionPrice + sizeSurcharge;
+  }, [product, optionPrice, sizeSurcharge]);
 
   useEffect(() => {
     if (!product || !isProductBundle(product)) {
@@ -263,6 +325,7 @@ export default function ProductDetailPage() {
             quantity,
             size:
               sizeOptions.length > 0 && selectedSize ? selectedSize : undefined,
+            option: selectedOption || undefined,
           }
         : null;
 
@@ -461,8 +524,54 @@ export default function ProductDetailPage() {
 
               {/* Price */}
               <p className="text-2xl md:text-3xl font-bold text-[#FFC76E] mb-5">
-                {product.price.toLocaleString("id-ID")}
+                Rp {priceFormatter.format(computedUnitPrice)}
               </p>
+              {/* {(optionPrice > 0 || sizeSurcharge > 0) && (
+                <p className="text-sm text-[#FFEABB]/80 mb-4">
+                  Termasuk
+                  {optionPrice > 0
+                    ? ` opsi (+Rp ${priceFormatter.format(optionPrice)})`
+                    : ""}
+                  {sizeSurcharge > 0
+                    ? ` & biaya ukuran (+Rp ${priceFormatter.format(
+                        sizeSurcharge
+                      )})`
+                    : ""}
+                </p>
+              )} */}
+
+              {optionChoices.length > 0 && (
+                <div className="mb-5">
+                  <h3 className="text-sm font-body font-bold text-[#FFD88C] mb-2">
+                    Opsi
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {optionChoices.map((opt) => {
+                      const isActive = selectedOption === opt.label;
+                      return (
+                        <button
+                          key={opt.label}
+                          type="button"
+                          onClick={() => setSelectedOption(opt.label)}
+                          className={`px-4 py-1.5 rounded-full border-2 font-semibold text-sm transition-colors ${
+                            isActive
+                              ? "bg-[#c62d76] text-[#ffeabb] border-[#c62d76]"
+                              : "bg-transparent text-[#ffeabb] border-[#ffeabb]/60 hover:bg-[#ffeabb]/15"
+                          }`}
+                        >
+                          {opt.label}{" "}
+                          {opt.additional_price > 0 && (
+                            <span className="text-[#FFD88C]/80 font-normal">
+                              (+Rp {priceFormatter.format(opt.additional_price)}
+                              )
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {sizeOptions.length > 0 && (
                 <div className="mb-5">
@@ -485,6 +594,10 @@ export default function ProductDetailPage() {
                       </button>
                     ))}
                   </div>
+                  <p className="mt-1 text-[#FFEABB]/70">
+                    Ukuran di atas XL dikenakan biaya tambahan Rp{" "}
+                    {priceFormatter.format(SIZE_SURCHARGE)}.
+                  </p>
                 </div>
               )}
 

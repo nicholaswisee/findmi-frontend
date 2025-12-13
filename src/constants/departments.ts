@@ -1,6 +1,8 @@
 import type { UserDepartmentEnum } from "@/types/types";
 
+// Official department list (+ Umum for non-panitia, Panitia for committee, All for general catalog)
 export const DEPARTMENTS: UserDepartmentEnum[] = [
+  "All",
   "Ketua AMI",
   "Kesekjenan",
   "Manajemen Personalia",
@@ -14,6 +16,7 @@ export const DEPARTMENTS: UserDepartmentEnum[] = [
   "Operasional",
   "Perangkat Lapangan Utama",
   "IT",
-  // "Panitia",
-  // "none",
+  "Tutor",
+  "Umum",
+  "Panitia",
 ];

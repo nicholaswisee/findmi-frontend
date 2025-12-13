@@ -73,10 +73,11 @@ export default function CartPage() {
                         itemType="product"
                         name={item.product.name}
                         category={item.product.category}
-                        price={item.product.price}
+                        price={item.unit_price}
                         quantity={item.quantity}
                         image={item.product.image_urls?.[0] ?? ""}
                         size={item.selected_size ?? undefined}
+                        option={item.selected_option ?? undefined}
                         maxQuantity={
                           typeof item.product.remaining_stock === "number"
                             ? item.product.remaining_stock
@@ -113,7 +114,7 @@ export default function CartPage() {
                         itemType="bundle"
                         name={item.bundle.name}
                         category={item.bundle.category}
-                        price={item.bundle.price}
+                        price={item.unit_price}
                         quantity={item.quantity}
                         image={item.bundle.image_urls?.[0] ?? ""}
                         bundleItems={bundleItemsDetails}

@@ -32,7 +32,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CircleEllipsisIcon } from "lucide-react";
-import { DEPARTMENTS } from "@/constants/departments";
 import { ImageUploadPool } from "@/components/admin/media/ImageUploadPool";
 
 export type BundleFormValues = {
@@ -78,6 +77,7 @@ export function BundleFormDialog({
   description,
   submitLabel,
 }: BundleFormDialogProps) {
+  const CATEGORY_OPTIONS = ["Umum", "Panitia", "Tutor"] as const;
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -163,7 +163,7 @@ export function BundleFormDialog({
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      {DEPARTMENTS.map((dept) => (
+                      {CATEGORY_OPTIONS.map((dept) => (
                         <SelectItem key={dept} value={dept}>
                           {dept}
                         </SelectItem>

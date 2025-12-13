@@ -156,7 +156,7 @@ export default function OrderHistoryPage() {
         </button>
 
         <header className="text-center">
-          <h1 className="mt-4 text-5xl font-extrabold uppercase tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
+          <h1 className="mt-4 text-5xl font-extrabold  tracking-wide text-[#FFD88C] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
             Riwayat Transaksi
           </h1>
         </header>

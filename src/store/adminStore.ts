@@ -8,6 +8,7 @@ import type {
   OrdersWithUsersResponse,
   Product,
   ProductsResponse,
+  ProductOption,
   UserDepartmentEnum,
   UserWithOrders,
   UsersWithOrdersResponse,
@@ -24,6 +25,7 @@ export type CreateProductPayload = {
   category?: string;
   image_urls?: string[];
   available_sizes?: string[];
+  options?: ProductOption[];
 };
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;

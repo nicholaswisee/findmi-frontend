@@ -37,6 +37,7 @@ interface CartItemInterface {
   unit_price: number;
   line_total: number;
   selected_size: string | null;
+  selected_option: string | null;
   selected_bundle_items: BundleSelection[];
   product?: CartProduct;
   bundle?: CartBundle;
@@ -62,6 +63,7 @@ interface OrderItemRequest {
   bundleId?: number;
   quantity: number;
   size?: string | null;
+  option?: string | null;
   bundleSelections?: { productId: number; size?: string | null }[];
 }
 

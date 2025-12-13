@@ -15,10 +15,8 @@ import { DEPARTMENTS } from "@/constants/departments";
 import { toast } from "sonner";
 import { API_URL } from "@/lib/api";
 import { DIVISIONS } from "@/constants/divisions";
-import type {
-  UserDepartmentEnum,
-  UserDivisionEnum,
-} from "@/types/types";
+import type { UserDepartmentEnum, UserDivisionEnum } from "@/types/types";
+import { DIVISION_TOKENS } from "@/constants/division-tokens";
 
 type EditedProfileData = {
   name: string;
@@ -42,10 +40,137 @@ export default function ProfilePage() {
     division: (user?.division as UserDivisionEnum) || "none",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [tokenInput, setTokenInput] = useState("");
+  const [nimInput, setNimInput] = useState("");
+  const [showTokenPrompt, setShowTokenPrompt] = useState(false);
+  const [tokenSubmitting, setTokenSubmitting] = useState(false);
+  const [lineInput, setLineInput] = useState(user?.line_id || "");
+  const [waInput, setWaInput] = useState(user?.no_wa || "");
+  const hideNimAndDepartment = user?.department === "Umum";
+  const affiliationLocked =
+    user?.provider === "google" &&
+    !hideNimAndDepartment &&
+    user?.department !== "none" &&
+    user?.division !== "none";
+  const inputClass =
+    "h-10 w-full rounded-xl border border-white/30 bg-white/80 px-3 text-sm font-semibold text-[#302a77] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5F92E0]";
+  const selectableDepartments = DEPARTMENTS.filter(
+    (dept) => dept !== "All" && dept !== "Tutor"
+  );
 
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
+
+  useEffect(() => {
+    if (
+      user &&
+      user.provider === "google" &&
+      user.department !== "Umum" &&
+      (user.department === "none" || user.division === "none")
+    ) {
+      setShowTokenPrompt(true);
+    } else {
+      setShowTokenPrompt(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (!showTokenPrompt) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showTokenPrompt]);
+
+  const handleTokenSubmit = async () => {
+    const token = tokenInput.trim().toUpperCase();
+    let match = token ? (DIVISION_TOKENS as Record<string, any>)[token] : null;
+    if (!token) {
+      match = (DIVISION_TOKENS as Record<string, any>)["UMUM-2026"];
+    }
+    if (match?.requireNim && !nimInput.trim()) {
+      toast.error("NIM wajib diisi untuk panitia.");
+      return;
+    }
+    if (!lineInput.trim() || !waInput.trim()) {
+      toast.error("ID Line dan No. WhatsApp wajib diisi.");
+      return;
+    }
+    setTokenSubmitting(true);
+    try {
+      const payload: Partial<EditedProfileData> = {
+        department: match ? match.department : "Umum",
+        division: match ? match.division : "none",
+        nim: match?.requireNim ? nimInput.trim() : "",
+        line_id: lineInput.trim(),
+        no_wa: waInput.trim(),
+      };
+      if (!match) {
+        toast.error("Token tidak sesuai.");
+        return;
+      }
+      const res = await fetch(`${API_URL}/user/me`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || "Gagal menyimpan token.");
+      }
+      setShowTokenPrompt(false);
+      setTokenInput("");
+      setNimInput("");
+      await refreshUser(true);
+      toast.success("Data berhasil diperbarui");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Gagal memvalidasi token."
+      );
+    } finally {
+      setTokenSubmitting(false);
+    }
+  };
+
+  // const handleTokenSkip = async () => {
+  //   setTokenSubmitting(true);
+  //   try {
+  //     const res = await fetch(`${API_URL}/user/me`, {
+  //       method: "PATCH",
+  //       credentials: "include",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Accept: "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         department: "Umum",
+  //         division: "none",
+  //         nim: "",
+  //       }),
+  //     });
+  //     if (!res.ok) {
+  //       const err = await res.json().catch(() => ({}));
+  //       throw new Error(err?.message || "Gagal mengatur profil.");
+  //     }
+  //     await refreshUser(true);
+  //     toast.success("Profil berhasil diatur.");
+  //     setShowTokenPrompt(false);
+  //     setTokenInput("");
+  //     setNimInput("");
+  //   } catch (err) {
+  //     toast.error(
+  //       err instanceof Error ? err.message : "Gagal memproses permintaan."
+  //     );
+  //   } finally {
+  //     setTokenSubmitting(false);
+  //   }
+  // };
 
   useEffect(() => {
     if (user) {
@@ -57,6 +182,9 @@ export default function ProfilePage() {
         department: (user.department as UserDepartmentEnum) || "none",
         division: (user.division as UserDivisionEnum) || "none",
       });
+      setLineInput(user.line_id || "");
+      setWaInput(user.no_wa || "");
+      setNimInput(user.nim || "");
     }
   }, [user]);
 
@@ -120,12 +248,16 @@ export default function ProfilePage() {
   const profileFields = [
     { label: "Nama", value: user?.name, field: "name", editable: true },
     { label: "Email", value: user?.email, field: "email", editable: false },
-    {
-      label: "NIM",
-      value: user?.nim || "-",
-      field: "nim",
-      editable: true,
-    },
+    ...(hideNimAndDepartment
+      ? []
+      : [
+          {
+            label: "NIM",
+            value: user?.nim || "-",
+            field: "nim",
+            editable: !affiliationLocked,
+          },
+        ]),
     {
       label: "ID Line",
       value: user?.line_id || "-",
@@ -139,6 +271,11 @@ export default function ProfilePage() {
       editable: true,
     },
   ];
+  // const shouldShowInlineToken =
+  //   user &&
+  //   (user.department === "Umum" ||
+  //     user.department === "none" ||
+  //     user.division === "none");
 
   useEffect(() => {
     refreshUser();
@@ -189,6 +326,72 @@ export default function ProfilePage() {
               </div>
             )}
           </header>
+          {showTokenPrompt && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+              <div className="w-full max-w-md rounded-2xl bg-plain-green p-6 text-[#ffd88c] shadow-2xl">
+                <h2 className="text-xl font-semibold tracking-wide text-center mb-2 text-[#FFC76E]">
+                  Lengkapi Data Akun
+                </h2>
+                {/* <p className="text-sm text-slate-600 mb-4">
+                  Masukkan token panitia untuk menetapkan Bidang dan Divisi.
+                  Jika bukan panitia, lewati dan kami sembunyikan NIM/Bidang.
+                </p> */}
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-semibold">Token</label>
+                    <Input
+                      value={tokenInput}
+                      onChange={(e) => setTokenInput(e.target.value)}
+                      placeholder="Masukkan token jika ada"
+                      className={`mt-1 ${inputClass}`}
+                      disabled={tokenSubmitting}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold">NIM</label>
+                    <Input
+                      value={nimInput}
+                      onChange={(e) => setNimInput(e.target.value)}
+                      placeholder="Masukkan NIM jika ada"
+                      className={`mt-1 ${inputClass}`}
+                      disabled={tokenSubmitting}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold">ID Line*</label>
+                    <Input
+                      value={lineInput}
+                      onChange={(e) => setLineInput(e.target.value)}
+                      placeholder="Masukkan ID Line"
+                      className={`mt-1 ${inputClass}`}
+                      disabled={tokenSubmitting}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-semibold">
+                      No. WhatsApp*
+                    </label>
+                    <Input
+                      value={waInput}
+                      onChange={(e) => setWaInput(e.target.value)}
+                      placeholder="Masukkan No. WhatsApp"
+                      className={`mt-1 ${inputClass}`}
+                      disabled={tokenSubmitting}
+                    />
+                  </div>
+                </div>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Button
+                    variant="blue"
+                    onClick={handleTokenSubmit}
+                    disabled={tokenSubmitting}
+                  >
+                    Simpan
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex w-full min-h-36 rounded-3xl border border-white/0 bg-[#463B8B]/15 shadow-lg py-2 px-6">
             <table className="w-full table-fixed text-left">
               <tbody>
@@ -219,7 +422,7 @@ export default function ProfilePage() {
                                   [field]: e.target.value,
                                 })
                               }
-                              className="h-10 w-full rounded-xl border border-white/30 bg-white/80 px-3 text-sm font-semibold text-[#302a77] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5F92E0]"
+                              className={inputClass}
                             />
                           ) : (
                             value
@@ -231,85 +434,89 @@ export default function ProfilePage() {
                     </tr>
                   );
                 })}
-                <tr className="border-b border-white/10 last:border-b-0">
-                  <th
-                    scope="row"
-                    className="w-1/3 text-[#FFD88C] py-4 pr-4 font-semibold"
-                  >
-                    Bidang / Divisi
-                  </th>
-                  <td className="py-4 text-[#FFD88C] font-semibold">
-                    {isEditing ? (
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="flex flex-col gap-1">
-                          <Select
-                            value={editedData.department || "none"}
-                            onValueChange={(value) =>
-                              setEditedData((prev) => ({
-                                ...prev,
-                                department: value as UserDepartmentEnum,
-                              }))
-                            }
-                          >
-                            <SelectTrigger className="h-10 w-full rounded-xl border border-white/30 bg-white/80 px-3 text-sm font-semibold text-[#302a77] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5F92E0]">
-                              <SelectValue placeholder="Pilih Bidang" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">Non Bidang</SelectItem>
-                              {DEPARTMENTS.map((dept) => (
-                                <SelectItem key={dept} value={dept}>
-                                  {dept}
+                {!hideNimAndDepartment && (
+                  <tr className="border-b border-white/10 last:border-b-0">
+                    <th
+                      scope="row"
+                      className="w-1/3 text-[#FFD88C] py-4 pr-4 font-semibold"
+                    >
+                      Bidang / Divisi
+                    </th>
+                    <td className="py-4 text-[#FFD88C] font-semibold">
+                      {isEditing && !affiliationLocked ? (
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div className="flex flex-col gap-1">
+                            <Select
+                              value={editedData.department || "none"}
+                              onValueChange={(value) =>
+                                setEditedData((prev) => ({
+                                  ...prev,
+                                  department: value as UserDepartmentEnum,
+                                }))
+                              }
+                            >
+                              <SelectTrigger className={inputClass}>
+                                <SelectValue placeholder="Pilih Bidang" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">Non Bidang</SelectItem>
+                                {selectableDepartments.map((dept) => (
+                                  <SelectItem key={dept} value={dept}>
+                                    {dept}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-[#FFD88C]/80">Bidang</p>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <Select
+                              value={editedData.division || "none"}
+                              onValueChange={(value) =>
+                                setEditedData((prev) => ({
+                                  ...prev,
+                                  division: value as UserDivisionEnum,
+                                }))
+                              }
+                            >
+                              <SelectTrigger className={inputClass}>
+                                <SelectValue placeholder="Pilih Divisi" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">
+                                  Non Divisional
                                 </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <p className="text-xs text-[#FFD88C]/80">Bidang</p>
+                                {DIVISIONS.map((div) => (
+                                  <SelectItem key={div} value={div}>
+                                    {div}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-[#FFD88C]/80">Divisi</p>
+                          </div>
                         </div>
+                      ) : (
                         <div className="flex flex-col gap-1">
-                          <Select
-                            value={editedData.division || "none"}
-                            onValueChange={(value) =>
-                              setEditedData((prev) => ({
-                                ...prev,
-                                division: value as UserDivisionEnum,
-                              }))
-                            }
-                          >
-                            <SelectTrigger className="h-10 w-full rounded-xl border border-white/30 bg-white/80 px-3 text-sm font-semibold text-[#302a77] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#5F92E0]">
-                              <SelectValue placeholder="Pilih Divisi" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">Non Divisional</SelectItem>
-                              {DIVISIONS.map((div) => (
-                                <SelectItem key={div} value={div}>
-                                  {div}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <p className="text-xs text-[#FFD88C]/80">Divisi</p>
+                          <span>
+                            {!user
+                              ? "-"
+                              : user.department === "none"
+                              ? "Non Bidang"
+                              : user.department}
+                          </span>
+                          <span className="text-sm text-[#FFD88C]/80">
+                            {!user
+                              ? "-"
+                              : user.division === "none"
+                              ? "Non Divisional"
+                              : user.division}
+                          </span>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-1">
-                        <span>
-                          {!user
-                            ? "-"
-                            : user.department === "none"
-                            ? "Non Bidang"
-                            : user.department}
-                        </span>
-                        <span className="text-sm text-[#FFD88C]/80">
-                          {!user
-                            ? "-"
-                            : user.division === "none"
-                            ? "Non Divisional"
-                            : user.division}
-                        </span>
-                      </div>
-                    )}
-                  </td>
-                </tr>
+                      )}
+                    </td>
+                  </tr>
+                )}
                 <tr className="border-b border-white/10 last:border-b-0">
                   <th
                     scope="row"
@@ -323,6 +530,36 @@ export default function ProfilePage() {
                     </Button>
                   </td>
                 </tr>
+                {/* {shouldShowInlineToken && (
+                  <tr className="border-b border-white/10 last:border-b-0">
+                    <th
+                      scope="row"
+                      className="w-1/3 text-[#FFD88C] py-4 pr-4 font-semibold"
+                    >
+                      Token
+                    </th>
+                    <td className="py-4 text-[#FFD88C] font-semibold">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                        <Input
+                          value={tokenInput}
+                          onChange={(e) => setTokenInput(e.target.value)}
+                          placeholder="Masukkan token atau biarkan kosong"
+                          className={`sm:max-w-xs ${inputClass}`}
+                          disabled={tokenSubmitting}
+                        />
+                        <div className="flex gap-2 mt-2">
+                          <Button
+                            variant="blue"
+                            onClick={handleTokenSubmit}
+                            disabled={tokenSubmitting}
+                          >
+                            Simpan Token
+                          </Button>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                )} */}
               </tbody>
             </table>
           </div>
