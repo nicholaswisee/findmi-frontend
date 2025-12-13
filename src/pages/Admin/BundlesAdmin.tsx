@@ -34,6 +34,7 @@ export default function BundlesAdmin() {
   const totalBundles = useAdminStore((state) => state.bundleTotal);
   const updateBundle = useAdminStore((state) => state.updateBundle);
   const createBundle = useAdminStore((state) => state.createBundle);
+  const deleteBundle = useAdminStore((state) => state.deleteBundle);
 
   const [departmentFilter, setDepartmentFilter] =
     useState<DepartmentFilterValue>("all");
@@ -201,6 +202,23 @@ export default function BundlesAdmin() {
     });
   };
 
+  const handleDeleteBundle = useCallback(
+    async (bundleId: number) => {
+      try {
+        await deleteBundle(bundleId);
+        const isLastItemOnPage = bundles.length === 1 && pageIndex > 0;
+        const nextOffset = isLastItemOnPage
+          ? (pageIndex - 1) * pageSize
+          : pageIndex * pageSize;
+        await fetchWithFilters({ offset: nextOffset });
+        toast.success("Bundel berhasil dihapus");
+      } catch (err) {
+        toast.error((err as Error).message ?? "Gagal menghapus bundel");
+      }
+    },
+    [bundles.length, deleteBundle, fetchWithFilters, pageIndex, pageSize]
+  );
+
   return (
     <section className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
@@ -285,6 +303,7 @@ export default function BundlesAdmin() {
           onPreviousPage={handlePreviousPage}
           total={totalBundles}
           onEditBundle={(bundle, values) => handleEditBundle(bundle.id, values)}
+          onDeleteBundle={(bundle) => handleDeleteBundle(bundle.id)}
         />
       )}
     </section>

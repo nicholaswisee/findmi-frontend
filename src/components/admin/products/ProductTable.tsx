@@ -1,11 +1,23 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import type { Product } from "@/types/types";
 import { type ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "../data-table";
 import { Button } from "@/components/ui/button";
 import { ProductFormDialog, type ProductFormValues } from "./ProductFormDialog";
+import { Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type ProductTableProps = {
   data: Product[];
@@ -19,6 +31,7 @@ type ProductTableProps = {
     product: Product,
     values: ProductFormValues
   ) => Promise<void>;
+  onDeleteProduct?: (product: Product) => Promise<void>;
   total?: number;
 };
 
@@ -31,8 +44,10 @@ export default function ProductTable({
   onNextPage,
   onPreviousPage,
   onEditProduct,
+  onDeleteProduct,
   total,
 }: ProductTableProps) {
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const columns = useMemo<ColumnDef<Product>[]>(
     () => [
       {
@@ -99,15 +114,69 @@ export default function ProductTable({
         accessorKey: "action",
         header: "Modify",
         cell: ({ row }) =>
-          onEditProduct ? (
-            <ProductFormDialog
-              product={row.original}
-              onSubmit={(values) => onEditProduct(row.original, values)}
-            />
+          onEditProduct || onDeleteProduct ? (
+            <div className="flex items-center gap-2">
+              {onEditProduct ? (
+                <ProductFormDialog
+                  product={row.original}
+                  onSubmit={(values) => onEditProduct(row.original, values)}
+                />
+              ) : null}
+              {onDeleteProduct ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      disabled={deletingId === row.original.id}
+                      title="Delete product"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="font-sans">
+                        Delete product
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove{" "}
+                        <span className="font-semibold">
+                          {row.original.name}
+                        </span>{" "}
+                        from the catalog.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction asChild>
+                        <Button
+                          variant="destructive"
+                          disabled={deletingId === row.original.id}
+                          onClick={async () => {
+                            if (!onDeleteProduct) return;
+                            try {
+                              setDeletingId(row.original.id);
+                              await onDeleteProduct(row.original);
+                            } finally {
+                              setDeletingId(null);
+                            }
+                          }}
+                        >
+                          {deletingId === row.original.id
+                            ? "Deleting..."
+                            : "Delete"}
+                        </Button>
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : null}
+            </div>
           ) : null,
       },
     ],
-    [onEditProduct]
+    [deletingId, onDeleteProduct, onEditProduct]
   );
 
   const manualPagination =

@@ -58,6 +58,7 @@ export default function ProductsAdmin() {
   const totalProducts = useAdminStore((state) => state.productTotal);
   const updateProduct = useAdminStore((state) => state.updateProduct);
   const createProduct = useAdminStore((state) => state.createProduct);
+  const deleteProduct = useAdminStore((state) => state.deleteProduct);
 
   const [departmentFilter, setDepartmentFilter] =
     useState<DepartmentFilterValue>("all");
@@ -247,6 +248,36 @@ export default function ProductsAdmin() {
     });
   };
 
+  const handleDeleteProduct = useCallback(
+    async (productId: number) => {
+      try {
+        await deleteProduct(productId);
+        const isLastItemOnPage = products.length === 1 && pageIndex > 0;
+        const nextOffset = isLastItemOnPage
+          ? (pageIndex - 1) * pageSize
+          : pageIndex * pageSize;
+        await fetchProducts({
+          limit: pageSize,
+          offset: nextOffset,
+          department: departmentFilter,
+          search: appliedSearchTerm,
+        });
+        toast.success("Produk berhasil dihapus");
+      } catch (err) {
+        toast.error((err as Error).message ?? "Gagal menghapus produk");
+      }
+    },
+    [
+      appliedSearchTerm,
+      deleteProduct,
+      departmentFilter,
+      fetchProducts,
+      pageIndex,
+      pageSize,
+      products.length,
+    ]
+  );
+
   return (
     <section className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
@@ -344,6 +375,7 @@ export default function ProductsAdmin() {
           onEditProduct={(product, values) =>
             handleEditProduct(product.id, values)
           }
+          onDeleteProduct={(product) => handleDeleteProduct(product.id)}
         />
       )}
     </section>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { type ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,18 @@ import { DataTable } from "@/components/admin/data-table";
 import type { Bundle } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import { BundleFormDialog, type BundleFormValues } from "./BundleFormDialog";
+import { Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type BundleTableProps = {
   data: Bundle[];
@@ -18,6 +30,7 @@ type BundleTableProps = {
   onNextPage?: () => void;
   onPreviousPage?: () => void;
   onEditBundle?: (bundle: Bundle, values: BundleFormValues) => Promise<void>;
+  onDeleteBundle?: (bundle: Bundle) => Promise<void>;
   total?: number;
 };
 
@@ -30,8 +43,10 @@ export default function BundleTable({
   onNextPage,
   onPreviousPage,
   onEditBundle,
+  onDeleteBundle,
   total,
 }: BundleTableProps) {
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const columns = useMemo<ColumnDef<Bundle>[]>(
     () => [
       {
@@ -119,15 +134,69 @@ export default function BundleTable({
         accessorKey: "action",
         header: "Modify",
         cell: ({ row }) =>
-          onEditBundle ? (
-            <BundleFormDialog
-              bundle={row.original}
-              onSubmit={(values) => onEditBundle(row.original, values)}
-            />
+          onEditBundle || onDeleteBundle ? (
+            <div className="flex items-center gap-2">
+              {onEditBundle ? (
+                <BundleFormDialog
+                  bundle={row.original}
+                  onSubmit={(values) => onEditBundle(row.original, values)}
+                />
+              ) : null}
+              {onDeleteBundle ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      disabled={deletingId === row.original.id}
+                      title="Delete bundle"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="font-sans">
+                        Delete bundle
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove{" "}
+                        <span className="font-semibold">
+                          {row.original.name}
+                        </span>{" "}
+                        and its configuration.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction asChild>
+                        <Button
+                          variant="destructive"
+                          disabled={deletingId === row.original.id}
+                          onClick={async () => {
+                            if (!onDeleteBundle) return;
+                            try {
+                              setDeletingId(row.original.id);
+                              await onDeleteBundle(row.original);
+                            } finally {
+                              setDeletingId(null);
+                            }
+                          }}
+                        >
+                          {deletingId === row.original.id
+                            ? "Deleting..."
+                            : "Delete"}
+                        </Button>
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : null}
+            </div>
           ) : null,
       },
     ],
-    [onEditBundle]
+    [deletingId, onDeleteBundle, onEditBundle]
   );
 
   const manualPagination =
