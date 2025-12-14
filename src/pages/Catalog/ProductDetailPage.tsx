@@ -665,7 +665,7 @@ export default function ProductDetailPage() {
                       </button>
                     ))}
                   </div>
-                  <p className="mt-1 text-[#FFEABB]/70">
+                  <p className="mt-1 text-[#FFEABB]/70 text-md font-bold">
                     Ukuran di atas XL dikenakan biaya tambahan Rp{" "}
                     {priceFormatter.format(SIZE_SURCHARGE)}.
                   </p>
@@ -677,7 +677,7 @@ export default function ProductDetailPage() {
                 <h3 className="text-md font-body font-bold text-[#FFD88C] mb-2">
                   Deskripsi Produk
                 </h3>
-                <p className="text-sm leading-relaxed text-[#FFD88C]">
+                <p className="text-md leading-relaxed text-[#FFD88C]">
                   {product.description}
                 </p>
                 {isProductBundle(product) && bundleItems.length > 0 && (
@@ -797,7 +797,7 @@ export default function ProductDetailPage() {
               {/* Quantity & Add to Cart */}
               <div className="flex flex-col gap-4">
                 <div>
-                  <p className="mb-2 text-sm font-semibold text-[#FFEABB]">
+                  <p className="mb-2 text-md font-semibold text-[#FFEABB]">
                     Jumlah
                   </p>
                   <div className="flex items-center gap-3">
