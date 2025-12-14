@@ -11,6 +11,7 @@ function CarouselCard() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
+  const slides = ["/crsl/1.jpg", "/crsl/2.png"];
 
   useEffect(() => {
     if (!api) {
@@ -74,14 +75,17 @@ function CarouselCard() {
           }}
         >
           <CarouselContent className="h-[190px] sm:h-[230px] md:h-[280px] lg:h-80 w-full ml-0">
-            {Array.from({ length: 5 }).map((_, index) => (
+            {slides.map((src, index) => (
               <CarouselItem key={index} className="h-full pl-0">
                 <div className="px-6 h-full">
                   <Card className="h-full overflow-hidden border-none bg-transparent shadow-none">
-                    <CardContent className="flex h-full w-full items-center justify-center rounded-xl bg-white/80 px-0 py-0">
-                      <span className="text-4xl font-semibold">
-                        {index + 1}
-                      </span>
+                    <CardContent className="flex h-full w-full items-center justify-center rounded-xl bg-white/10 px-0 py-0">
+                      <img
+                        src={src}
+                        alt={`Carousel slide ${index + 1}`}
+                        className="h-full w-full object-contain"
+                        loading="lazy"
+                      />
                     </CardContent>
                   </Card>
                 </div>
