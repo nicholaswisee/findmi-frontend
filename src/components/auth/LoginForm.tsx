@@ -73,7 +73,7 @@ export default function LoginForm() {
       <Button
         type="submit"
         disabled={loading}
-        className="mt-2 w-full text-[#ffeabb] rounded-xl bg-[#1e368f] py-3 text-lg font-semibold tracking-wide transition hover:bg-[#1e368f] disabled:opacity-70"
+        className={`mt-2 w-full text-[#ffeabb] rounded-xl bg-[#1e368f] py-3 text-lg font-semibold tracking-wide transition hover:bg-[#1e368f] disabled:opacity-70 ${loading ? "cursor-not-allowed" : "hover:cursor-pointer"}`}
       >
         {loading ? "Sedang masuk..." : "Log in"}
       </Button>

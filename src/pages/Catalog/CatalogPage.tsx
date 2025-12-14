@@ -464,7 +464,7 @@ export default function CatalogPage() {
                 key={tab.value}
                 type="button"
                 onClick={() => handleTabSelect(tab.value)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all shadow-sm border ${
+                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all hover:cursor-pointer shadow-sm border ${
                   active
                     ? "border-[#FFD88C]/80 bg-[#463B8B]/60 text-[#FFD88C] shadow-lg"
                     : "border-white/10 bg-[#1b1540]/50 text-[#FFEABB]/80 hover:border-white/30 hover:text-[#FFD88C]"
