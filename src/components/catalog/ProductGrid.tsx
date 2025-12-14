@@ -26,6 +26,14 @@ export default function ProductGrid({
   const category = useProductStore((s) => s.category);
   const fetchCart = useCartStore((s) => s.fetchCart);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
+  const isPanitia =
+    !!user &&
+    (user.role === "admin" ||
+      user.role === "subadmin" ||
+      (user.department !== "Umum" &&
+        user.department !== "none" &&
+        user.department !== "Tutor"));
 
   const handleNavigateToProduct = (productId: number | string) => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -107,6 +115,12 @@ export default function ProductGrid({
     const q = showSearch && query ? query.trim().toLowerCase() : "";
     let filtered = products;
 
+    if (!isPanitia) {
+      filtered = filtered.filter(
+        (p) => (p.category ?? "").trim().toLowerCase() !== "panitia"
+      );
+    }
+
     if (showSearch) {
       filtered = filtered.filter((p) =>
         categoryMatches(p.category, category ?? INITIAL_CATEGORY)
@@ -127,7 +141,7 @@ export default function ProductGrid({
     }
 
     return filtered;
-  }, [products, query, category, showSearch, maxItems]);
+  }, [products, query, category, showSearch, maxItems, isPanitia]);
 
   const fmt = new Intl.NumberFormat("id-ID");
 
