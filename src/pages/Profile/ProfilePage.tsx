@@ -62,6 +62,12 @@ export default function ProfilePage() {
   const selectableDepartments = DEPARTMENTS.filter(
     (dept) => dept !== "All" && dept !== "Tutor"
   );
+  const shouldShowInlineToken =
+    !showTokenPrompt &&
+    user &&
+    (user.department === "Umum" ||
+      user.department === "none" ||
+      user.division === "none");
 
   useEffect(() => {
     refreshUser();
@@ -80,14 +86,14 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (!showTokenPrompt) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [showTokenPrompt]);
+  // useEffect(() => {
+  //   if (!showTokenPrompt) return;
+  //   const previousOverflow = document.body.style.overflow;
+  //   document.body.style.overflow = "hidden";
+  //   return () => {
+  //     document.body.style.overflow = previousOverflow;
+  //   };
+  // }, [showTokenPrompt]);
 
   const handleTokenSubmit = async () => {
     const token = tokenInput.trim().toUpperCase();
@@ -97,33 +103,44 @@ export default function ProfilePage() {
     } else if (!token) {
       match = DIVISION_TOKENS["UMUM-2026"];
     }
-    if (match?.requireNim && !nimInput.trim()) {
-      toast.error("NIM wajib diisi untuk panitia.");
-      return;
-    }
-    if (!nameInput.trim()) {
-      toast.error("Nama wajib diisi.");
-      return;
-    }
-    const trimmedWa = waInput.trim();
-    if (!trimmedWa) {
-      toast.error("No. WhatsApp wajib diisi.");
-      return;
-    }
-    if (!/^[0-9]+$/.test(trimmedWa)) {
-      toast.error("No. WhatsApp hanya boleh berisi angka.");
-      return;
+    const currentName = (nameInput || user?.name || "").trim();
+    const currentNim = (nimInput || user?.nim || "").trim();
+    const currentLine = (lineInput || user?.line_id || "").trim();
+    const currentWa = (waInput || user?.no_wa || "").trim();
+
+    if (showTokenPrompt) {
+      if (match?.requireNim && !currentNim) {
+        toast.error("NIM wajib diisi untuk panitia.");
+        return;
+      }
+      if (!currentName) {
+        toast.error("Nama wajib diisi.");
+        return;
+      }
+      if (!currentWa) {
+        toast.error("No. WhatsApp wajib diisi.");
+        return;
+      }
+      if (!/^[0-9]+$/.test(currentWa)) {
+        toast.error("No. WhatsApp hanya boleh berisi angka.");
+        return;
+      }
     }
     setTokenSubmitting(true);
     try {
       const payload: Partial<EditedProfileData> = {
-        name: nameInput.trim(),
         department: match ? match.department : "Umum",
         division: match ? match.division : "none",
-        nim: match?.requireNim ? nimInput.trim() : "",
-        line_id: lineInput.trim(),
-        no_wa: trimmedWa,
       };
+
+      // Only include other profile fields when using the token modal; the inline token uses existing data.
+      if (showTokenPrompt) {
+        payload.name = currentName;
+        payload.line_id = currentLine;
+        payload.no_wa = currentWa;
+        payload.nim = match?.requireNim ? currentNim : "";
+      }
+
       if (!match) {
         toast.error("Token tidak sesuai.");
         return;
@@ -284,7 +301,7 @@ export default function ProfilePage() {
             label: "NIM",
             value: user?.nim || "-",
             field: "nim",
-            editable: !affiliationLocked,
+            editable: true,
           },
         ]),
     {
@@ -300,12 +317,6 @@ export default function ProfilePage() {
       editable: true,
     },
   ];
-  // const shouldShowInlineToken =
-  //   user &&
-  //   (user.department === "Umum" ||
-  //     user.department === "none" ||
-  //     user.division === "none");
-
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
@@ -470,11 +481,11 @@ export default function ProfilePage() {
                           value
                         )}
                       </td>
-                    </tr>
-                  );
-                })}
-                {!hideNimAndDepartment && (
-                  <tr className="border-b border-white/10 last:border-b-0">
+                </tr>
+              );
+            })}
+            {!hideNimAndDepartment && (
+              <tr className="border-b border-white/10 last:border-b-0">
                     <th
                       scope="row"
                       className="w-1/3 text-[#FFD88C] py-4 pr-4 font-semibold"
@@ -553,6 +564,41 @@ export default function ProfilePage() {
                           </span>
                         </div>
                       )}
+                    </td>
+                  </tr>
+                )}
+                {shouldShowInlineToken && (
+                  <tr className="border-b border-white/10 last:border-b-0">
+                    <th
+                      scope="row"
+                      className="w-1/3 text-[#FFD88C] py-4 pr-4 font-semibold align-top"
+                    >
+                      Token Panitia
+                    </th>
+                    <td className="py-4 text-[#FFD88C] font-semibold">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <Input
+                          value={tokenInput}
+                          onChange={(e) => setTokenInput(e.target.value)}
+                          placeholder="Masukkan token panitia"
+                          className={`sm:max-w-xs ${inputClass}`}
+                          disabled={tokenSubmitting}
+                        />
+                        <Button
+                          variant="blue"
+                          onClick={handleTokenSubmit}
+                          disabled={tokenSubmitting}
+                        >
+                          Simpan Token
+                        </Button>
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        <p className="text-xs text-[#FFD88C]/80">
+                          Masukkan token panitia untuk beralih dari akun Umum ke
+                          panitia. Data lain dapat diedit pada baris profil di
+                          atas.
+                        </p>
+                      </div>
                     </td>
                   </tr>
                 )}
