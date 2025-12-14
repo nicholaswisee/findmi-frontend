@@ -367,7 +367,7 @@ export default function ProfilePage() {
             )}
           </header>
           {showTokenPrompt && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+            <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 px-4">
               <div className="w-full max-w-md rounded-2xl bg-plain-green p-6 text-[#ffd88c] shadow-2xl">
                 <h2 className="text-xl font-semibold tracking-wide text-center mb-2 text-[#FFC76E]">
                   Lengkapi Data Akun
@@ -481,11 +481,11 @@ export default function ProfilePage() {
                           value
                         )}
                       </td>
-                </tr>
-              );
-            })}
-            {!hideNimAndDepartment && (
-              <tr className="border-b border-white/10 last:border-b-0">
+                    </tr>
+                  );
+                })}
+                {!hideNimAndDepartment && (
+                  <tr className="border-b border-white/10 last:border-b-0">
                     <th
                       scope="row"
                       className="w-1/3 text-[#FFD88C] py-4 pr-4 font-semibold"
