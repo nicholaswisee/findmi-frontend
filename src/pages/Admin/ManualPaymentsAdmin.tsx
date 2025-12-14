@@ -41,6 +41,14 @@ const currencyFormatter = new Intl.NumberFormat("id-ID", {
   maximumFractionDigits: 0,
 });
 
+const SERVICE_FEE_RATE = 0.02;
+const computeWithServiceFee = (amount: number | string | null | undefined) => {
+  const base = typeof amount === "number" ? amount : Number(amount) || 0;
+  const fee = Math.ceil(base * SERVICE_FEE_RATE);
+  const total = base + fee;
+  return { base, fee, total };
+};
+
 const formatCurrency = (value: number | string | null | undefined) =>
   currencyFormatter.format(
     typeof value === "string" ? Number(value) || 0 : value ?? 0
@@ -268,14 +276,20 @@ export default function ManualPaymentsAdmin() {
       {
         id: "total",
         header: "Total",
-        cell: ({ row }) => (
-          <div className="text-sm font-semibold">
-            {formatCurrency(row.original.order.total_amount)}
-            <div className="text-[11px] text-muted-foreground">
-              Order: {row.original.order.payment_status}
+        cell: ({ row }) => {
+          const pricing = computeWithServiceFee(row.original.order.total_amount);
+          return (
+            <div className="text-sm font-semibold">
+              {formatCurrency(pricing.total)}
+              <div className="text-[11px] text-muted-foreground">
+                Termasuk biaya layanan 2% ({formatCurrency(pricing.fee)})
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Order: {row.original.order.payment_status}
+              </div>
             </div>
-          </div>
-        ),
+          );
+        },
       },
       {
         id: "actions",
@@ -418,9 +432,22 @@ export default function ManualPaymentsAdmin() {
                 </div>
                 <div>
                   <p className="text-xs  tracking-wide">Order</p>
-                  <p className="font-semibold">
-                    Total {formatCurrency(selectedProof.order.total_amount)}
-                  </p>
+                  {(() => {
+                    const pricing = computeWithServiceFee(
+                      selectedProof.order.total_amount
+                    );
+                    return (
+                      <div className="space-y-1">
+                        <p className="font-semibold">
+                          Total {formatCurrency(pricing.total)}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Termasuk biaya layanan 2% (
+                          {formatCurrency(pricing.fee)})
+                        </p>
+                      </div>
+                    );
+                  })()}
                   <p className="text-xs ">
                     Status: {selectedProof.order.payment_status}
                   </p>

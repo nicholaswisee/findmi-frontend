@@ -59,14 +59,6 @@ export default function CheckoutPage() {
     }
   }, [showDialog]);
 
-  const totalQuantity = cart?.summary.total_quantity ?? 0;
-  const subtotal = cart?.summary.total_amount ?? 0;
-  const deliveryFee = fulfillmentMethod === "Delivery" ? 20000 : 0;
-  const baseTotal = subtotal + deliveryFee;
-  const serviceFeeRate = 0.02;
-  const serviceFee = Math.ceil(baseTotal * serviceFeeRate);
-  const grandTotal = baseTotal + serviceFee;
-  const cartItems = cart?.items ?? [];
   type CartItemType = (typeof cartItems)[number];
   const SIZE_SURCHARGE = 15000;
   const isAboveXL = (size?: string | null) => {
@@ -119,6 +111,25 @@ export default function CheckoutPage() {
     }
     return base + extras;
   };
+
+  const cartItems = cart?.items ?? [];
+  const totalQuantity =
+    cartItems.reduce((acc, item) => acc + (item.quantity ?? 0), 0) ??
+    cart?.summary.total_quantity ??
+    0;
+  const deliveryFee = fulfillmentMethod === "Delivery" ? 20000 : 0;
+  const baseTotal =
+    cartItems.reduce((acc, item) => {
+      const unitPrice = item.bundle
+        ? computeBundleUnitPrice(item)
+        : computeProductUnitPrice(item);
+      return acc + unitPrice * (item.quantity ?? 0);
+    }, 0) + deliveryFee;
+  const subtotal =
+    baseTotal - deliveryFee; /* computed subtotal with surcharges */
+  const serviceFeeRate = 0.02;
+  const serviceFee = Math.ceil(baseTotal * serviceFeeRate);
+  const grandTotal = baseTotal + serviceFee;
 
   const buildItemsPayload = () => {
     const items: Array<{

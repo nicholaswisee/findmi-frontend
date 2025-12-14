@@ -9,8 +9,59 @@ export function CartSummary() {
     fulfillmentMethod,
   } = useCartStore();
 
-  const totalQuantity = cart?.summary.total_quantity ?? 0;
-  const subtotal = cart?.summary.total_amount ?? 0;
+  const cartItems = cart?.items ?? [];
+
+  const isAboveXL = (size?: string | null) => {
+    const normalized = size?.trim().toUpperCase();
+    if (!normalized || !normalized.endsWith("L")) return false;
+    const numericMatch = normalized.match(/^(\d+)XL$/);
+    if (numericMatch) return Number(numericMatch[1]) >= 2;
+    const xMatch = normalized.match(/^(X+)L$/);
+    return !!(xMatch?.[1] && xMatch[1].length >= 2);
+  };
+
+  const SIZE_SURCHARGE = 15000;
+
+  const computeProductUnitPrice = (item: (typeof cartItems)[number]) => {
+    const base =
+      typeof item.product?.price === "number" ? item.product.price : 0;
+    const optionPrice =
+      item.selected_option && Array.isArray(item.product?.options)
+        ? item.product.options.find(
+            (opt) =>
+              opt?.label?.toUpperCase() === item.selected_option?.toUpperCase()
+          )?.additional_price ?? 0
+        : 0;
+    const sizeExtra =
+      item.selected_size && isAboveXL(item.selected_size) ? SIZE_SURCHARGE : 0;
+    return base + optionPrice + sizeExtra;
+  };
+
+  const computeBundleUnitPrice = (item: (typeof cartItems)[number]) => {
+    const bundle = item.bundle;
+    if (!bundle) return 0;
+    const base = typeof bundle.price === "number" ? bundle.price : 0;
+    const selections = item.selected_bundle_items ?? [];
+    let extras = 0;
+    // Cart bundle payload here lacks full product option metadata; apply size surcharge only.
+    for (const sel of selections) {
+      const sizeExtra = sel.size && isAboveXL(sel.size) ? SIZE_SURCHARGE : 0;
+      extras += sizeExtra;
+    }
+    return base + extras;
+  };
+
+  const subtotal = cartItems.reduce((acc, item) => {
+    const unitPrice = item.bundle
+      ? computeBundleUnitPrice(item)
+      : computeProductUnitPrice(item);
+    return acc + unitPrice * (item.quantity ?? 0);
+  }, 0);
+
+  const totalQuantity = cartItems.reduce(
+    (acc, item) => acc + (item.quantity ?? 0),
+    0
+  );
   const deliveryFee = fulfillmentMethod === "Delivery" ? DELIVERY_FEE : 0;
   const grandTotal = subtotal + deliveryFee;
 
