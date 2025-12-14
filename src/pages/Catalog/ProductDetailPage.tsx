@@ -554,7 +554,7 @@ export default function ProductDetailPage() {
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
-                      className={`bg-plain-green rounded aspect-square flex items-center justify-center overflow-hidden border-2 transition-all w-24 h-24 flex-1 ${
+                      className={`bg-plain-green rounded aspect-square flex items-center justify-center overflow-hidden border-2 transition-all w-24 h-24 flex-1 cursor-pointer ${
                         selectedImage === index
                           ? "border-[#ffd88c]"
                           : "border-gray-200 hover:border-gray-300"
@@ -619,7 +619,7 @@ export default function ProductDetailPage() {
                           key={opt.label}
                           type="button"
                           onClick={() => setSelectedOption(opt.label)}
-                          className={`group relative overflow-hidden rounded-xl border px-4 py-2 text-sm font-semibold transition-all ${
+                          className={`group relative overflow-hidden rounded-xl border px-4 py-2 text-sm font-semibold transition-all cursor-pointer hover:scale-105 active:scale-95 ${
                             isActive
                               ? "border-[#c62d76] bg-[#c62d76] text-[#ffeabb] shadow-lg shadow-[#c62d76]/30"
                               : "border-white/20 bg-white/5 text-[#ffeabb] hover:border-[#c62d76] hover:bg-[#c62d76]/10 hover:text-[#ffeabb]"
@@ -655,7 +655,7 @@ export default function ProductDetailPage() {
                         key={size}
                         type="button"
                         onClick={() => setSelectedSize(size)}
-                        className={`px-4 py-1.5 rounded-full border-2 font-semibold text-sm transition-colors ${
+                        className={`px-4 py-1.5 rounded-full border-2 font-semibold text-sm transition-all cursor-pointer hover:scale-105 active:scale-95 ${
                           selectedSize === size
                             ? "bg-[#c62d76] text-[#ffeabb] border-[#c62d76]"
                             : "bg-transparent text-[#ffeabb] border-[#ffeabb]/60 hover:bg-[#ffeabb]/15"
@@ -674,7 +674,7 @@ export default function ProductDetailPage() {
 
               {/* Product Description */}
               <div className="mb-6 grow">
-                <h3 className="text-sm font-body font-bold text-[#FFD88C] mb-2">
+                <h3 className="text-md font-body font-bold text-[#FFD88C] mb-2">
                   Deskripsi Produk
                 </h3>
                 <p className="text-sm leading-relaxed text-[#FFD88C]">
@@ -801,11 +801,11 @@ export default function ProductDetailPage() {
                     Jumlah
                   </p>
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center rounded-2xl border-2 border-[#050836] bg-plain-green text-[#050836] shadow">
+                    <div className="flex items-center rounded-2xl border-2 border-[#FFEABB] bg-plain-green text-[#FFEABB] shadow">
                       <button
                         type="button"
                         onClick={decrementQuantity}
-                        className="flex h-12 w-12 items-center justify-center border-r-2 border-[#050836] hover:bg-black/10 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-12 w-12 items-center justify-center border-r-2 border-[#050836] hover:bg-black/10 transition-all cursor-pointer hover:scale-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                         disabled={quantity <= 1}
                         aria-label="Kurangi jumlah"
                       >
@@ -822,7 +822,7 @@ export default function ProductDetailPage() {
                       <button
                         type="button"
                         onClick={incrementQuantity}
-                        className="flex h-12 w-12 items-center justify-center border-l-2 border-[#050836] hover:bg-black/10 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-12 w-12 items-center justify-center border-l-2 border-[#050836] hover:bg-black/10 transition-all cursor-pointer hover:scale-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
                         disabled={!product || quantity >= getStock()}
                         aria-label="Tambah jumlah"
                       >
@@ -838,7 +838,7 @@ export default function ProductDetailPage() {
                   className={`mt-2 block w-full rounded-lg py-2 text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all ${
                     getStock() === 0 || !isAuthenticated
                       ? "cursor-not-allowed bg-[#7a1644] text-[#ffeabb]/60 opacity-80"
-                      : "bg-[#c62d76] text-[#ffeabb] hover:brightness-105 active:brightness-95"
+                      : "cursor-pointer bg-[#c62d76] text-[#ffeabb] hover:brightness-105 hover:scale-105 active:brightness-95 active:scale-95"
                   }`}
                 >
                   {getStock() === 0

@@ -34,7 +34,7 @@ export default function AuthPage() {
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 rounded-2xl py-2 text-sm font-semibold transition ${
+                className={`flex-1 rounded-2xl py-2 text-sm font-semibold transition hover:cursor-pointer ${
                   activeTab === tab.key ? "bg-[#1b165e]" : ""
                 }`}
                 aria-selected={activeTab === tab.key}
