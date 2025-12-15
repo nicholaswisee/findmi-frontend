@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, SquarePen, X, Check } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -319,6 +320,84 @@ export default function ProfilePage() {
     refreshUser();
   }, [refreshUser]);
 
+  const tokenModal = showTokenPrompt
+    ? createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="w-full max-w-md rounded-2xl bg-plain-green p-6 text-[#ffd88c] shadow-2xl">
+            <h2 className="text-xl font-semibold tracking-wide text-center mb-2 text-[#FFC76E]">
+              Lengkapi Data Akun
+            </h2>
+            {/* <p className="text-sm text-slate-600 mb-4">
+                  Masukkan token panitia untuk menetapkan Bidang dan Divisi.
+                  Jika bukan panitia, lewati dan kami sembunyikan NIM/Bidang.
+                </p> */}
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-semibold">Token</label>
+                <Input
+                  value={tokenInput}
+                  onChange={(e) => setTokenInput(e.target.value)}
+                  placeholder="Masukkan token jika ada"
+                  className={`mt-1 ${inputClass}`}
+                  disabled={tokenSubmitting}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">Nama*</label>
+                <Input
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  placeholder="Masukkan nama lengkap"
+                  className={`mt-1 ${inputClass}`}
+                  disabled={tokenSubmitting}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">NIM</label>
+                <Input
+                  value={nimInput}
+                  onChange={(e) => setNimInput(e.target.value)}
+                  placeholder="Masukkan NIM jika ada"
+                  className={`mt-1 ${inputClass}`}
+                  disabled={tokenSubmitting}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">ID Line</label>
+                <Input
+                  value={lineInput}
+                  onChange={(e) => setLineInput(e.target.value)}
+                  placeholder="Masukkan ID Line (opsional)"
+                  className={`mt-1 ${inputClass}`}
+                  disabled={tokenSubmitting}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-semibold">No. WhatsApp*</label>
+                <Input
+                  value={waInput}
+                  onChange={(e) => setWaInput(e.target.value)}
+                  placeholder="Masukkan No. WhatsApp"
+                  className={`mt-1 ${inputClass}`}
+                  disabled={tokenSubmitting}
+                />
+              </div>
+            </div>
+            <div className="mt-5 flex flex-wrap gap-3 font-medium">
+              <Button
+                variant="blue"
+                onClick={handleTokenSubmit}
+                disabled={tokenSubmitting}
+              >
+                Simpan
+              </Button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )
+    : null;
+
   return (
     <section className="relative isolate flex min-h-[calc(100svh-5rem)] items-center justify-center px-2 py-10 sm:px-4 md:py-16">
       <div className="z-10 w-full max-w-5xl">
@@ -364,82 +443,7 @@ export default function ProfilePage() {
               </div>
             )}
           </header>
-          {showTokenPrompt && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-              <div className="w-full max-w-md rounded-2xl bg-plain-green p-6 text-[#ffd88c] shadow-2xl">
-                <h2 className="text-xl font-semibold tracking-wide text-center mb-2 text-[#FFC76E]">
-                  Lengkapi Data Akun
-                </h2>
-                {/* <p className="text-sm text-slate-600 mb-4">
-                  Masukkan token panitia untuk menetapkan Bidang dan Divisi.
-                  Jika bukan panitia, lewati dan kami sembunyikan NIM/Bidang.
-                </p> */}
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-semibold">Token</label>
-                    <Input
-                      value={tokenInput}
-                      onChange={(e) => setTokenInput(e.target.value)}
-                      placeholder="Masukkan token jika ada"
-                      className={`mt-1 ${inputClass}`}
-                      disabled={tokenSubmitting}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold">Nama*</label>
-                    <Input
-                      value={nameInput}
-                      onChange={(e) => setNameInput(e.target.value)}
-                      placeholder="Masukkan nama lengkap"
-                      className={`mt-1 ${inputClass}`}
-                      disabled={tokenSubmitting}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold">NIM</label>
-                    <Input
-                      value={nimInput}
-                      onChange={(e) => setNimInput(e.target.value)}
-                      placeholder="Masukkan NIM jika ada"
-                      className={`mt-1 ${inputClass}`}
-                      disabled={tokenSubmitting}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold">ID Line</label>
-                    <Input
-                      value={lineInput}
-                      onChange={(e) => setLineInput(e.target.value)}
-                      placeholder="Masukkan ID Line (opsional)"
-                      className={`mt-1 ${inputClass}`}
-                      disabled={tokenSubmitting}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold">
-                      No. WhatsApp*
-                    </label>
-                    <Input
-                      value={waInput}
-                      onChange={(e) => setWaInput(e.target.value)}
-                      placeholder="Masukkan No. WhatsApp"
-                      className={`mt-1 ${inputClass}`}
-                      disabled={tokenSubmitting}
-                    />
-                  </div>
-                </div>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  <Button
-                    variant="blue"
-                    onClick={handleTokenSubmit}
-                    disabled={tokenSubmitting}
-                  >
-                    Simpan
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+          {tokenModal}
           <div className="flex w-full min-h-36 rounded-3xl border border-white/0 bg-[#463B8B]/15 shadow-lg py-2 px-6">
             <table className="w-full table-fixed text-left">
               <tbody>
