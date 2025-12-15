@@ -65,9 +65,7 @@ export default function ProfilePage() {
   const shouldShowInlineToken =
     !showTokenPrompt &&
     user &&
-    (user.department === "Umum" ||
-      user.department === "none" ||
-      user.division === "none");
+    (user.department === "Umum" || user.department === "none");
 
   useEffect(() => {
     refreshUser();
@@ -367,7 +365,7 @@ export default function ProfilePage() {
             )}
           </header>
           {showTokenPrompt && (
-            <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/60 px-4">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
               <div className="w-full max-w-md rounded-2xl bg-plain-green p-6 text-[#ffd88c] shadow-2xl">
                 <h2 className="text-xl font-semibold tracking-wide text-center mb-2 text-[#FFC76E]">
                   Lengkapi Data Akun
