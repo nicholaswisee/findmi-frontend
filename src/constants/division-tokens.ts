@@ -7,6 +7,63 @@ export const DIVISION_TOKENS = {
     requireNim: true,
   },
 
+  // Department-only tokens (no specific division)
+  "KES-2026": {
+    department: "Kesekjenan",
+    division: "none",
+    requireNim: true,
+  },
+  "MP-2026": {
+    department: "Manajemen Personalia",
+    division: "none",
+    requireNim: true,
+  },
+  "MAT-2026": {
+    department: "Materi dan Metode",
+    division: "none",
+    requireNim: true,
+  },
+  "ITBDAY-2026": {
+    department: "ITB Day",
+    division: "none",
+    requireNim: true,
+  },
+  "REL-2026": {
+    department: "Relasi",
+    division: "none",
+    requireNim: true,
+  },
+  "KRE-2026": {
+    department: "Kreatif",
+    division: "none",
+    requireNim: true,
+  },
+  "DIS-2026": {
+    department: "Diseminasi",
+    division: "none",
+    requireNim: true,
+  },
+  "PAG-2026": {
+    department: "Paguyuban Membangun",
+    division: "none",
+    requireNim: true,
+  },
+  "FUN-2026": {
+    department: "Fundraising",
+    division: "none",
+    requireNim: true,
+  },
+  "OPS-2026": {
+    department: "Operasional",
+    division: "none",
+    requireNim: true,
+  },
+  "IT-HEAD-2026": {
+    department: "IT",
+    division: "none",
+    requireNim: true,
+  },
+
   // Kesekjenan
   "KES-SEKRETARIS-2026": {
     department: "Kesekjenan",

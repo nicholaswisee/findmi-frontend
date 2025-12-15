@@ -1,11 +1,32 @@
 import "../../styles/auth.styles.css";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
 import { API_URL } from "@/lib/api";
 
 const BACKEND_URL = API_URL;
 
 export default function GoogleLoginButton() {
+  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+
+  const inAppRegex = useMemo(
+    () =>
+      /(FBAN|FBAV|Instagram|Line|MicroMessenger|Twitter|Snapchat|TikTok|Weibo|QQ|Telegram)/i,
+    []
+  );
+
+  useEffect(() => {
+    const ua = navigator?.userAgent || "";
+    setIsInAppBrowser(inAppRegex.test(ua));
+  }, [inAppRegex]);
+
   const handleLogin = () => {
+    if (isInAppBrowser) {
+      // Google blocks OAuth inside embedded browsers; prompt user to open a real browser.
+      alert(
+        "Login Google tidak didukung di browser bawaan aplikasi. Silakan buka halaman ini di Chrome/Safari untuk melanjutkan."
+      );
+      return;
+    }
     window.location.href = `${BACKEND_URL}/auth/google`;
   };
 
