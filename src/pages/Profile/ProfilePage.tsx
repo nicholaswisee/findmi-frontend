@@ -84,14 +84,14 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  // useEffect(() => {
-  //   if (!showTokenPrompt) return;
-  //   const previousOverflow = document.body.style.overflow;
-  //   document.body.style.overflow = "hidden";
-  //   return () => {
-  //     document.body.style.overflow = previousOverflow;
-  //   };
-  // }, [showTokenPrompt]);
+  useEffect(() => {
+    if (!showTokenPrompt) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [showTokenPrompt]);
 
   const handleTokenSubmit = async () => {
     const token = tokenInput.trim().toUpperCase();

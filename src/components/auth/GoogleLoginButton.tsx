@@ -2,6 +2,7 @@ import "../../styles/auth.styles.css";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
 import { API_URL } from "@/lib/api";
+import { toast } from "sonner";
 
 const BACKEND_URL = API_URL;
 
@@ -22,8 +23,8 @@ export default function GoogleLoginButton() {
   const handleLogin = () => {
     if (isInAppBrowser) {
       // Google blocks OAuth inside embedded browsers; prompt user to open a real browser.
-      alert(
-        "Login Google tidak didukung di browser bawaan aplikasi. Silakan buka halaman ini di Chrome/Safari untuk melanjutkan."
+      toast.error(
+        "Buka di Chrome, Safari, atau Browser lainnya untuk melakukan login."
       );
       return;
     }
@@ -47,6 +48,12 @@ export default function GoogleLoginButton() {
         />
         <p className="text-black mb-1">Lanjutkan dengan Google</p>
       </Button>
+      {/* {isInAppBrowser && (
+        <div className="mt-2 text-center text-xs text-red-600">
+          Deteksi browser bawaan aplikasi. Buka halaman ini di Chrome/Safari
+          (Open in browser) lalu coba login lagi.
+        </div>
+      )} */}
     </>
   );
 }
