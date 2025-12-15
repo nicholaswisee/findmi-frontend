@@ -76,7 +76,7 @@ export default function ProfilePage() {
       user &&
       user.provider === "google" &&
       user.department !== "Umum" &&
-      (user.department === "none" || user.division === "none")
+      user.department === "none"
     ) {
       setShowTokenPrompt(true);
     } else {
