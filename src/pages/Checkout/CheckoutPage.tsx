@@ -467,19 +467,27 @@ export default function CheckoutPage() {
             <div className="mt-4 space-y-3">
               <div className="rounded-xl border border-white/10 bg-white/5 p-3">
                 <p className="text-sm font-semibold text-[#FFD88C]">
-                  Scan QRIS
+                  Metode Pembayaran
                 </p>
-                <div className="mt-2 overflow-hidden rounded-xl border border-white/15 bg-white">
+                <p>
+                  Transfer ke:
+                  <br />
+                  <span className="font-semibold text-lg text-[#FFD88C]">
+                    Bank Jago - 106371605856 a.n. ANINDITA PUTRI AISYA
+                  </span>
+                </p>
+                <p>atau Scan QRIS:</p>
+                <div className="mt-2 overflow-hidden rounded-xl border border-white/15 bg-white/20">
                   <img
                     src="/qris.jpg"
                     alt="QRIS pembayaran manual"
                     className="h-56 w-full object-contain"
                   />
                 </div>
-                <p className="mt-2 text-xs text-white/70">
+                {/* <p className="mt-2 text-xs text-white/70">
                   Scan QRIS di atas, bayar sesuai total, lalu unggah bukti
                   pembayaran.
-                </p>
+                </p> */}
               </div>
 
               <div className="text-sm font-semibold text-[#FFD88C]">
