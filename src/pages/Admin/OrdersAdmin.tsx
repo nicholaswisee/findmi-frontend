@@ -19,10 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { DEPARTMENTS } from "@/constants/departments";
-import { apiRequest } from "@/lib/api";
 import type {
   OrderWithUser,
-  OrdersWithUsersResponse,
   UserDepartmentEnum,
 } from "@/types/types";
 
@@ -289,117 +287,6 @@ export default function OrdersAdmin() {
     [activeOrderId, handleUpdateOrder]
   );
 
-  const handleExportCsv = useCallback(async () => {
-    try {
-      const limit = 100;
-      let offset = 0;
-      const allOrders: OrderWithUser[] = [];
-
-      // Fetch all pages with current filters (backend caps limit at 100)
-      // AJFLDJASKLDFJSASKLDFeslint-disable-next-line no-constant-conditionsdfjkajsdfj
-      while (true) {
-        const params = new URLSearchParams({
-          limit: String(limit),
-          offset: String(offset),
-        });
-        const trimmedSearch = debouncedSearch.trim();
-        if (trimmedSearch) {
-          params.set("search", trimmedSearch);
-        }
-        if (departmentFilter && departmentFilter !== "all") {
-          params.set("department", departmentFilter);
-        }
-        if (pickupFilter && pickupFilter !== "all") {
-          params.set("pickup", pickupFilter);
-        }
-
-        const data = await apiRequest<OrdersWithUsersResponse>(
-          `/order/admin?${params.toString()}`
-        );
-
-        allOrders.push(...data.orders);
-
-        if (data.offset + data.orders.length >= data.total) {
-          break;
-        }
-
-        offset = data.offset + data.limit;
-      }
-
-      if (allOrders.length === 0) {
-        toast.info("Tidak ada pesanan untuk diekspor.");
-        return;
-      }
-
-      const escapeCsv = (value: unknown): string => {
-        if (value === null || value === undefined) return "";
-        const str = String(value);
-        if (/[",\n]/.test(str)) {
-          return `"${str.replace(/"/g, '""')}"`;
-        }
-        return str;
-      };
-
-      const headers = [
-        "Order ID",
-        "Buyer Name",
-        "Buyer NIM",
-        "Department",
-        "Division",
-        "Payment Status",
-        "Payment Method",
-        "Total Amount",
-        "Is Taken",
-        "Fulfillment",
-        "Delivery Fee",
-        "Created At",
-        "Admin Note",
-      ];
-
-      const rows = allOrders.map((order) => [
-        order.id,
-        order.user.name,
-        order.user.nim,
-        order.user.department,
-        order.user.division,
-        order.payment_status,
-        order.payment_method,
-        order.total_amount,
-        order.is_taken ? "Taken" : "Pending",
-        order.fulfillment_method,
-        order.delivery_fee,
-        new Date(order.created_at).toLocaleString("id-ID"),
-        order.admin_note ?? "",
-      ]);
-
-      const csvLines = [
-        headers.map(escapeCsv).join(","),
-        ...rows.map((row) => row.map(escapeCsv).join(",")),
-      ];
-      const csvContent = csvLines.join("\r\n");
-
-      const blob = new Blob([csvContent], {
-        type: "text/csv;charset=utf-8;",
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "orders-export.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      toast.success("Export orders ke CSV berhasil.");
-    } catch (err) {
-      toast.error(
-        err instanceof Error
-          ? err.message
-          : "Gagal mengekspor data pesanan ke CSV"
-      );
-    }
-  }, [debouncedSearch, departmentFilter, pickupFilter]);
-
   const resetFilters = () => {
     setDepartmentFilter("all");
     setPickupFilter("all");
@@ -558,10 +445,7 @@ export default function OrdersAdmin() {
             onChange={(event) => setSearchTerm(event.target.value)}
           />
         </div>
-        <div className="lg:col-span-4 flex justify-end gap-2">
-          <Button variant="outline" onClick={handleExportCsv}>
-            Export CSV
-          </Button>
+        <div className="lg:col-span-4 flex justify-end">
           <Button variant="secondary" onClick={resetFilters}>
             Reset Filters
           </Button>

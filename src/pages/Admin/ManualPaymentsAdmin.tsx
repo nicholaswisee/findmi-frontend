@@ -277,7 +277,9 @@ export default function ManualPaymentsAdmin() {
         id: "total",
         header: "Total",
         cell: ({ row }) => {
-          const pricing = computeWithServiceFee(row.original.order.total_amount);
+          const pricing = computeWithServiceFee(
+            row.original.order.total_amount
+          );
           return (
             <div className="text-sm font-semibold">
               {formatCurrency(pricing.total)}
@@ -367,10 +369,10 @@ export default function ManualPaymentsAdmin() {
           </Select>
         </div>
         <div className="space-y-2 min-w-0 lg:col-span-2">
-          <Label htmlFor="manual-search">Cari nama/NIM/transaksi</Label>
+          <Label htmlFor="manual-search">Cari Nama / NIM</Label>
           <Input
             id="manual-search"
-            placeholder="Cari nama, NIM, atau transaksi"
+            placeholder="Cari Nama atau NIM"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full wrap-break-word"

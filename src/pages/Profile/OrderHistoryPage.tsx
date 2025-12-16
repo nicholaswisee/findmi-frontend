@@ -199,12 +199,33 @@ export default function OrderHistoryPage() {
             .join(", ")
         : undefined;
 
+    const bundleOptions =
+      !isProduct && item.selected_bundle_items?.length
+        ? item.selected_bundle_items
+            .filter((selection) => selection.option)
+            .map((selection) => {
+              const productName = item.bundle?.bundle_items?.find(
+                (bundleItem) => bundleItem.product_id === selection.product_id
+              )?.product?.name;
+              const label =
+                productName && productName.trim().length > 0
+                  ? productName
+                  : `Produk #${selection.product_id}`;
+              return `${label}: ${selection.option}`;
+            })
+            .join(", ")
+        : undefined;
+
+    const optionLabel = isProduct ? item.selected_option ?? null : null;
+
     return {
       name: source?.name ?? "Item tanpa nama",
       description: truncateDescription(rawDescription),
       image: source?.image_urls?.[0] || "",
       size: item.selected_size ?? null,
       bundleSizes,
+      optionLabel,
+      bundleOptions,
     };
   };
 
@@ -299,8 +320,15 @@ export default function OrderHistoryPage() {
 
                   <div className="space-y-3">
                     {order.items.map((item) => {
-                      const { name, description, image, size, bundleSizes } =
-                        describeItem(item);
+                      const {
+                        name,
+                        description,
+                        image,
+                        size,
+                        bundleSizes,
+                        optionLabel,
+                        bundleOptions,
+                      } = describeItem(item);
                       const displayImage = image || FALLBACK_IMAGE;
                       return (
                         <div
@@ -331,9 +359,19 @@ export default function OrderHistoryPage() {
                               Ukuran: {size}
                             </p>
                           )}
+                          {optionLabel && (
+                            <p className="text-xs font-semibold text-[#FFD88C]">
+                              Opsi: {optionLabel}
+                            </p>
+                          )}
                           {bundleSizes && (
                             <p className="text-xs text-[#FFD88C]">
                               {bundleSizes}
+                            </p>
+                          )}
+                          {bundleOptions && (
+                            <p className="text-xs text-[#FFD88C]">
+                              Opsi Bundle: {bundleOptions}
                             </p>
                           )}
                         </div>

@@ -1,6 +1,7 @@
 import {
   BadgeDollarSign,
   Box,
+  Download,
   Home,
   LogOut,
   ShoppingBag,
@@ -53,6 +54,11 @@ const items = [
     title: "Manual Payments",
     url: "/dashboard/manual-payments",
     icon: BadgeDollarSign,
+  },
+  {
+    title: "Export",
+    url: "/dashboard/export",
+    icon: Download,
   },
 ];
 

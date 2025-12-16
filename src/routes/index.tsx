@@ -22,6 +22,7 @@ const UsersAdmin = lazy(() => import("@/pages/Admin/UsersAdmin"));
 const ProductsAdmin = lazy(() => import("@/pages/Admin/ProductsAdmin"));
 const BundlesAdmin = lazy(() => import("@/pages/Admin/BundlesAdmin"));
 const OrdersAdmin = lazy(() => import("@/pages/Admin/OrdersAdmin"));
+const ExportPage = lazy(() => import("@/pages/Admin/ExportPage"));
 const ManualPaymentsAdmin = lazy(
   () => import("@/pages/Admin/ManualPaymentsAdmin")
 );
@@ -136,6 +137,14 @@ export const routes: RouteObject[] = [
         element: withSuspense(
           <AdminRoute>
             <OrdersAdmin />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: "export",
+        element: withSuspense(
+          <AdminRoute>
+            <ExportPage />
           </AdminRoute>
         ),
       },
