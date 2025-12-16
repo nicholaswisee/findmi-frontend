@@ -48,16 +48,16 @@ export default function CheckoutPage() {
     return map;
   }, [catalogProducts]);
 
-  // useEffect(() => {
-  //   if (typeof document === "undefined") return;
-  //   if (showDialog) {
-  //     const previous = document.body.style.overflow;
-  //     document.body.style.overflow = "hidden";
-  //     return () => {
-  //       document.body.style.overflow = previous;
-  //     };
-  //   }
-  // }, [showDialog]);
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    if (showDialog) {
+      const previous = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = previous;
+      };
+    }
+  }, [showDialog]);
 
   type CartItemType = (typeof cartItems)[number];
   const SIZE_SURCHARGE = 15000;
@@ -432,8 +432,8 @@ export default function CheckoutPage() {
       </div>
 
       {showDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 backdrop-blur-lg">
-          <div className="w-full max-w-lg rounded-2xl border border-white/15 bg-[#463B8B]/15 p-6 text-white shadow-2xl backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 backdrop-blur-lg ">
+          <div className="w-full max-w-lg rounded-2xl border border-white/15 bg-[#463B8B]/15 p-6 text-white shadow-2xl backdrop-blur-md max-h-[88vh] overflow-y-scroll">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold tracking-wide text-[#FFD88C]">
                 Konfirmasi Pembayaran
