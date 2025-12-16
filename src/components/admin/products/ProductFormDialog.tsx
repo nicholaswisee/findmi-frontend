@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { ImageUploadPool } from "@/components/admin/media/ImageUploadPool";
 
-const SIZE_PRIORITY = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
+const SIZE_PRIORITY = ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "XXXXL"] as const;
 const sizePriorityMap = new Map<string, number>(
   SIZE_PRIORITY.map((size, index) => [size, index])
 );
