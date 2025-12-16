@@ -48,16 +48,16 @@ export default function CheckoutPage() {
     return map;
   }, [catalogProducts]);
 
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    if (showDialog) {
-      const previous = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = previous;
-      };
-    }
-  }, [showDialog]);
+  // useEffect(() => {
+  //   if (typeof document === "undefined") return;
+  //   if (showDialog) {
+  //     const previous = document.body.style.overflow;
+  //     document.body.style.overflow = "hidden";
+  //     return () => {
+  //       document.body.style.overflow = previous;
+  //     };
+  //   }
+  // }, [showDialog]);
 
   type CartItemType = (typeof cartItems)[number];
   const SIZE_SURCHARGE = 15000;
