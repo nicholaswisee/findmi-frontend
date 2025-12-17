@@ -53,9 +53,9 @@ export default function AuthPage() {
             <div className="space-y-6 text-center">
               <div className="space-y-3">
                 {/* <h2 className="text-2xl font-semibold">Daftar Panitia</h2> */}
-                <p className="text-sm">
-                  Pendaftaran hanya tersedia melalui akun Google yang
-                  terverifikasi
+                <p className="text-md font-semibold">
+                  Gunakan browser seperti Chrome atau Safari untuk melakukan
+                  autentikasi Google.
                 </p>
               </div>
               <GoogleLoginButton />

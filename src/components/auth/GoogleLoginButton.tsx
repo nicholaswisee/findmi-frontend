@@ -1,27 +1,27 @@
 import "../../styles/auth.styles.css";
-import { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/button";
 import { API_URL } from "@/lib/api";
 import { toast } from "sonner";
+import { isInAppBrowser } from "@/utils/browserCheck";
 
 const BACKEND_URL = API_URL;
 
 export default function GoogleLoginButton() {
-  const [isInAppBrowser, setIsInAppBrowser] = useState(false);
+  // const [isInAppBrowser, setIsInAppBrowser] = useState(false);
 
-  const inAppRegex = useMemo(
-    () =>
-      /(FBAN|FBAV|Instagram|Line|MicroMessenger|Twitter|Snapchat|TikTok|Weibo|QQ|Telegram)/i,
-    []
-  );
+  // const inAppRegex = useMemo(
+  //   () =>
+  //     /(FBAN|FBAV|Instagram|Line|MicroMessenger|Twitter|Snapchat|TikTok|Weibo|QQ|Telegram)/i,
+  //   []
+  // );
 
-  useEffect(() => {
-    const ua = navigator?.userAgent || "";
-    setIsInAppBrowser(inAppRegex.test(ua));
-  }, [inAppRegex]);
+  // useEffect(() => {
+  //   const ua = navigator?.userAgent || "";
+  //   setIsInAppBrowser(inAppRegex.test(ua));
+  // }, [inAppRegex]);
 
   const handleLogin = () => {
-    if (isInAppBrowser) {
+    if (isInAppBrowser()) {
       // Google blocks OAuth inside embedded browsers; prompt user to open a real browser.
       toast.error(
         "Buka di Chrome, Safari, atau Browser lainnya untuk melakukan login."
@@ -48,10 +48,10 @@ export default function GoogleLoginButton() {
         />
         <p className="text-black mb-1">Lanjutkan dengan Google</p>
       </Button>
-      {/* {isInAppBrowser && (
-        <div className="mt-2 text-center text-xs text-red-600">
-          Deteksi browser bawaan aplikasi. Buka halaman ini di Chrome/Safari
-          (Open in browser) lalu coba login lagi.
+      {/* {isInAppBrowser() && (
+        <div className="mt-2 text-center text-md text-red-600">
+          Silakan buka halaman ini menggunakan Chrome, Safari, atau browser
+          bawaan.
         </div>
       )} */}
     </>
