@@ -36,7 +36,11 @@ export default function MainLayout() {
     "Perangkat Lapangan Utama",
     "IT",
   ];
-  const multikampusOptions: UserMultikampusEnum[] = ["Bandung", "Jatinangor"];
+  const multikampusOptions: UserMultikampusEnum[] = [
+    "Bandung",
+    "Jatinangor",
+    "Cirebon",
+  ];
   const requiresMultikampus = (department?: UserDepartmentEnum) =>
     !!department && multikampusRequiredDepartments.includes(department);
 
@@ -109,8 +113,9 @@ export default function MainLayout() {
             <h2 className="text-xl font-medium tracking-wide text-center mb-3 text-[#FFC76E]">
               Pilih Multikampus
             </h2>
-            <p className="font-medium text-center text-[#FFD88C]/90 mb-4">
-              Multikampus akan digunakan untuk pengambilan OTS.
+            <p className="font-medium text-center text-[#FFD88C]/90 mb-2">
+              Multikampus akan digunakan untuk pengambilan OTS. Untuk
+              multikampus Cirebon dapat diambil di ITB Ganesha.
             </p>
             <Select
               value={multikampusInput || "none"}

@@ -87,7 +87,11 @@ export default function ProfilePage() {
     "Perangkat Lapangan Utama",
     "IT",
   ];
-  const multikampusOptions: UserMultikampusEnum[] = ["Bandung", "Jatinangor"];
+  const multikampusOptions: UserMultikampusEnum[] = [
+    "Bandung",
+    "Jatinangor",
+    "Cirebon",
+  ];
   const requiresMultikampus = (department?: UserDepartmentEnum) =>
     !!department && multikampusRequiredDepartments.includes(department);
   const shouldShowInlineToken =
@@ -440,6 +444,10 @@ export default function ProfilePage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="mt-2 font-medium text-[#FFD88C]/80">
+                    Pengambilan OTS untuk multikampus Cirebon dapat diambil di
+                    ITB Ganesha.
+                  </p>
                 </div>
               )}
               <div>
@@ -683,6 +691,10 @@ export default function ProfilePage() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <p className="text-xs text-[#FFD88C]/80">
+                            Pengambilan OTS untuk multikampus Cirebon dapat
+                            diambil di ITB Ganesha.
+                          </p>
                         </div>
                       ) : (
                         <span>

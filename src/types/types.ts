@@ -64,7 +64,7 @@ export type UserRankEnum =
   | "Staff"
   | "none";
 
-export type UserMultikampusEnum = "Bandung" | "Jatinangor" | "none";
+export type UserMultikampusEnum = "Bandung" | "Jatinangor" | "Cirebon" | "none";
 
 export type UserRoleEnum = "user" | "admin" | "subadmin";
 
