@@ -64,6 +64,8 @@ export type UserRankEnum =
   | "Staff"
   | "none";
 
+export type UserMultikampusEnum = "Bandung" | "Jatinangor" | "none";
+
 export type UserRoleEnum = "user" | "admin" | "subadmin";
 
 export type OrderPaymentStatusEnum = "Pending" | "Paid" | "Failed" | "Refunded";
@@ -152,6 +154,7 @@ export type User = {
   name: string;
   department: UserDepartmentEnum;
   division: UserDivisionEnum;
+  multikampus: UserMultikampusEnum;
   rank: UserRankEnum;
   nim: string;
   no_wa: string;

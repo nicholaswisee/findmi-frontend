@@ -16,7 +16,11 @@ import { DEPARTMENTS } from "@/constants/departments";
 import { toast } from "sonner";
 import { API_URL } from "@/lib/api";
 import { DIVISIONS } from "@/constants/divisions";
-import type { UserDepartmentEnum, UserDivisionEnum } from "@/types/types";
+import type {
+  UserDepartmentEnum,
+  UserDivisionEnum,
+  UserMultikampusEnum,
+} from "@/types/types";
 import {
   DIVISION_TOKENS,
   type DivisionTokenKey,
@@ -30,6 +34,7 @@ type EditedProfileData = {
   no_wa: string;
   department: UserDepartmentEnum;
   division: UserDivisionEnum;
+  multikampus: UserMultikampusEnum;
 };
 
 export default function ProfilePage() {
@@ -43,6 +48,7 @@ export default function ProfilePage() {
     no_wa: user?.no_wa || "",
     department: (user?.department as UserDepartmentEnum) || "none",
     division: (user?.division as UserDivisionEnum) || "none",
+    multikampus: (user?.multikampus as UserMultikampusEnum) || "none",
   });
   const [isSaving, setIsSaving] = useState(false);
   const [tokenInput, setTokenInput] = useState("");
@@ -52,6 +58,9 @@ export default function ProfilePage() {
   const [nameInput, setNameInput] = useState(user?.name || "");
   const [lineInput, setLineInput] = useState(user?.line_id || "");
   const [waInput, setWaInput] = useState(user?.no_wa || "");
+  const [multikampusInput, setMultikampusInput] = useState<UserMultikampusEnum>(
+    (user?.multikampus as UserMultikampusEnum) || "none"
+  );
   const hideNimAndDepartment = user?.department === "Umum";
   const affiliationLocked =
     user?.provider === "google" &&
@@ -63,10 +72,36 @@ export default function ProfilePage() {
   const selectableDepartments = DEPARTMENTS.filter(
     (dept) => dept !== "All" && dept !== "Tutor"
   );
+  const multikampusRequiredDepartments: UserDepartmentEnum[] = [
+    "Ketua AMI",
+    "Kesekjenan",
+    "Manajemen Personalia",
+    "Materi dan Metode",
+    "Relasi",
+    "ITB Day",
+    "Paguyuban Membangun",
+    "Diseminasi",
+    "Kreatif",
+    "Fundraising",
+    "Operasional",
+    "Perangkat Lapangan Utama",
+    "IT",
+  ];
+  const multikampusOptions: UserMultikampusEnum[] = ["Bandung", "Jatinangor"];
+  const requiresMultikampus = (department?: UserDepartmentEnum) =>
+    !!department && multikampusRequiredDepartments.includes(department);
   const shouldShowInlineToken =
     !showTokenPrompt &&
     user &&
     (user.department === "Umum" || user.department === "none");
+  const tokenCandidate = tokenInput.trim().toUpperCase();
+  const tokenMatch =
+    tokenCandidate && (tokenCandidate as DivisionTokenKey) in DIVISION_TOKENS
+      ? DIVISION_TOKENS[tokenCandidate as DivisionTokenKey]
+      : undefined;
+  const tokenRequiresMultikampus = tokenMatch
+    ? requiresMultikampus(tokenMatch.department)
+    : false;
 
   useEffect(() => {
     refreshUser();
@@ -125,11 +160,18 @@ export default function ProfilePage() {
         return;
       }
     }
+    if (match?.department && requiresMultikampus(match.department)) {
+      if (!multikampusInput || multikampusInput === "none") {
+        toast.error("Pilih multikampus.");
+        return;
+      }
+    }
     setTokenSubmitting(true);
     try {
       const payload: Partial<EditedProfileData> = {
         department: match ? match.department : "Umum",
         division: match ? match.division : "none",
+        multikampus: multikampusInput,
       };
 
       // Only include other profile fields when using the token modal; the inline token uses existing data.
@@ -161,6 +203,7 @@ export default function ProfilePage() {
       setTokenInput("");
       setNimInput("");
       setNameInput("");
+      setMultikampusInput("none");
       await refreshUser(true);
       toast.success("Data berhasil diperbarui");
     } catch (err) {
@@ -215,11 +258,13 @@ export default function ProfilePage() {
         no_wa: user.no_wa || "",
         department: (user.department as UserDepartmentEnum) || "none",
         division: (user.division as UserDivisionEnum) || "none",
+        multikampus: (user.multikampus as UserMultikampusEnum) || "none",
       });
       setNameInput(user.name || "");
       setLineInput(user.line_id || "");
       setWaInput(user.no_wa || "");
       setNimInput(user.nim || "");
+      setMultikampusInput((user.multikampus as UserMultikampusEnum) || "none");
     }
   }, [user]);
 
@@ -236,7 +281,9 @@ export default function ProfilePage() {
       no_wa: user?.no_wa || "",
       department: (user?.department as UserDepartmentEnum) || "none",
       division: (user?.division as UserDivisionEnum) || "none",
+      multikampus: (user?.multikampus as UserMultikampusEnum) || "none",
     });
+    setMultikampusInput((user?.multikampus as UserMultikampusEnum) || "none");
   };
 
   const handleSave = async () => {
@@ -247,6 +294,13 @@ export default function ProfilePage() {
     }
     if (!/^[0-9]+$/.test(trimmedWa)) {
       toast.error("No. WhatsApp hanya boleh berisi angka.");
+      return;
+    }
+    if (
+      requiresMultikampus(editedData.department) &&
+      editedData.multikampus === "none"
+    ) {
+      toast.error("Pilih multikampus.");
       return;
     }
     const updatedData = { ...editedData, no_wa: trimmedWa };
@@ -316,6 +370,9 @@ export default function ProfilePage() {
       editable: true,
     },
   ];
+  const shouldShowMultikampus = isEditing
+    ? requiresMultikampus(editedData.department)
+    : requiresMultikampus(user?.department as UserDepartmentEnum | undefined);
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
@@ -362,6 +419,29 @@ export default function ProfilePage() {
                   disabled={tokenSubmitting}
                 />
               </div>
+              {tokenRequiresMultikampus && (
+                <div>
+                  <label className="text-sm font-semibold">Multikampus*</label>
+                  <Select
+                    value={multikampusInput || "none"}
+                    onValueChange={(value) =>
+                      setMultikampusInput(value as UserMultikampusEnum)
+                    }
+                  >
+                    <SelectTrigger className={`mt-1 ${inputClass}`}>
+                      <SelectValue placeholder="Pilih Multikampus" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Pilih Multikampus</SelectItem>
+                      {multikampusOptions.map((campus) => (
+                        <SelectItem key={campus} value={campus}>
+                          {campus}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div>
                 <label className="text-sm font-semibold">ID Line</label>
                 <Input
@@ -569,6 +649,51 @@ export default function ProfilePage() {
                     </td>
                   </tr>
                 )}
+                {shouldShowMultikampus && (
+                  <tr className="border-b border-white/10 last:border-b-0">
+                    <th
+                      scope="row"
+                      className="w-1/3 text-[#FFD88C] py-4 pr-4 font-semibold"
+                    >
+                      Multikampus
+                    </th>
+                    <td className="py-4 text-[#FFD88C] font-semibold">
+                      {isEditing ? (
+                        <div className="flex flex-col gap-1">
+                          <Select
+                            value={editedData.multikampus || "none"}
+                            onValueChange={(value) =>
+                              setEditedData((prev) => ({
+                                ...prev,
+                                multikampus: value as UserMultikampusEnum,
+                              }))
+                            }
+                          >
+                            <SelectTrigger className={inputClass}>
+                              <SelectValue placeholder="Pilih Multikampus" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">
+                                Pilih Multikampus
+                              </SelectItem>
+                              {multikampusOptions.map((campus) => (
+                                <SelectItem key={campus} value={campus}>
+                                  {campus}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ) : (
+                        <span>
+                          {user?.multikampus && user.multikampus !== "none"
+                            ? user.multikampus
+                            : "-"}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                )}
                 {shouldShowInlineToken && (
                   <tr className="border-b border-white/10 last:border-b-0">
                     <th
@@ -594,6 +719,30 @@ export default function ProfilePage() {
                           Simpan Token
                         </Button>
                       </div>
+                      {tokenRequiresMultikampus && (
+                        <div className="mt-3 max-w-xs">
+                          <Select
+                            value={multikampusInput || "none"}
+                            onValueChange={(value) =>
+                              setMultikampusInput(value as UserMultikampusEnum)
+                            }
+                          >
+                            <SelectTrigger className={inputClass}>
+                              <SelectValue placeholder="Pilih Multikampus" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">
+                                Pilih Multikampus
+                              </SelectItem>
+                              {multikampusOptions.map((campus) => (
+                                <SelectItem key={campus} value={campus}>
+                                  {campus}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                       <div className="mt-3 flex flex-wrap items-center gap-3">
                         <p className="text-xs text-[#FFD88C]/80">
                           Masukkan token panitia untuk beralih dari akun Umum ke

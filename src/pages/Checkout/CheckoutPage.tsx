@@ -27,6 +27,10 @@ export default function CheckoutPage() {
   const [showDialog, setShowDialog] = useState(false);
   const [selectedProof, setSelectedProof] = useState<File | null>(null);
   const [isDialogSubmitting, setIsDialogSubmitting] = useState(false);
+  const checkoutClosedStart = new Date(2025, 11, 22, 0, 0, 0);
+  const checkoutClosedEnd = new Date(2025, 11, 26, 0, 0, 0);
+  const isCheckoutClosed =
+    new Date() >= checkoutClosedStart && new Date() < checkoutClosedEnd;
 
   useEffect(() => {
     fetchCart();
@@ -215,6 +219,28 @@ export default function CheckoutPage() {
     }
     setShowDialog(true);
   };
+
+  // if (isCheckoutClosed) {
+  //   return (
+  //     <div className="min-h-svh py-8">
+  //       <div className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
+  //         <h1 className="mt-4 text-4xl font-extrabold tracking-wide text-[#FFC76E] drop-shadow-[0.5px_3px_0px_rgba(0,0,0,0.3)]">
+  //           Checkout Ditutup Sementara
+  //         </h1>
+  //         <p className="max-w-xl text-base text-[#1b165e]">
+  //           Checkout ditutup mulai 21 Desember 2025 dan akan dibuka kembali pada
+  //           26 Desember 2025.
+  //         </p>
+  //         <a
+  //           href="/catalog"
+  //           className="rounded-lg bg-[#c62d76] px-4 py-2 text-sm font-semibold text-[#ffeabb] drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition hover:brightness-105 active:brightness-95"
+  //         >
+  //           Kembali ke Katalog
+  //         </a>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-svh py-8">
@@ -414,17 +440,32 @@ export default function CheckoutPage() {
                 </div>
               </div>
               <div className="mt-4 space-y-2">
-                <button
-                  onClick={handleOpenDialog}
-                  disabled={isMutating || !cart?.items?.length}
-                  className={`mx-auto mt-4 block w-full rounded-lg py-1 px-2 text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all ${
-                    isMutating || !cart?.items?.length
-                      ? "cursor-not-allowed bg-[#7a1644] text-[#ffeabb]/60 opacity-80"
-                      : "bg-[#c62d76] text-[#ffeabb] hover:brightness-105 active:brightness-95"
-                  }`}
-                >
-                  {isMutating ? "Memproses..." : "Buat Pesanan"}
-                </button>
+                {isCheckoutClosed ? (
+                  <button
+                    onClick={() => {
+                      toast.error("Batch Order telah ditutup.");
+                    }}
+                    className={`mx-auto mt-4 block w-full rounded-lg py-1 px-2 text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all ${
+                      isCheckoutClosed
+                        ? "cursor-not-allowed bg-[#7a1644] text-[#ffeabb]/60 opacity-80"
+                        : "bg-[#c62d76] text-[#ffeabb] hover:brightness-105 active:brightness-95"
+                    }`}
+                  >
+                    {"Batch Order telah ditutup."}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleOpenDialog}
+                    disabled={isMutating || !cart?.items?.length}
+                    className={`mx-auto mt-4 block w-full rounded-lg py-1 px-2 text-base font-semibold drop-shadow-[0px_3.5px_0px_rgba(0,0,0,0.3)] transition-all ${
+                      isMutating || !cart?.items?.length
+                        ? "cursor-not-allowed bg-[#7a1644] text-[#ffeabb]/60 opacity-80"
+                        : "bg-[#c62d76] text-[#ffeabb] hover:brightness-105 active:brightness-95"
+                    }`}
+                  >
+                    {isMutating ? "Memproses..." : "Buat Pesanan"}
+                  </button>
+                )}
               </div>
             </div>
           </div>

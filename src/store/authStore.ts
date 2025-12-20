@@ -5,6 +5,7 @@ import { API_URL } from "@/lib/api";
 import type {
   UserDepartmentEnum,
   UserDivisionEnum,
+  UserMultikampusEnum,
   UserRankEnum,
 } from "@/types/types";
 
@@ -14,6 +15,7 @@ interface User {
   nim: string;
   department: UserDepartmentEnum;
   division: UserDivisionEnum;
+  multikampus?: UserMultikampusEnum;
   rank: UserRankEnum;
   line_id: string;
   no_wa: string;
