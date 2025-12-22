@@ -27,7 +27,7 @@ export default function CheckoutPage() {
   const [showDialog, setShowDialog] = useState(false);
   const [selectedProof, setSelectedProof] = useState<File | null>(null);
   const [isDialogSubmitting, setIsDialogSubmitting] = useState(false);
-  const checkoutClosedStart = new Date(2025, 11, 22, 0, 0, 0);
+  const checkoutClosedStart = new Date(2025, 11, 22, 11, 59, 59);
   const checkoutClosedEnd = new Date(2025, 11, 26, 0, 0, 0);
   const isCheckoutClosed =
     new Date() >= checkoutClosedStart && new Date() < checkoutClosedEnd;
