@@ -90,30 +90,64 @@ export default function ExportPage() {
     if (!Array.isArray(order.items) || order.items.length === 0) return "-";
     return order.items
       .map((item) => {
-        const label =
-          item.product?.name ??
-          item.bundle?.name ??
-          (item.bundle_id ? `Bundle #${item.bundle_id}` : `Item #${item.id}`);
-        const size =
-          item.selected_size && item.selected_size !== ""
-            ? `Size: ${item.selected_size}`
-            : "";
-        const option =
-          item.selected_option && item.selected_option !== ""
-            ? `Option: ${item.selected_option}`
-            : "";
-        const bundleItems =
-          Array.isArray(item.selected_bundle_items) &&
-          item.selected_bundle_items.length > 0
-            ? `Bundle items: ${item.selected_bundle_items
-                .map(
-                  (bi) =>
-                    `${bi.product_id ?? ""}${bi.size ? ` (${bi.size})` : ""}`
-                )
-                .join("; ")}`
-            : "";
-        const details = [size, option, bundleItems].filter(Boolean).join(", ");
-        return `${label} x${item.quantity}${details ? ` (${details})` : ""}`;
+        const isBundle = Boolean(item.bundle);
+
+        if (!isBundle) {
+          const label =
+            item.product?.name ??
+            (item.product_id ? `Produk #${item.product_id}` : `Item #${item.id}`);
+          const size =
+            item.selected_size && item.selected_size !== ""
+              ? `Size: ${item.selected_size}`
+              : "";
+          const option =
+            item.selected_option && item.selected_option !== ""
+              ? `Option: ${item.selected_option}`
+              : "";
+          const details = [size, option].filter(Boolean).join(", ");
+          return `${label} x${item.quantity}${
+            details ? ` (${details})` : ""
+          }`;
+        }
+
+        const bundleName =
+          item.bundle?.name ?? `Bundle #${item.bundle_id ?? item.id}`;
+        const bundleSelections = Array.isArray(item.selected_bundle_items)
+          ? item.selected_bundle_items
+          : [];
+        const bundleItemDetails = Array.isArray(item.bundle?.bundle_items)
+          ? item.bundle?.bundle_items
+              .map((bundleItem) => {
+                const productName =
+                  bundleItem.product?.name ?? `Produk #${bundleItem.product_id}`;
+                const amount =
+                  typeof bundleItem.amount === "number" && bundleItem.amount > 0
+                    ? bundleItem.amount
+                    : 1;
+                const selection = bundleSelections.find(
+                  (sel) => sel.product_id === bundleItem.product_id
+                );
+                const sizeLabel =
+                  selection?.size && selection.size.trim().length > 0
+                    ? `Size: ${selection.size}`
+                    : "";
+                const optionLabel =
+                  selection?.option && selection.option.trim().length > 0
+                    ? `Option: ${selection.option}`
+                    : "";
+                const extras = [sizeLabel, optionLabel]
+                  .filter(Boolean)
+                  .join(", ");
+                return extras
+                  ? `${productName} x${amount} (${extras})`
+                  : `${productName} x${amount}`;
+              })
+              .join("; ")
+          : "";
+
+        return `${bundleName} x${item.quantity}${
+          bundleItemDetails ? ` [${bundleItemDetails}]` : ""
+        }`;
       })
       .join(", ");
   };

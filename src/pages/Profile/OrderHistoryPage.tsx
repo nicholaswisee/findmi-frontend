@@ -95,8 +95,11 @@ export default function OrderHistoryPage() {
 
   const computeBundleUnitPrice = (item: OrderItem) => {
     const bundle = item.bundle;
-    if (!bundle) return toNumber(item.unit_price);
-    const base = toNumber(bundle.price ?? item.unit_price);
+    const backendPrice = toNumber(item.unit_price);
+    // Prefer backend-computed bundle unit price since it already includes dynamic option/size surcharges.
+    if (backendPrice > 0) return backendPrice;
+    if (!bundle) return 0;
+    const base = toNumber(bundle.price);
     const selections = item.selected_bundle_items ?? [];
     const bundleItems = Array.isArray(bundle.bundle_items)
       ? bundle.bundle_items
@@ -192,11 +195,23 @@ export default function OrderHistoryPage() {
     const bundleSizes =
       !isProduct && item.selected_bundle_items?.length
         ? item.selected_bundle_items
-            .map(
-              (selection) =>
-                `Produk #${selection.product_id} (${selection.size})`
-            )
-            .join(", ")
+            .filter(Boolean)
+            .map((selection) => {
+              const bundleItem = item.bundle?.bundle_items?.find(
+                (bi) => bi.product_id === selection.product_id
+              );
+              const amount =
+                typeof bundleItem?.amount === "number" && bundleItem.amount > 0
+                  ? bundleItem.amount
+                  : 1;
+              const baseLabel =
+                bundleItem?.product?.name?.trim() ||
+                `Produk #${selection.product_id}`;
+              const amountLabel = ` x${amount}`;
+              const sizeLabel = selection.size ? ` (${selection.size})` : "";
+              return `${baseLabel}${amountLabel}${sizeLabel}`;
+            })
+            .join(", ") || undefined
         : undefined;
 
     const bundleOptions =
