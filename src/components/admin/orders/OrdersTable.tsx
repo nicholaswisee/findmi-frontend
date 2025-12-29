@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
@@ -137,38 +137,58 @@ const buildItemSummary = (order: OrderWithUser) => {
   const summaryLines: string[] = [];
 
   order.items.slice(0, 3).forEach((item) => {
-    const name = item.product?.name ?? item.bundle?.name ?? "Item";
-    const details: string[] = [];
-    details.push(`${item.quantity}x`);
-    if (item.selected_size) {
-      details.push(`Size ${item.selected_size}`);
-    }
-    if (item.selected_option) {
-      details.push(`Opsi ${item.selected_option}`);
-    }
-    if (item.selected_bundle_items?.length) {
-      const bundleSelections = item.selected_bundle_items
-        .map((selection) => {
-          if (!selection.product_id || !item.bundle?.bundle_items) return null;
-          const productName =
-            item.bundle.bundle_items.find(
-              (bundleItem) => bundleItem.product_id === selection.product_id
-            )?.product?.name ?? "Item";
-          const sizeLabel = selection.size ? `Size ${selection.size}` : null;
-          const optionLabel = selection.option
-            ? `Opsi ${selection.option}`
-            : null;
-          const detail = [sizeLabel, optionLabel]
-            .filter((value): value is string => Boolean(value))
-            .join(" | ");
-          return detail ? `${productName} (${detail})` : productName;
-        })
-        .filter((value): value is string => Boolean(value));
-      if (bundleSelections.length) {
-        details.push(bundleSelections.join(", "));
+    const isBundle = Boolean(item.bundle);
+
+    if (!isBundle) {
+      const name = item.product?.name ?? `Produk #${item.product_id ?? item.id}`;
+      const detailParts = [`${item.quantity}x`];
+      if (item.selected_size) {
+        detailParts.push(`Size ${item.selected_size}`);
       }
+      if (item.selected_option) {
+        detailParts.push(`Option ${item.selected_option}`);
+      }
+      summaryLines.push(`${name} — ${detailParts.join(" · ")}`);
+      return;
     }
-    summaryLines.push(`${name} • ${details.join(" · ")}`);
+
+    const bundleName = item.bundle?.name ?? `Bundle #${item.bundle_id ?? item.id}`;
+    const selections = Array.isArray(item.selected_bundle_items)
+      ? item.selected_bundle_items
+      : [];
+    const bundleItems = Array.isArray(item.bundle?.bundle_items)
+      ? item.bundle.bundle_items
+      : [];
+
+    const bundleDetails = bundleItems
+      .map((bundleItem) => {
+        const productName =
+          bundleItem.product?.name ?? `Produk #${bundleItem.product_id}`;
+        const amount =
+          typeof bundleItem.amount === "number" && bundleItem.amount > 0
+            ? bundleItem.amount
+            : 1;
+        const selection = selections.find(
+          (sel) => sel.product_id === bundleItem.product_id
+        );
+        const sizeLabel = selection?.size ? `Size ${selection.size}` : null;
+        const optionLabel = selection?.option
+          ? `Option ${selection.option}`
+          : null;
+        const extras = [sizeLabel, optionLabel]
+          .filter((value): value is string => Boolean(value))
+          .join(" | ");
+        return extras
+          ? `${productName} x${amount} (${extras})`
+          : `${productName} x${amount}`;
+      })
+      .filter(Boolean)
+      .join("; ");
+
+    const detailParts = [`${item.quantity}x`];
+    if (bundleDetails) detailParts.push(`[${bundleDetails}]`);
+
+    summaryLines.push(`${bundleName} — ${detailParts.join(" · ")}`);
   });
 
   if (order.items.length > 3) {
@@ -177,7 +197,6 @@ const buildItemSummary = (order: OrderWithUser) => {
 
   return summaryLines;
 };
-
 export default function OrdersTable({
   data,
   pageIndex,
@@ -357,3 +376,16 @@ export default function OrdersTable({
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

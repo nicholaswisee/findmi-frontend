@@ -366,7 +366,42 @@ export function OrderAdminDialog({
                       item.product?.name ?? item.bundle?.name ?? "Item";
                     const unitPrice = computeItemUnitPrice(item);
                     const itemSubtotal = unitPrice * (item.quantity ?? 0);
-                    // const bundleLabel = getBundleSelectionLabel(item);
+                    const bundleDetails =
+                      item.bundle && Array.isArray(item.bundle.bundle_items)
+                        ? item.bundle.bundle_items
+                            .map((bundleItem) => {
+                              const selection =
+                                item.selected_bundle_items?.find(
+                                  (sel) =>
+                                    sel.product_id === bundleItem.product_id
+                                );
+                              const productName =
+                                bundleItem.product?.name ??
+                                `Produk #${bundleItem.product_id}`;
+                              const qtyLabel =
+                                typeof bundleItem.amount === "number" &&
+                                bundleItem.amount > 0
+                                  ? `x${bundleItem.amount}`
+                                  : "x1";
+                              const sizeLabel = selection?.size
+                                ? `Size ${selection.size}`
+                                : null;
+                              const optionLabel = selection?.option
+                                ? `Option ${selection.option}`
+                                : null;
+                              const extras = [sizeLabel, optionLabel]
+                                .filter(
+                                  (value): value is string => Boolean(value)
+                                )
+                                .join(" | ");
+                              return extras
+                                ? `${productName} ${qtyLabel} (${extras})`
+                                : `${productName} ${qtyLabel}`;
+                            })
+                            .filter(
+                              (value): value is string => Boolean(value)
+                            )
+                        : [];
                     return (
                       <div key={item.id} className="space-y-2 p-3">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -391,6 +426,18 @@ export function OrderAdminDialog({
                             <p className="text-sm text-muted-foreground">
                               Additional: {item.selected_option}
                             </p>
+                          ) : null}
+                          {bundleDetails.length > 0 ? (
+                            <div className="space-y-1">
+                              <p className="text-[11px] uppercase text-muted-foreground">
+                                Bundle contents
+                              </p>
+                              <ul className="list-disc space-y-0.5 pl-4">
+                                {bundleDetails.map((detail, idx) => (
+                                  <li key={idx}>{detail}</li>
+                                ))}
+                              </ul>
+                            </div>
                           ) : null}
                           <p>Harga satuan: {formatCurrency(unitPrice)}</p>
                         </div>
